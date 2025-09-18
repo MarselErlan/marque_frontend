@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live API Debug - marque.website</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .test { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto; 
+            font-size: 12px; 
+            white-space: pre-wrap;
+        }
+        .url-display {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Live API Debug for marque.website</h1>
+    <p>This page tests the exact API configuration that your live frontend should be using.</p>
+    
+    <div class="url-display">
+        <strong>Current Domain:</strong> <span id="currentDomain"></span><br>
+        <strong>API Base URL:</strong> <span id="apiBaseUrl"></span><br>
+        <strong>Full API URL:</strong> <span id="fullApiUrl"></span>
+    </div>
+    
+    <button onclick="testConfiguration()">Test API Configuration</button>
+    <button onclick="testCORS()">Test CORS</button>
+    <button onclick="testSMSEndpoint()">Test SMS Endpoint</button>
+    <button onclick="testHealthEndpoint()">Test Health Endpoint</button>
+    
+    <div id="results"></div>
+
+    <script>
+        // Use the same configuration as your frontend
+        const API_BASE_URL = 'https://marquebackend-production.up.railway.app/api/v1';
+        const SEND_VERIFICATION_ENDPOINT = '/auth/send-verification';
+        const HEALTH_ENDPOINT = '/health';
+        
+        // Display current configuration
+        document.getElementById('currentDomain').textContent = window.location.origin;
+        document.getElementById('apiBaseUrl').textContent = API_BASE_URL;
+        document.getElementById('fullApiUrl').textContent = API_BASE_URL + SEND_VERIFICATION_ENDPOINT;
+        
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(title, status, details) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${details}</pre>
+            `;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testConfiguration() {
+            addResult('Configuration Test', 'loading', 'Testing current configuration...');
+            
+            const config = {
+                currentDomain: window.location.origin,
+                apiBaseUrl: API_BASE_URL,
+                fullUrl: API_BASE_URL + SEND_VERIFICATION_ENDPOINT,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+            };
+            
+            addResult('Configuration Test - SUCCESS', 'success', JSON.stringify(config, null, 2));
+        }
+        
+        async function testCORS() {
+            try {
+                const response = await fetch(API_BASE_URL + SEND_VERIFICATION_ENDPOINT, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type,Accept,X-Market,X-Request-ID'
+                    }
+                });
+                
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                addResult(
+                    `CORS Test - ${response.ok ? 'SUCCESS' : 'FAILED'}`,
+                    response.ok ? 'success' : 'error',
+                    `Status: ${response.status} ${response.statusText}
+Origin: ${window.location.origin}
+Headers: ${JSON.stringify(headers, null, 2)}`
+                );
+                
+            } catch (error) {
+                addResult('CORS Test - ERROR', 'error', `Error: ${error.message}\nStack: ${error.stack}`);
+            }
+        }
+        
+        async function testHealthEndpoint() {
+            try {
+                const response = await fetch(API_BASE_URL.replace('/api/v1', '') + HEALTH_ENDPOINT);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(
+                        'Health Check - SUCCESS',
+                        'success',
+                        `Backend is healthy!\n${JSON.stringify(data, null, 2)}`
+                    );
+                } else {
+                    addResult(
+                        'Health Check - FAILED',
+                        'error',
+                        `Status: ${response.status}\nResponse: ${await response.text()}`
+                    );
+                }
+                
+            } catch (error) {
+                addResult('Health Check - ERROR', 'error', `Error: ${error.message}\nStack: ${error.stack}`);
+            }
+        }
+        
+        async function testSMSEndpoint() {
+            try {
+                const testData = {
+                    phone: '+13128059851'
+                };
+                
+                console.log('Testing SMS endpoint with:', testData);
+                console.log('URL:', API_BASE_URL + SEND_VERIFICATION_ENDPOINT);
+                
+                const response = await fetch(API_BASE_URL + SEND_VERIFICATION_ENDPOINT, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Market': 'us',
+                        'X-Request-ID': `debug-${Date.now()}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const responseText = await response.text();
+                
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    responseData = responseText;
+                }
+                
+                addResult(
+                    `SMS Endpoint Test - ${response.ok ? 'SUCCESS' : 'FAILED'}`,
+                    response.ok ? 'success' : 'error',
+                    `Status: ${response.status} ${response.statusText}
+URL: ${API_BASE_URL + SEND_VERIFICATION_ENDPOINT}
+Request: ${JSON.stringify(testData, null, 2)}
+Response: ${JSON.stringify(responseData, null, 2)}`
+                );
+                
+            } catch (error) {
+                addResult(
+                    'SMS Endpoint Test - ERROR',
+                    'error',
+                    `Error: ${error.message}
+Stack: ${error.stack}
+URL: ${API_BASE_URL + SEND_VERIFICATION_ENDPOINT}`
+                );
+            }
+        }
+    </script>
+</body>
+</html>
