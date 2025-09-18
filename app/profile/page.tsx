@@ -56,6 +56,102 @@ export default function ProfilePage() {
     postalCode: "",
   })
 
+  const [paymentMethods, setPaymentMethods] = useState([
+    {
+      id: 1,
+      type: "Банковская карта",
+      brand: "Visa",
+      lastFour: "2352",
+      fullNumber: "•••• •••• •••• 2352",
+    },
+    {
+      id: 2,
+      type: "Банковская карта",
+      brand: "Mastercard",
+      lastFour: "5256",
+      fullNumber: "•••• •••• •••• 5256",
+    },
+  ])
+  const [showPaymentForm, setShowPaymentForm] = useState(false)
+  const [editingPayment, setEditingPayment] = useState(null)
+  const [newPayment, setNewPayment] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    cardholderName: "",
+  })
+
+  const [notificationFilter, setNotificationFilter] = useState<"all" | "orders" | "sales">("all")
+  const [notificationSettings, setNotificationSettings] = useState({
+    orderUpdates: true,
+    salesPromotions: true,
+    emailNotifications: true,
+    pushNotifications: false,
+  })
+
+  // Mock notifications data
+  const notifications = [
+    {
+      id: 1,
+      type: "order" as const,
+      title: "Заказ №123 подтвержден",
+      time: "14:32",
+      date: "сегодня",
+      products: [{ image: "/black-t-shirt.png" }, { image: "/beige-t-shirt.jpg" }],
+    },
+    {
+      id: 2,
+      type: "order" as const,
+      title: "Заказ №123 передан курьеру",
+      time: "14:30",
+      date: "сегодня",
+      products: [{ image: "/black-t-shirt.png" }, { image: "/beige-t-shirt.jpg" }],
+    },
+    {
+      id: 3,
+      type: "order" as const,
+      title: "Заказ №123 доставлен",
+      time: "14:25",
+      date: "сегодня",
+      products: [{ image: "/black-t-shirt.png" }, { image: "/beige-t-shirt.jpg" }],
+    },
+    {
+      id: 4,
+      type: "sale" as const,
+      title: "Скидка 30% на летнюю коллекцию",
+      time: "10:00",
+      date: "сегодня",
+      products: [],
+    },
+    {
+      id: 5,
+      type: "sale" as const,
+      title: "Новая коллекция уже в продаже",
+      time: "09:15",
+      date: "вчера",
+      products: [],
+    },
+  ]
+
+  const filteredNotifications = notifications.filter((notification) => {
+    if (notificationFilter === "all") return true
+    if (notificationFilter === "orders") return notification.type === "order"
+    if (notificationFilter === "sales") return notification.type === "sale"
+    return true
+  })
+
+  const groupedNotifications = filteredNotifications.reduce(
+    (groups, notification) => {
+      const date = notification.date
+      if (!groups[date]) {
+        groups[date] = []
+      }
+      groups[date].push(notification)
+      return groups
+    },
+    {} as Record<string, typeof notifications>,
+  )
+
   const orders = [
     {
       id: "23529",
@@ -334,6 +430,62 @@ export default function ProfilePage() {
     setReviewPhotos([])
   }
 
+  const handleAddPayment = () => {
+    if (newPayment.cardNumber.trim() && newPayment.expiryDate.trim() && newPayment.cvv.trim()) {
+      const lastFour = newPayment.cardNumber.slice(-4)
+      const brand = newPayment.cardNumber.startsWith("4") ? "Visa" : "Mastercard"
+
+      const payment = {
+        id: Date.now(),
+        type: "Банковская карта",
+        brand,
+        lastFour,
+        fullNumber: `•••• •••• •••• ${lastFour}`,
+      }
+      setPaymentMethods([...paymentMethods, payment])
+      setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
+      setShowPaymentForm(false)
+    }
+  }
+
+  const handleEditPayment = (payment) => {
+    setEditingPayment(payment)
+    setNewPayment({
+      cardNumber: `****${payment.lastFour}`,
+      expiryDate: "",
+      cvv: "",
+      cardholderName: "",
+    })
+    setShowPaymentForm(true)
+  }
+
+  const handleUpdatePayment = () => {
+    if (newPayment.cardNumber.trim() && newPayment.expiryDate.trim() && newPayment.cvv.trim()) {
+      const lastFour = newPayment.cardNumber.slice(-4)
+      const brand = newPayment.cardNumber.startsWith("4") ? "Visa" : "Mastercard"
+
+      setPaymentMethods(
+        paymentMethods.map((payment) =>
+          payment.id === editingPayment.id
+            ? {
+                ...payment,
+                brand,
+                lastFour,
+                fullNumber: `•••• •••• •••• ${lastFour}`,
+              }
+            : payment,
+        ),
+      )
+      setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
+      setShowPaymentForm(false)
+      setEditingPayment(null)
+    }
+  }
+
+  const handleDeletePayment = (paymentId) => {
+    setPaymentMethods(paymentMethods.filter((payment) => payment.id !== paymentId))
+  }
+
   const sidebarItems = [
     { id: "profile", label: "Профиль", icon: User },
     { id: "orders", label: "Заказы", icon: Package },
@@ -346,6 +498,7 @@ export default function ProfilePage() {
     { id: "profile", label: "Профиль" },
     { id: "orders", label: "Заказы" },
     { id: "addresses", label: "Адреса доставки" },
+    { id: "payments", label: "Способы оплаты" },
   ]
 
   return (
@@ -918,7 +1071,331 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* ... existing code for other tabs ... */}
+            {activeTab === "payments" && !showPaymentForm && (
+              <div className="bg-white rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-black mb-2">Способы оплаты</h2>
+                <p className="text-gray-500 text-sm mb-6">{paymentMethods.length} способа</p>
+
+                <div className="space-y-4 mb-6">
+                  {paymentMethods.map((payment) => (
+                    <div
+                      key={payment.id}
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">{payment.type}</p>
+                        <p className="text-gray-600">
+                          {payment.brand} {payment.fullNumber}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditPayment(payment)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeletePayment(payment.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  onClick={() => setShowPaymentForm(true)}
+                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  Добавить способ оплаты
+                </Button>
+              </div>
+            )}
+
+            {activeTab === "payments" && showPaymentForm && (
+              <div className="bg-white rounded-lg p-6">
+                <div className="flex items-center space-x-4 mb-6">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowPaymentForm(false)
+                      setEditingPayment(null)
+                      setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
+                    }}
+                    className="p-0"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <h2 className="text-xl font-semibold text-black">
+                    {editingPayment ? "Редактировать карту" : "Добавить способ оплаты"}
+                  </h2>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Номер карты *</label>
+                    <Input
+                      type="text"
+                      value={newPayment.cardNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "").slice(0, 16)
+                        const formatted = value.replace(/(\d{4})(?=\d)/g, "$1 ")
+                        setNewPayment({ ...newPayment, cardNumber: formatted })
+                      }}
+                      placeholder="1234 5678 9012 3456"
+                      className="w-full"
+                      maxLength={19}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Срок действия *</label>
+                      <Input
+                        type="text"
+                        value={newPayment.expiryDate}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "").slice(0, 4)
+                          const formatted = value.replace(/(\d{2})(?=\d)/, "$1/")
+                          setNewPayment({ ...newPayment, expiryDate: formatted })
+                        }}
+                        placeholder="MM/YY"
+                        className="w-full"
+                        maxLength={5}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">CVV *</label>
+                      <Input
+                        type="text"
+                        value={newPayment.cvv}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "").slice(0, 3)
+                          setNewPayment({ ...newPayment, cvv: value })
+                        }}
+                        placeholder="123"
+                        className="w-full"
+                        maxLength={3}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Имя владельца карты</label>
+                    <Input
+                      type="text"
+                      value={newPayment.cardholderName}
+                      onChange={(e) => setNewPayment({ ...newPayment, cardholderName: e.target.value })}
+                      placeholder="IVAN PETROV"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="flex space-x-4 pt-4">
+                    <Button
+                      onClick={editingPayment ? handleUpdatePayment : handleAddPayment}
+                      className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+                      disabled={
+                        !newPayment.cardNumber.trim() || !newPayment.expiryDate.trim() || !newPayment.cvv.trim()
+                      }
+                    >
+                      {editingPayment ? "Сохранить изменения" : "Добавить карту"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowPaymentForm(false)
+                        setEditingPayment(null)
+                        setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
+                      }}
+                      className="flex-1"
+                    >
+                      Отмена
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "notifications" && (
+              <div className="bg-white rounded-lg p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-black mb-4 sm:mb-0">Уведомления</h2>
+
+                  {/* Notification Settings Toggle */}
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() =>
+                        setNotificationSettings((prev) => ({ ...prev, emailNotifications: !prev.emailNotifications }))
+                      }
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                        notificationSettings.emailNotifications
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      <Bell className="w-4 h-4" />
+                      Email
+                    </button>
+                    <button
+                      onClick={() =>
+                        setNotificationSettings((prev) => ({ ...prev, pushNotifications: !prev.pushNotifications }))
+                      }
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                        notificationSettings.pushNotifications
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      <Bell className="w-4 h-4" />
+                      Push
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
+                  <button
+                    onClick={() => setNotificationFilter("all")}
+                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      notificationFilter === "all" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    Все
+                  </button>
+                  <button
+                    onClick={() => setNotificationFilter("orders")}
+                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      notificationFilter === "orders"
+                        ? "bg-white text-black shadow-sm"
+                        : "text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    Заказы
+                  </button>
+                  <button
+                    onClick={() => setNotificationFilter("sales")}
+                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      notificationFilter === "sales"
+                        ? "bg-white text-black shadow-sm"
+                        : "text-gray-600 hover:text-black"
+                    }`}
+                  >
+                    Акции
+                  </button>
+                </div>
+
+                {/* Notifications List */}
+                <div className="space-y-6">
+                  {Object.entries(groupedNotifications).map(([date, dateNotifications]) => (
+                    <div key={date}>
+                      <h3 className="text-sm font-medium text-gray-500 mb-3 lowercase">{date}</h3>
+                      <div className="space-y-3">
+                        {dateNotifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            {notification.products.length > 0 && (
+                              <div className="flex -space-x-2">
+                                {notification.products.slice(0, 2).map((product, index) => (
+                                  <img
+                                    key={index}
+                                    src={product.image || "/placeholder.svg"}
+                                    alt=""
+                                    className="w-10 h-10 rounded-lg border-2 border-white object-cover"
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            {notification.products.length === 0 && (
+                              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <Bell className="w-5 h-5 text-purple-600" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-black">{notification.title}</p>
+                              <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {filteredNotifications.length === 0 && (
+                  <div className="text-center py-12">
+                    <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">
+                      {notificationFilter === "all"
+                        ? "У вас пока нет уведомлений"
+                        : `Нет уведомлений в категории "${notificationFilter === "orders" ? "Заказы" : "Акции"}"`}
+                    </p>
+                  </div>
+                )}
+
+                {/* Notification Settings */}
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-medium text-black mb-4">Настройки уведомлений</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-black">Обновления заказов</p>
+                        <p className="text-xs text-gray-500">Получать уведомления о статусе заказов</p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setNotificationSettings((prev) => ({ ...prev, orderUpdates: !prev.orderUpdates }))
+                        }
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          notificationSettings.orderUpdates ? "bg-purple-600" : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            notificationSettings.orderUpdates ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-black">Акции и скидки</p>
+                        <p className="text-xs text-gray-500">Получать уведомления о новых предложениях</p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setNotificationSettings((prev) => ({ ...prev, salesPromotions: !prev.salesPromotions }))
+                        }
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          notificationSettings.salesPromotions ? "bg-purple-600" : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            notificationSettings.salesPromotions ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
