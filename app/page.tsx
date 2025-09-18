@@ -95,10 +95,14 @@ export default function MarquePage() {
     
     try {
       console.log('Sending SMS to:', fullPhoneNumber)
+      console.log('API URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`)
+      
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`, {
         method: 'POST',
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           phone: fullPhoneNumber
@@ -129,13 +133,18 @@ export default function MarquePage() {
     if (smsCode.length >= 6) {
       setIsVerifyingCode(true)
       try {
+        const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
+        console.log('Verifying SMS code for:', fullPhoneNumber)
+        
         const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VERIFY_CODE}`, {
           method: 'POST',
+          mode: 'cors',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify({
-            phone: `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`,
+            phone: fullPhoneNumber,
             code: smsCode
           }),
         })

@@ -162,10 +162,14 @@ export default function CartPage() {
     
     try {
       console.log('Sending SMS to:', fullPhoneNumber)
+      console.log('API URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`)
+      
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`, {
         method: 'POST',
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           phone: fullPhoneNumber
@@ -173,6 +177,7 @@ export default function CartPage() {
       })
 
       console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
       
       if (response.ok) {
         const data = await response.json()
@@ -180,13 +185,23 @@ export default function CartPage() {
         setIsPhoneModalOpen(false)
         setIsSmsModalOpen(true)
       } else {
-        const errorData = await response.json()
-        console.error('Failed to send SMS:', errorData)
-        alert(`Не удалось отправить SMS: ${errorData.message || 'Попробуйте еще раз.'}`)
+        const errorText = await response.text()
+        console.error('Failed to send SMS. Status:', response.status)
+        console.error('Error response:', errorText)
+        try {
+          const errorData = JSON.parse(errorText)
+          alert(`Не удалось отправить SMS: ${errorData.message || 'Попробуйте еще раз.'}`)
+        } catch {
+          alert(`Ошибка сервера: ${response.status} ${response.statusText}`)
+        }
       }
     } catch (error) {
       console.error('Error sending SMS:', error)
-      alert('Ошибка подключения. Убедитесь что API сервер запущен.')
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        alert('Ошибка сети: Не удается подключиться к серверу. Проверьте интернет соединение.')
+      } else {
+        alert('Ошибка подключения. Убедитесь что API сервер запущен.')
+      }
     } finally {
       setIsSendingSms(false)
     }
@@ -195,14 +210,21 @@ export default function CartPage() {
   const handleSmsVerification = async () => {
     if (smsCode.length >= 6) {
       setIsVerifyingCode(true)
+      const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
+      
       try {
+        console.log('Verifying SMS code for:', fullPhoneNumber)
+        console.log('SMS code:', smsCode)
+        
         const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VERIFY_CODE}`, {
           method: 'POST',
+          mode: 'cors',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify({
-            phone: `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`,
+            phone: fullPhoneNumber,
             code: smsCode
           }),
         })
