@@ -389,31 +389,31 @@ export default function MarquePage() {
       title: "Мужчинам",
       image: "/images/male-model-black.jpg",
       bgColor: "bg-gray-100",
-      href: "/category/мужчинам",
+      href: "/category/muzhchinam",
     },
     {
       title: "Женщинам",
       image: "/images/female-model-olive.jpg",
       bgColor: "bg-purple-50",
-      href: "/category/женщинам",
+      href: "/category/zhenshchinam",
     },
     {
       title: "Детям",
       image: "/images/kids-yellow-blue.jpg",
       bgColor: "bg-yellow-50",
-      href: "/category/детям",
+      href: "/category/detyam",
     },
     {
       title: "Обувь",
       image: "/images/white-sneakers.jpg",
       bgColor: "bg-gray-50",
-      href: "/category/обувь",
+      href: "/category/obuv",
     },
     {
       title: "Спорт",
       image: "/images/male-model-hoodie.jpg",
       bgColor: "bg-gray-100",
-      href: "/category/спорт",
+      href: "/category/sport",
     },
   ]
 

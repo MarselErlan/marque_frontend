@@ -21,6 +21,47 @@ const categoryData = {
       { name: "Домашняя одежда", count: 23, image: "/images/black-tshirt.jpg", slug: "domashnyaya-odezhda" },
     ],
   },
+  zhenshchinam: {
+    title: "Женщинам",
+    subcategories: [
+      { name: "Платья", count: 1254, image: "/images/black-tshirt.jpg", slug: "platya" },
+      { name: "Блузки и рубашки", count: 864, image: "/images/black-tshirt.jpg", slug: "bluzki-i-rubashki" },
+      { name: "Юбки", count: 532, image: "/images/black-tshirt.jpg", slug: "yubki" },
+      { name: "Брюки и джинсы", count: 743, image: "/images/black-tshirt.jpg", slug: "bryuki-i-dzhinsy" },
+      { name: "Кофты и свитера", count: 1124, image: "/images/black-tshirt.jpg", slug: "kofty-i-svitera" },
+      { name: "Верхняя одежда", count: 234, image: "/images/black-tshirt.jpg", slug: "verkhnyaya-odezhda" },
+      { name: "Нижнее белье", count: 2341, image: "/images/black-tshirt.jpg", slug: "nizhnee-bele" },
+      { name: "Купальники", count: 145, image: "/images/black-tshirt.jpg", slug: "kupalniki" },
+    ],
+  },
+  detyam: {
+    title: "Детям",
+    subcategories: [
+      { name: "Для мальчиков", count: 1245, image: "/images/black-tshirt.jpg", slug: "dlya-malchikov" },
+      { name: "Для девочек", count: 1356, image: "/images/black-tshirt.jpg", slug: "dlya-devochek" },
+      { name: "Для малышей", count: 567, image: "/images/black-tshirt.jpg", slug: "dlya-malyshej" },
+      { name: "Школьная форма", count: 234, image: "/images/black-tshirt.jpg", slug: "shkolnaya-forma" },
+    ],
+  },
+  obuv: {
+    title: "Обувь",
+    subcategories: [
+      { name: "Кроссовки", count: 2341, image: "/images/white-sneakers.jpg", slug: "krossovki" },
+      { name: "Ботинки", count: 654, image: "/images/white-sneakers.jpg", slug: "botinki" },
+      { name: "Туфли", count: 432, image: "/images/white-sneakers.jpg", slug: "tufli" },
+      { name: "Сандалии", count: 321, image: "/images/white-sneakers.jpg", slug: "sandalii" },
+      { name: "Домашняя обувь", count: 156, image: "/images/white-sneakers.jpg", slug: "domashnyaya-obuv" },
+    ],
+  },
+  sport: {
+    title: "Спорт",
+    subcategories: [
+      { name: "Спортивная одежда", count: 1234, image: "/images/male-model-hoodie.jpg", slug: "sportivnaya-odezhda" },
+      { name: "Обувь для спорта", count: 876, image: "/images/white-sneakers.jpg", slug: "obuv-dlya-sporta" },
+      { name: "Аксессуары", count: 543, image: "/images/black-tshirt.jpg", slug: "aksessuary" },
+      { name: "Фитнес", count: 321, image: "/images/black-tshirt.jpg", slug: "fitnes" },
+    ],
+  },
 }
 
 const recommendedProducts = Array.from({ length: 8 }, (_, i) => ({
