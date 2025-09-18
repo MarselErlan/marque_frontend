@@ -1,12 +1,15 @@
 "use client"
 import { useState } from "react"
-import { Search, Heart, ShoppingCart, User, Edit, Trash2, Minus, Plus } from "lucide-react"
+import { Search, Heart, ShoppingCart, User, Edit, Trash2, Minus, Plus, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function CartPage() {
+  const router = useRouter()
   const [cartItems, setCartItems] = useState([
     {
       id: 1,
@@ -34,6 +37,10 @@ export default function CartPage() {
   const [deliveryAddress, setDeliveryAddress] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("")
 
+  const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "success" | null>(null)
+  const [checkoutAddress, setCheckoutAddress] = useState("")
+  const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
+
   const deliveryDates = ["21 июл", "22 июл", "23 июл", "24 июл", "25 июл"]
   const deliveryCost = 350
   const taxRate = 0.12
@@ -51,6 +58,28 @@ export default function CartPage() {
   const taxes = Math.round(subtotal * taxRate)
   const discount = cartItems.reduce((sum, item) => sum + (item.originalPrice - item.price) * item.quantity, 0)
   const total = subtotal + deliveryCost + taxes
+
+  const handleCheckout = () => {
+    setCheckoutStep("address")
+  }
+
+  const handleAddressSubmit = () => {
+    if (checkoutAddress) {
+      setCheckoutStep("payment")
+    }
+  }
+
+  const handlePaymentSubmit = () => {
+    if (checkoutPaymentMethod) {
+      setCheckoutStep("success")
+    }
+  }
+
+  const handleOrderComplete = () => {
+    setCheckoutStep(null)
+    setCartItems([]) // Clear cart after successful order
+    router.push("/order-success") // Redirect to order success page instead of just closing modal
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -250,7 +279,10 @@ export default function CartPage() {
               </div>
 
               {/* Checkout Button */}
-              <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg">
+              <Button
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                onClick={handleCheckout}
+              >
                 Перейти к оформлению
               </Button>
             </div>
@@ -294,6 +326,120 @@ export default function CartPage() {
           </div>
         </div>
       </footer>
+
+      {/* Address Selection Modal */}
+      <Dialog open={checkoutStep === "address"} onOpenChange={() => setCheckoutStep(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Выберите адрес доставки</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Input
+                placeholder="Введите адрес"
+                value={checkoutAddress}
+                onChange={(e) => setCheckoutAddress(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <Input placeholder="Квартира, офис" className="w-full" />
+            </div>
+            <div>
+              <Input placeholder="Подъезд" className="w-full" />
+            </div>
+            <div>
+              <Input placeholder="Этаж" className="w-full" />
+            </div>
+            <Button
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              onClick={handleAddressSubmit}
+              disabled={!checkoutAddress}
+            >
+              Продолжить
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Method Modal */}
+      <Dialog open={checkoutStep === "payment"} onOpenChange={() => setCheckoutStep(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Выберите способ оплаты</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="card"
+                  checked={checkoutPaymentMethod === "card"}
+                  onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span>Банковская карта</span>
+              </label>
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="cash"
+                  checked={checkoutPaymentMethod === "cash"}
+                  onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span>Наличные при получении</span>
+              </label>
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="online"
+                  checked={checkoutPaymentMethod === "online"}
+                  onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
+                  className="w-4 h-4 text-purple-600"
+                />
+                <span>Онлайн оплата</span>
+              </label>
+            </div>
+            {checkoutPaymentMethod === "card" && (
+              <div className="space-y-3 pt-4 border-t">
+                <Input placeholder="Номер карты" />
+                <div className="flex space-x-2">
+                  <Input placeholder="ММ/ГГ" className="flex-1" />
+                  <Input placeholder="CVC" className="flex-1" />
+                </div>
+                <Input placeholder="Имя держателя карты" />
+              </div>
+            )}
+            <Button
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              onClick={handlePaymentSubmit}
+              disabled={!checkoutPaymentMethod}
+            >
+              Оформить заказ
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={checkoutStep === "success"} onOpenChange={() => setCheckoutStep(null)}>
+        <DialogContent className="sm:max-w-md">
+          <div className="text-center py-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="w-8 h-8 text-green-600" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Заказ принят к исполнению!</h3>
+            <p className="text-gray-600 mb-6">Мы отправили детали заказа на ваш номер телефона</p>
+            <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white" onClick={handleOrderComplete}>
+              ОК
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

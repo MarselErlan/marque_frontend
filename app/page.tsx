@@ -177,10 +177,10 @@ export default function MarquePage() {
                     <ShoppingCart className="w-5 h-5 mb-1" />
                     <span>Корзина</span>
                   </Link>
-                  <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                  <Link href="/profile" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                     <User className="w-5 h-5 mb-1" />
                     <span>Войти</span>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -424,10 +424,10 @@ export default function MarquePage() {
                   <ShoppingCart className="w-5 h-5 mb-1" />
                   <span>Корзина</span>
                 </Link>
-                <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <Link href="/profile" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                   <User className="w-5 h-5 mb-1" />
                   <span>Войти</span>
-                </div>
+                </Link>
               </div>
             </div>
           </div>
