@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Search,
   Heart,
@@ -22,13 +22,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("profile")
   const [orderFilter, setOrderFilter] = useState("active")
   const [userName, setUserName] = useState("Анна Ахматова")
   const [phoneNumber, setPhoneNumber] = useState("+996 505 32 53 11")
   const [additionalPhone, setAdditionalPhone] = useState("")
+  
+  // Authentication states
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userData, setUserData] = useState<any>(null)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState("")
@@ -132,6 +138,77 @@ export default function ProfilePage() {
       products: [],
     },
   ]
+
+  // Check authentication status
+  const checkAuthStatus = () => {
+    try {
+      const authToken = localStorage.getItem('authToken')
+      const savedUserData = localStorage.getItem('userData')
+      const tokenExpiration = localStorage.getItem('tokenExpiration')
+      const isLoggedInFlag = localStorage.getItem('isLoggedIn')
+      
+      // Check if user was logged in
+      if (isLoggedInFlag === 'true' && authToken && savedUserData) {
+        // Check if token is still valid
+        if (tokenExpiration) {
+          const expirationTime = parseInt(tokenExpiration)
+          const currentTime = new Date().getTime()
+          
+          if (currentTime < expirationTime) {
+            // Token is still valid
+            setIsLoggedIn(true)
+            const userData = JSON.parse(savedUserData)
+            setUserData(userData)
+            setUserName(userData.full_name || userData.name || "Анна Ахматова")
+            setPhoneNumber(userData.phone || "+996 505 32 53 11")
+            console.log('User is logged in with valid token')
+          } else {
+            // Token has expired, redirect to home
+            console.log('Token expired, redirecting to home')
+            handleLogout()
+          }
+        } else {
+          // No expiration time found, assume valid for now
+          setIsLoggedIn(true)
+          const userData = JSON.parse(savedUserData)
+          setUserData(userData)
+          setUserName(userData.full_name || userData.name || "Анна Ахматова")
+          setPhoneNumber(userData.phone || "+996 505 32 53 11")
+        }
+      } else {
+        // No valid authentication found, redirect to home
+        console.log('No authentication found, redirecting to home')
+        router.push('/')
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error)
+      router.push('/')
+    }
+  }
+
+  // Logout function to clear all auth data
+  const handleLogout = () => {
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('tokenType')
+    localStorage.removeItem('sessionId')
+    localStorage.removeItem('expiresInMinutes')
+    localStorage.removeItem('market')
+    localStorage.removeItem('userData')
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('tokenExpiration')
+    
+    setIsLoggedIn(false)
+    setUserData(null)
+    console.log('User logged out successfully')
+    
+    // Redirect to home page
+    router.push('/')
+  }
+
+  // Check auth status on component mount
+  useEffect(() => {
+    checkAuthStatus()
+  }, [])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
@@ -543,7 +620,7 @@ export default function ProfilePage() {
                 </Link>
                 <div className="flex flex-col items-center cursor-pointer text-purple-600">
                   <User className="w-5 h-5 mb-1" />
-                  <span>Войти</span>
+                  <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
                 </div>
               </div>
             </div>
@@ -672,6 +749,7 @@ export default function ProfilePage() {
                   {/* Logout Button */}
                   <div className="pt-6 border-t border-gray-200">
                     <Button
+                      onClick={handleLogout}
                       variant="outline"
                       className="flex items-center space-x-2 text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
                     >
