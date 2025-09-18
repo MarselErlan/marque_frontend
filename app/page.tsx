@@ -2,11 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Heart, ShoppingCart, User, LogIn, ArrowLeft, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { API_CONFIG } from "@/lib/config"
 import Link from "next/link"
 
 export default function MarquePage() {
@@ -14,12 +16,19 @@ export default function MarquePage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [phoneNumber, setPhoneNumber] = useState("+996 505-23-12-55")
-  const [smsCode, setSmsCode] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
   const [selectedCatalogCategory, setSelectedCatalogCategory] = useState("Мужчинам")
+  const [cartItemCount, setCartItemCount] = useState(0)
+  
+  // Authentication states
+  const [countryCode, setCountryCode] = useState("+996")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [smsCode, setSmsCode] = useState("")
+  const [isSendingSms, setIsSendingSms] = useState(false)
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false)
+  const [userData, setUserData] = useState<any>(null)
 
   const searchSuggestions = [
     "футболка",
@@ -29,6 +38,144 @@ export default function MarquePage() {
     "футболка чёрная",
   ]
 
+  // Country codes for phone input
+  const countryCodes = [
+    { code: "+996", country: "KG", flag: "🇰🇬", placeholder: "505-23-12-55" },
+    { code: "+1", country: "US", flag: "🇺🇸", placeholder: "555-123-4567" }
+  ]
+
+  // Check authentication status
+  const checkAuthStatus = () => {
+    try {
+      const authToken = localStorage.getItem('authToken')
+      const savedUserData = localStorage.getItem('userData')
+      
+      if (authToken && savedUserData) {
+        setIsLoggedIn(true)
+        setUserData(JSON.parse(savedUserData))
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error)
+    }
+  }
+
+  // Load cart count from localStorage
+  const loadCartCount = () => {
+    try {
+      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
+      const totalItems = existingCart.reduce((total: number, item: any) => total + item.quantity, 0)
+      setCartItemCount(totalItems)
+    } catch (error) {
+      console.error('Error loading cart count:', error)
+      setCartItemCount(0)
+    }
+  }
+
+  // Load cart count on component mount
+  useEffect(() => {
+    loadCartCount()
+    checkAuthStatus()
+  }, [])
+
+  // Authentication handlers
+  const handleLoginClick = () => {
+    setIsLoginModalOpen(false)
+    setIsPhoneModalOpen(true)
+  }
+
+  const handlePhoneSubmit = async () => {
+    // Validate phone number is not empty
+    if (!phoneNumber.trim()) {
+      alert('Пожалуйста, введите номер телефона')
+      return
+    }
+
+    setIsSendingSms(true)
+    const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
+    
+    try {
+      console.log('Sending SMS to:', fullPhoneNumber)
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: fullPhoneNumber
+        }),
+      })
+
+      console.log('Response status:', response.status)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('SMS sent successfully:', data)
+        setIsPhoneModalOpen(false)
+        setIsSmsModalOpen(true)
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to send SMS:', errorData)
+        alert(`Не удалось отправить SMS: ${errorData.message || 'Попробуйте еще раз.'}`)
+      }
+    } catch (error) {
+      console.error('Error sending SMS:', error)
+      alert('Ошибка подключения. Убедитесь что API сервер запущен.')
+    } finally {
+      setIsSendingSms(false)
+    }
+  }
+
+  const handleSmsVerification = async () => {
+    if (smsCode.length >= 6) {
+      setIsVerifyingCode(true)
+      try {
+        const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VERIFY_CODE}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`,
+            code: smsCode
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log('SMS verification successful:', data)
+          
+          // Store authentication data
+          if (data.data && data.data.access_token) {
+            localStorage.setItem('authToken', data.data.access_token)
+            localStorage.setItem('userData', JSON.stringify(data.data.user))
+            setUserData(data.data.user)
+          }
+          
+          setIsSmsModalOpen(false)
+          setIsLoggedIn(true)
+          setSmsCode("")
+          console.log("User logged in successfully with phone:", `${countryCode} ${phoneNumber}`)
+        } else {
+          const errorData = await response.json()
+          console.error('Failed to verify SMS code:', errorData)
+          alert('Неверный код. Попробуйте еще раз.')
+        }
+      } catch (error) {
+        console.error('Error verifying SMS code:', error)
+        alert('Ошибка подключения. Проверьте интернет соединение.')
+      } finally {
+        setIsVerifyingCode(false)
+      }
+    }
+  }
+
+  const handleCountryCodeChange = (newCountryCode: string) => {
+    setCountryCode(newCountryCode)
+    // Don't set the placeholder as the actual value
+  }
+
+  const getFullPhoneNumber = () => `${countryCode} ${phoneNumber}`
+
   const handleWishlistClick = (productId: number) => {
     if (!isLoggedIn) {
       setIsLoginModalOpen(true)
@@ -37,24 +184,6 @@ export default function MarquePage() {
     }
   }
 
-  const handlePhoneSubmit = () => {
-    setIsPhoneModalOpen(false)
-    setIsSmsModalOpen(true)
-  }
-
-  const handleSmsVerification = () => {
-    if (smsCode.length >= 6) {
-      setIsSmsModalOpen(false)
-      setIsLoggedIn(true)
-      setSmsCode("")
-      console.log("User logged in successfully with phone:", phoneNumber)
-    }
-  }
-
-  const handleLoginClick = () => {
-    setIsLoginModalOpen(false)
-    setIsPhoneModalOpen(true)
-  }
 
   const handleCatalogClick = () => {
     setShowCatalog(true)
@@ -173,8 +302,15 @@ export default function MarquePage() {
                     <Heart className="w-5 h-5 mb-1" />
                     <span>Избранные</span>
                   </Link>
-                  <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
-                    <ShoppingCart className="w-5 h-5 mb-1" />
+                  <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600 relative">
+                    <div className="relative">
+                      <ShoppingCart className="w-5 h-5 mb-1" />
+                      {cartItemCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                          {cartItemCount > 99 ? '99+' : cartItemCount}
+                        </span>
+                      )}
+                    </div>
                     <span>Корзина</span>
                   </Link>
                   <Link href="/profile" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
@@ -420,8 +556,15 @@ export default function MarquePage() {
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
                 </Link>
-                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
-                  <ShoppingCart className="w-5 h-5 mb-1" />
+                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600 relative">
+                  <div className="relative">
+                    <ShoppingCart className="w-5 h-5 mb-1" />
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {cartItemCount > 99 ? '99+' : cartItemCount}
+                      </span>
+                    )}
+                  </div>
                   <span>Корзина</span>
                 </Link>
                 <Link href="/profile" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
@@ -722,6 +865,131 @@ export default function MarquePage() {
                 onClick={() => setIsLoginModalOpen(false)}
               >
                 Закрыть
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Login Required Modal */}
+      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center space-y-6 py-6">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+              <LogIn className="w-8 h-8 text-purple-600" />
+            </div>
+            <div className="text-center space-y-2">
+              <h2 className="text-xl font-semibold text-black">Войдите чтобы добавить товар в избранное</h2>
+            </div>
+            <div className="flex space-x-3 w-full">
+              <Button
+                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                onClick={handleLoginClick}
+              >
+                Войти
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 py-3 rounded-lg bg-transparent"
+                onClick={() => setIsLoginModalOpen(false)}
+              >
+                Закрыть
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Phone Verification Modal */}
+      <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-semibold">Введите номер</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-center text-gray-600 text-sm">Мы отправим вам код подтверждения</p>
+            <div className="space-y-4">
+              <div className="flex space-x-2">
+                <Select value={countryCode} onValueChange={handleCountryCodeChange}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countryCodes.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        <div className="flex items-center space-x-2">
+                          <span>{country.flag}</span>
+                          <span>{country.code}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="flex-1 text-lg py-3"
+                  placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || "Phone number"}
+                />
+              </div>
+              <Button
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                onClick={handlePhoneSubmit}
+                disabled={isSendingSms || !phoneNumber.trim()}
+              >
+                {isSendingSms ? "Отправляем SMS..." : "Продолжить"}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 text-center">
+              Нажимая "Продолжить", вы соглашаетесь с{" "}
+              <span className="text-purple-600 cursor-pointer">Политикой конфиденциальности</span> и{" "}
+              <span className="text-purple-600 cursor-pointer">Пользовательским соглашением</span>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* SMS Verification Modal */}
+      <Dialog open={isSmsModalOpen} onOpenChange={setIsSmsModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center justify-center relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute left-0 p-1"
+                onClick={() => {
+                  setIsSmsModalOpen(false)
+                  setIsPhoneModalOpen(true)
+                }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <DialogTitle className="text-center text-xl font-semibold">Код из СМС</DialogTitle>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-center text-gray-600 text-sm">
+              Мы отправили вам код на номер
+              <br />
+              <span className="font-semibold">{getFullPhoneNumber()}</span>
+            </p>
+            <div className="space-y-4">
+              <Input
+                type="text"
+                value={smsCode}
+                onChange={(e) => setSmsCode(e.target.value)}
+                className="text-center text-lg py-3 tracking-widest"
+                placeholder="233 512"
+                maxLength={6}
+              />
+              <Button
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                onClick={handleSmsVerification}
+                disabled={smsCode.length < 6 || isVerifyingCode}
+              >
+                {isVerifyingCode ? "Проверяем код..." : "Подтвердить"}
               </Button>
             </div>
           </div>

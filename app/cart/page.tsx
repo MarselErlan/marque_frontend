@@ -1,37 +1,18 @@
 "use client"
-import { useState } from "react"
-import { Search, Heart, ShoppingCart, User, Edit, Trash2, Minus, Plus, Check } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, Heart, ShoppingCart, User, Edit, Trash2, Minus, Plus, Check, LogIn, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { API_CONFIG } from "@/lib/config"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export default function CartPage() {
   const router = useRouter()
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Футболка спорт из хлопка (чёрная)",
-      size: "42",
-      color: "Чёрный",
-      price: 2999,
-      originalPrice: 3699,
-      quantity: 1,
-      image: "/images/black-tshirt.jpg",
-    },
-    {
-      id: 2,
-      name: "Футболка спорт из хлопка (белая)",
-      size: "42",
-      color: "Белый",
-      price: 2999,
-      originalPrice: 3699,
-      quantity: 1,
-      image: "/images/black-tshirt.jpg",
-    },
-  ])
+  const [cartItems, setCartItems] = useState<any[]>([])
+  const [cartItemCount, setCartItemCount] = useState(0)
 
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState("21 июл")
   const [deliveryAddress, setDeliveryAddress] = useState("")
@@ -40,27 +21,115 @@ export default function CartPage() {
   const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "success" | null>(null)
   const [checkoutAddress, setCheckoutAddress] = useState("")
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
+  
+  // Authentication states
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
+  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false)
+  const [countryCode, setCountryCode] = useState("+996")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [smsCode, setSmsCode] = useState("")
+  const [isSendingSms, setIsSendingSms] = useState(false)
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false)
+  const [userData, setUserData] = useState<any>(null)
 
   const deliveryDates = ["21 июл", "22 июл", "23 июл", "24 июл", "25 июл"]
   const deliveryCost = 350
   const taxRate = 0.12
 
+  // Country codes for phone input
+  const countryCodes = [
+    { code: "+996", country: "KG", flag: "🇰🇬", placeholder: "505-23-12-55" },
+    { code: "+1", country: "US", flag: "🇺🇸", placeholder: "555-123-4567" }
+  ]
+
+  // Load cart count from localStorage
+  const loadCartCount = () => {
+    try {
+      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
+      const totalItems = existingCart.reduce((total: number, item: any) => total + item.quantity, 0)
+      setCartItemCount(totalItems)
+    } catch (error) {
+      console.error('Error loading cart count:', error)
+      setCartItemCount(0)
+    }
+  }
+
+  // Check authentication status
+  const checkAuthStatus = () => {
+    try {
+      const authToken = localStorage.getItem('authToken')
+      const savedUserData = localStorage.getItem('userData')
+      
+      if (authToken && savedUserData) {
+        setIsLoggedIn(true)
+        setUserData(JSON.parse(savedUserData))
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error)
+    }
+  }
+
+  // Load cart items from localStorage on component mount
+  useEffect(() => {
+    const loadCartItems = () => {
+      try {
+        const savedCart = localStorage.getItem('cart')
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart)
+          setCartItems(parsedCart)
+        }
+      } catch (error) {
+        console.error('Error loading cart from localStorage:', error)
+      }
+    }
+    
+    loadCartItems()
+    loadCartCount()
+    checkAuthStatus()
+  }, [])
+
+  // Save cart items to localStorage whenever cartItems changes
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(cartItems))
+    }
+  }, [cartItems])
+
   const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return
-    setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+    const updatedItems = cartItems.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item))
+    setCartItems(updatedItems)
+    localStorage.setItem('cart', JSON.stringify(updatedItems))
+    loadCartCount()
   }
 
   const removeItem = (id: number) => {
-    setCartItems((items) => items.filter((item) => item.id !== id))
+    const updatedItems = cartItems.filter((item) => item.id !== id)
+    setCartItems(updatedItems)
+    if (updatedItems.length === 0) {
+      localStorage.removeItem('cart')
+    } else {
+      localStorage.setItem('cart', JSON.stringify(updatedItems))
+    }
+    loadCartCount()
   }
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const taxes = Math.round(subtotal * taxRate)
-  const discount = cartItems.reduce((sum, item) => sum + (item.originalPrice - item.price) * item.quantity, 0)
+  const discount = cartItems.reduce((sum, item) => {
+    const originalPrice = item.originalPrice || item.price
+    return sum + (originalPrice - item.price) * item.quantity
+  }, 0)
   const total = subtotal + deliveryCost + taxes
 
   const handleCheckout = () => {
-    setCheckoutStep("address")
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true)
+    } else {
+      setCheckoutStep("address")
+    }
   }
 
   const handleAddressSubmit = () => {
@@ -75,9 +144,122 @@ export default function CartPage() {
     }
   }
 
+  // Authentication handlers
+  const handleLoginClick = () => {
+    setIsLoginModalOpen(false)
+    setIsPhoneModalOpen(true)
+  }
+
+  const handlePhoneSubmit = async () => {
+    // Validate phone number is not empty
+    if (!phoneNumber.trim()) {
+      alert('Пожалуйста, введите номер телефона')
+      return
+    }
+
+    setIsSendingSms(true)
+    const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
+    
+    try {
+      console.log('Sending SMS to:', fullPhoneNumber)
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: fullPhoneNumber
+        }),
+      })
+
+      console.log('Response status:', response.status)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('SMS sent successfully:', data)
+        setIsPhoneModalOpen(false)
+        setIsSmsModalOpen(true)
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to send SMS:', errorData)
+        alert(`Не удалось отправить SMS: ${errorData.message || 'Попробуйте еще раз.'}`)
+      }
+    } catch (error) {
+      console.error('Error sending SMS:', error)
+      alert('Ошибка подключения. Убедитесь что API сервер запущен.')
+    } finally {
+      setIsSendingSms(false)
+    }
+  }
+
+  const handleSmsVerification = async () => {
+    if (smsCode.length >= 6) {
+      setIsVerifyingCode(true)
+      try {
+        const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VERIFY_CODE}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`,
+            code: smsCode
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log('SMS verification successful:', data)
+          
+          // Store authentication data
+          if (data.data && data.data.access_token) {
+            localStorage.setItem('authToken', data.data.access_token)
+            localStorage.setItem('userData', JSON.stringify(data.data.user))
+            setUserData(data.data.user)
+          }
+          
+          setIsSmsModalOpen(false)
+          setIsLoggedIn(true)
+          setSmsCode("")
+          console.log("User logged in successfully with phone:", `${countryCode} ${phoneNumber}`)
+          
+          // Proceed to checkout after successful login
+          setCheckoutStep("address")
+        } else {
+          const errorData = await response.json()
+          console.error('Failed to verify SMS code:', errorData)
+          alert('Неверный код. Попробуйте еще раз.')
+        }
+      } catch (error) {
+        console.error('Error verifying SMS code:', error)
+        alert('Ошибка подключения. Проверьте интернет соединение.')
+      } finally {
+        setIsVerifyingCode(false)
+      }
+    }
+  }
+
+  const handleCountryCodeChange = (newCountryCode: string) => {
+    setCountryCode(newCountryCode)
+    // Don't set the placeholder as the actual value
+    // setPhoneNumber("") // Keep the input empty when changing country
+  }
+
+  const getFullPhoneNumber = () => `${countryCode} ${phoneNumber}`
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('userData')
+    setIsLoggedIn(false)
+    setUserData(null)
+    console.log('User logged out')
+  }
+
   const handleOrderComplete = () => {
     setCheckoutStep(null)
     setCartItems([]) // Clear cart after successful order
+    localStorage.removeItem("cart")
+    loadCartCount()
     router.push("/order-success") // Redirect to order success page instead of just closing modal
   }
 
@@ -115,8 +297,15 @@ export default function CartPage() {
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
                 </Link>
-                <div className="flex flex-col items-center cursor-pointer text-purple-600">
-                  <ShoppingCart className="w-5 h-5 mb-1" />
+                <div className="flex flex-col items-center cursor-pointer text-purple-600 relative">
+                  <div className="relative">
+                    <ShoppingCart className="w-5 h-5 mb-1" />
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {cartItemCount > 99 ? '99+' : cartItemCount}
+                      </span>
+                    )}
+                  </div>
                   <span>Корзина</span>
                 </div>
                 <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
@@ -139,8 +328,20 @@ export default function CartPage() {
               <p className="text-gray-500">{cartItems.length} товара</p>
             </div>
 
-            <div className="space-y-4">
-              {cartItems.map((item) => (
+            {cartItems.length === 0 ? (
+              <div className="text-center py-12">
+                <ShoppingCart className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">Ваша корзина пуста</h3>
+                <p className="text-gray-500 mb-6">Добавьте товары в корзину, чтобы сделать заказ</p>
+                <Link href="/">
+                  <Button className="bg-purple-500 hover:bg-purple-600 text-white">
+                    Перейти к покупкам
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cartItems.map((item) => (
                 <div key={item.id} className="bg-white rounded-lg p-6 flex items-center space-x-4">
                   {/* Product Image */}
                   <img
@@ -199,12 +400,14 @@ export default function CartPage() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Order Summary */}
-          <div className="w-80">
-            <div className="bg-white rounded-lg p-6 space-y-6">
+          {cartItems.length > 0 && (
+            <div className="w-80">
+              <div className="bg-white rounded-lg p-6 space-y-6">
               {/* Delivery Options */}
               <div>
                 <h3 className="font-semibold text-black mb-3">Доставка 350 сом</h3>
@@ -286,7 +489,8 @@ export default function CartPage() {
                 Перейти к оформлению
               </Button>
             </div>
-          </div>
+            </div>
+          )}
         </div>
       </main>
 
@@ -437,6 +641,132 @@ export default function CartPage() {
             <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white" onClick={handleOrderComplete}>
               ОК
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Login Required Modal */}
+      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center space-y-6 py-6">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+              <LogIn className="w-8 h-8 text-purple-600" />
+            </div>
+            <div className="text-center space-y-2">
+              <h2 className="text-xl font-semibold text-black">Войдите чтобы оформить заказ</h2>
+              <p className="text-gray-600">Для оформления заказа необходимо войти в аккаунт</p>
+            </div>
+            <div className="flex space-x-3 w-full">
+              <Button
+                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                onClick={handleLoginClick}
+              >
+                Войти
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 py-3 rounded-lg bg-transparent"
+                onClick={() => setIsLoginModalOpen(false)}
+              >
+                Закрыть
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Phone Verification Modal */}
+      <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-semibold">Введите номер</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-center text-gray-600 text-sm">Мы отправим вам код подтверждения</p>
+            <div className="space-y-4">
+              <div className="flex space-x-2">
+                <Select value={countryCode} onValueChange={handleCountryCodeChange}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countryCodes.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        <div className="flex items-center space-x-2">
+                          <span>{country.flag}</span>
+                          <span>{country.code}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="flex-1 text-lg py-3"
+                  placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || "Phone number"}
+                />
+              </div>
+              <Button
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                onClick={handlePhoneSubmit}
+                disabled={isSendingSms || !phoneNumber.trim()}
+              >
+                {isSendingSms ? "Отправляем SMS..." : "Продолжить"}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 text-center">
+              Нажимая "Продолжить", вы соглашаетесь с{" "}
+              <span className="text-purple-600 cursor-pointer">Политикой конфиденциальности</span> и{" "}
+              <span className="text-purple-600 cursor-pointer">Пользовательским соглашением</span>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* SMS Verification Modal */}
+      <Dialog open={isSmsModalOpen} onOpenChange={setIsSmsModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center justify-center relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute left-0 p-1"
+                onClick={() => {
+                  setIsSmsModalOpen(false)
+                  setIsPhoneModalOpen(true)
+                }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <DialogTitle className="text-center text-xl font-semibold">Код из СМС</DialogTitle>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-center text-gray-600 text-sm">
+              Мы отправили вам код на номер
+              <br />
+              <span className="font-semibold">{getFullPhoneNumber()}</span>
+            </p>
+            <div className="space-y-4">
+              <Input
+                type="text"
+                value={smsCode}
+                onChange={(e) => setSmsCode(e.target.value)}
+                className="text-center text-lg py-3 tracking-widest"
+                placeholder="233 512"
+                maxLength={6}
+              />
+              <Button
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                onClick={handleSmsVerification}
+                disabled={smsCode.length < 6 || isVerifyingCode}
+              >
+                {isVerifyingCode ? "Проверяем код..." : "Подтвердить"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
