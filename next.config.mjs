@@ -47,6 +47,15 @@ const nextConfig = {
       },
     ]
   },
+  // Runtime proxy to backend for any relative API calls
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: 'https://marquebackend-production.up.railway.app/api/v1/:path*',
+      },
+    ]
+  },
 }
 
 export default nextConfig
