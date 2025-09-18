@@ -29,6 +29,7 @@ export default function MarquePage() {
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [isVerifyingCode, setIsVerifyingCode] = useState(false)
   const [userData, setUserData] = useState<any>(null)
+  // This comment is added to force a Railway redeployment.
 
   const searchSuggestions = [
     "футболка",
