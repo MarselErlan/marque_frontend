@@ -53,8 +53,8 @@ A modern e-commerce frontend built with Next.js 14, React 18, TypeScript, and Ta
 
    ```
    NODE_ENV=production
-   NEXT_PUBLIC_API_URL=https://your-backend-api.railway.app/api/v1
-   NEXT_PUBLIC_APP_URL=https://your-frontend.up.railway.app
+   NEXT_PUBLIC_API_URL=https://marquebackend-production.up.railway.app/api/v1
+   NEXT_PUBLIC_APP_URL=https://marque.website
    ```
 
 4. **Deploy**:
@@ -68,7 +68,7 @@ railway init
 
 # Set environment variables
 railway variables set NODE_ENV=production
-railway variables set NEXT_PUBLIC_API_URL=https://your-backend-api.railway.app/api/v1
+railway variables set NEXT_PUBLIC_API_URL=https://marquebackend-production.up.railway.app/api/v1
 
 # Deploy
 railway up
@@ -91,8 +91,8 @@ railway up
    Edit `.env.local` with your values:
 
    ```
-   NEXT_PUBLIC_API_URL=https://marque.website/api/v1
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   NEXT_PUBLIC_API_URL=https://marquebackend-production.up.railway.app/api/v1
+   NEXT_PUBLIC_APP_URL=https://marque.website
    ```
 
 3. **Run development server**:
@@ -164,11 +164,11 @@ The app integrates with the backend API for:
 
 ## 📋 Environment Variables
 
-| Variable              | Description          | Default                         |
-| --------------------- | -------------------- | ------------------------------- |
-| `NEXT_PUBLIC_API_URL` | Backend API base URL | `https://marque.website/api/v1` |
-| `NEXT_PUBLIC_APP_URL` | Frontend app URL     | `http://localhost:3000`         |
-| `NODE_ENV`            | Environment          | `development`                   |
+| Variable              | Description          | Default                                                  |
+| --------------------- | -------------------- | -------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | Backend API base URL | `https://marquebackend-production.up.railway.app/api/v1` |
+| `NEXT_PUBLIC_APP_URL` | Frontend app URL     | `https://marque.website`                                 |
+| `NODE_ENV`            | Environment          | `development`                                            |
 
 ## 🐳 Docker Deployment
 

@@ -8,7 +8,7 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['marque.website'],
+    domains: ['marque.website', 'marquebackend-production.up.railway.app'],
   },
   // Enable output standalone for Docker
   output: 'standalone',

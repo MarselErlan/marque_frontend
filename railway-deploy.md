@@ -30,8 +30,8 @@ Set these in Railway Dashboard > Variables:
 
 ```
 NODE_ENV=production
-NEXT_PUBLIC_API_URL=https://your-backend-api.railway.app/api/v1
-NEXT_PUBLIC_APP_URL=https://your-frontend.up.railway.app
+NEXT_PUBLIC_API_URL=https://marquebackend-production.up.railway.app/api/v1
+NEXT_PUBLIC_APP_URL=https://marque.website
 ```
 
 ## Post-Deploy Checklist

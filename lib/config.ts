@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marque.website/api/v1',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marquebackend-production.up.railway.app/api/v1',
   ENDPOINTS: {
     SEND_VERIFICATION: '/auth/send-verification',
     VERIFY_CODE: '/auth/verify-code',
@@ -12,7 +12,7 @@ export const API_CONFIG = {
 
 // App Configuration
 export const APP_CONFIG = {
-  APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://marque.website',
   APP_NAME: 'MARQUE',
   APP_DESCRIPTION: 'Fashion E-commerce Platform',
 } as const
