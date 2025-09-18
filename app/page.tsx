@@ -169,14 +169,14 @@ export default function MarquePage() {
 
                 {/* User Actions */}
                 <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                  <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                     <Heart className="w-5 h-5 mb-1" />
                     <span>Избранные</span>
-                  </div>
-                  <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                  </Link>
+                  <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                     <ShoppingCart className="w-5 h-5 mb-1" />
                     <span>Корзина</span>
-                  </div>
+                  </Link>
                   <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                     <User className="w-5 h-5 mb-1" />
                     <span>Войти</span>
@@ -416,14 +416,14 @@ export default function MarquePage() {
 
               {/* User Actions */}
               <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
-                </div>
-                <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                </Link>
+                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                   <ShoppingCart className="w-5 h-5 mb-1" />
                   <span>Корзина</span>
-                </div>
+                </Link>
                 <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
                   <User className="w-5 h-5 mb-1" />
                   <span>Войти</span>
@@ -501,8 +501,9 @@ export default function MarquePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {recommendedProducts.map((product) => (
-              <div
+              <Link
                 key={product.id}
+                href={`/product/${product.id}`}
                 className="bg-white rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
               >
                 <div className="relative mb-4">
@@ -513,7 +514,10 @@ export default function MarquePage() {
                   />
                   <button
                     className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    onClick={() => handleWishlistClick(product.id)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleWishlistClick(product.id)
+                    }}
                   >
                     <Heart className="w-4 h-4 text-gray-400" />
                   </button>
@@ -523,7 +527,7 @@ export default function MarquePage() {
                   <span className="text-lg font-bold text-purple-600">{product.price}</span>
                   <span className="text-xs text-gray-500">Товар 01</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -538,8 +542,9 @@ export default function MarquePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {discountProducts.map((product) => (
-              <div
+              <Link
                 key={product.id}
+                href={`/product/${product.id}`}
                 className="bg-white rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
               >
                 <div className="relative mb-4">
@@ -550,7 +555,10 @@ export default function MarquePage() {
                   />
                   <button
                     className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    onClick={() => handleWishlistClick(product.id)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleWishlistClick(product.id)
+                    }}
                   >
                     <Heart className="w-4 h-4 text-gray-400" />
                   </button>
@@ -570,7 +578,7 @@ export default function MarquePage() {
                   </div>
                   <span className="text-xs text-gray-500">Товар 01</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
