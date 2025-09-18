@@ -2,7 +2,7 @@ name: Deploy Frontend to Railway
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -23,6 +23,6 @@ jobs:
       - name: Deploy to Railway
         uses: railwayapp/actions@v1
         with:
-          serviceId: ${{ secrets.RAILWAY_SERVICE_ID }}
+          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
           projectId: ${{ secrets.RAILWAY_PROJECT_ID }}
-          apiToken: ${{ secrets.RAILWAY_TOKEN }}
+          serviceId: ${{ secrets.RAILWAY_SERVICE_ID }}
