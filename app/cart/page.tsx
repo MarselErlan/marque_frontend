@@ -158,11 +158,37 @@ export default function CartPage() {
     }
 
     setIsSendingSms(true)
-    const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
+    const cleanPhoneNumber = phoneNumber.replace(/[-\s]/g, '')
+    const fullPhoneNumber = `${countryCode}${cleanPhoneNumber}`
+    
+    // Validate phone number format according to backend requirements
+    if (countryCode === '+1') {
+      if (cleanPhoneNumber.length !== 10) {
+        alert('Для номеров США введите 10 цифр (например: 3125551234)')
+        setIsSendingSms(false)
+        return
+      }
+    }
+    
+    if (countryCode === '+996') {
+      if (cleanPhoneNumber.length !== 9) {
+        alert('Для номеров КГ введите 9 цифр (например: 505123456)')
+        setIsSendingSms(false)
+        return
+      }
+    }
+    
+    console.log('DEBUG: Country Code:', countryCode)
+    console.log('DEBUG: Raw Phone Number:', phoneNumber)
+    console.log('DEBUG: Clean Phone Number:', cleanPhoneNumber)
+    console.log('DEBUG: Full Phone Number:', fullPhoneNumber)
     
     try {
       console.log('Sending SMS to:', fullPhoneNumber)
       console.log('API URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`)
+      
+      // Show a temporary alert with the phone number being sent
+      alert(`Отправляем SMS на номер: ${fullPhoneNumber}`)
       
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`, {
         method: 'POST',
@@ -170,6 +196,8 @@ export default function CartPage() {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Market': countryCode === '+1' ? 'us' : 'kg',
+          'X-Request-ID': `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         },
         body: JSON.stringify({
           phone: fullPhoneNumber
@@ -197,7 +225,11 @@ export default function CartPage() {
       }
     } catch (error) {
       console.error('Error sending SMS:', error)
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      if (
+        error instanceof TypeError &&
+        typeof error.message === 'string' &&
+        error.message.includes('fetch')
+      ) {
         alert('Ошибка сети: Не удается подключиться к серверу. Проверьте интернет соединение.')
       } else {
         alert('Ошибка подключения. Убедитесь что API сервер запущен.')
@@ -222,6 +254,8 @@ export default function CartPage() {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'X-Market': countryCode === '+1' ? 'us' : 'kg',
+            'X-Request-ID': `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           },
           body: JSON.stringify({
             phone: fullPhoneNumber,
@@ -735,7 +769,7 @@ export default function CartPage() {
                 onClick={handlePhoneSubmit}
                 disabled={isSendingSms || !phoneNumber.trim()}
               >
-                {isSendingSms ? "Отправляем SMS..." : "Продолжить"}
+                {isSendingSms ? "Отправляем SMS..." : `Продолжить (${countryCode}${phoneNumber.replace(/[-\s]/g, '')})`}
               </Button>
             </div>
             <p className="text-xs text-gray-500 text-center">
