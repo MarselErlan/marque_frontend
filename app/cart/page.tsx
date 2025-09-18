@@ -688,6 +688,9 @@ export default function CartPage() {
       {/* Success Modal */}
       <Dialog open={checkoutStep === "success"} onOpenChange={() => setCheckoutStep(null)}>
         <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Заказ оформлен</DialogTitle>
+          </DialogHeader>
           <div className="text-center py-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-green-600" />
@@ -704,6 +707,9 @@ export default function CartPage() {
       {/* Login Required Modal */}
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
         <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Войти в аккаунт</DialogTitle>
+          </DialogHeader>
           <div className="flex flex-col items-center space-y-6 py-6">
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
               <LogIn className="w-8 h-8 text-purple-600" />
