@@ -10,8 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { API_CONFIG } from "@/lib/config"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function MarquePage() {
+  const router = useRouter()
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false)
@@ -82,6 +84,17 @@ export default function MarquePage() {
   const handleLoginClick = () => {
     setIsLoginModalOpen(false)
     setIsPhoneModalOpen(true)
+  }
+
+  // New handler for header login button
+  const handleHeaderLoginClick = () => {
+    if (isLoggedIn) {
+      // User is already logged in, navigate to profile
+      router.push('/profile')
+    } else {
+      // User is not logged in, start phone verification
+      setIsPhoneModalOpen(true)
+    }
   }
 
   const handlePhoneSubmit = async () => {
@@ -323,10 +336,13 @@ export default function MarquePage() {
                     </div>
                     <span>Корзина</span>
                   </Link>
-                  <Link href="/profile" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                  <button 
+                    onClick={handleHeaderLoginClick}
+                    className="flex flex-col items-center cursor-pointer hover:text-purple-600 bg-transparent border-none p-0"
+                  >
                     <User className="w-5 h-5 mb-1" />
-                    <span>Войти</span>
-                  </Link>
+                    <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -577,10 +593,13 @@ export default function MarquePage() {
                   </div>
                   <span>Корзина</span>
                 </Link>
-                <Link href="/profile" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <button 
+                  onClick={handleHeaderLoginClick}
+                  className="flex flex-col items-center cursor-pointer hover:text-purple-600 bg-transparent border-none p-0"
+                >
                   <User className="w-5 h-5 mb-1" />
-                  <span>Войти</span>
-                </Link>
+                  <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
+                </button>
               </div>
             </div>
           </div>

@@ -236,6 +236,17 @@ export default function ProductDetailPage() {
     setIsPhoneModalOpen(true)
   }
 
+  // New handler for header login button
+  const handleHeaderLoginClick = () => {
+    if (isLoggedIn) {
+      // User is already logged in, navigate to profile
+      router.push('/profile')
+    } else {
+      // User is not logged in, start phone verification
+      setIsPhoneModalOpen(true)
+    }
+  }
+
   const handlePhoneSubmit = async () => {
     // Validate phone number is not empty
     if (!phoneNumber.trim()) {
@@ -389,10 +400,13 @@ export default function ProductDetailPage() {
                   </div>
                   <span>Корзина</span>
                 </Link>
-                <Link href="/profile" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <button 
+                  onClick={handleHeaderLoginClick}
+                  className="flex flex-col items-center cursor-pointer hover:text-purple-600 bg-transparent border-none p-0"
+                >
                   <User className="w-5 h-5 mb-1" />
-                  <span>Войти</span>
-                </Link>
+                  <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
+                </button>
               </div>
             </div>
           </div>
