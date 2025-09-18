@@ -15,6 +15,8 @@ import {
   Upload,
   X,
   ArrowLeft,
+  Trash2,
+  Edit,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,6 +34,27 @@ export default function ProfilePage() {
   const [reviewText, setReviewText] = useState("")
   const [reviewPhotos, setReviewPhotos] = useState([])
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [addresses, setAddresses] = useState([
+    {
+      id: 1,
+      label: "Адрес",
+      address: "ул.Юнусалиева, 34",
+    },
+    {
+      id: 2,
+      label: "Адрес",
+      address: "ул.Уметалиева, 11а",
+    },
+  ])
+  const [showAddressForm, setShowAddressForm] = useState(false)
+  const [editingAddress, setEditingAddress] = useState(null)
+  const [newAddress, setNewAddress] = useState({
+    label: "",
+    address: "",
+    city: "",
+    region: "",
+    postalCode: "",
+  })
 
   const orders = [
     {
@@ -225,6 +248,60 @@ export default function ProfilePage() {
   const filteredOrders = orders.filter((order) => (orderFilter === "active" ? order.isActive : !order.isActive))
 
   const activeOrdersCount = orders.filter((order) => order.isActive).length
+
+  const handleAddAddress = () => {
+    if (newAddress.address.trim()) {
+      const address = {
+        id: Date.now(),
+        label: newAddress.label || "Адрес",
+        address: newAddress.address,
+        city: newAddress.city,
+        region: newAddress.region,
+        postalCode: newAddress.postalCode,
+      }
+      setAddresses([...addresses, address])
+      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+      setShowAddressForm(false)
+    }
+  }
+
+  const handleEditAddress = (address) => {
+    setEditingAddress(address)
+    setNewAddress({
+      label: address.label,
+      address: address.address,
+      city: address.city || "",
+      region: address.region || "",
+      postalCode: address.postalCode || "",
+    })
+    setShowAddressForm(true)
+  }
+
+  const handleUpdateAddress = () => {
+    if (newAddress.address.trim()) {
+      setAddresses(
+        addresses.map((addr) =>
+          addr.id === editingAddress.id
+            ? {
+                ...addr,
+                label: newAddress.label || "Адрес",
+                address: newAddress.address,
+                city: newAddress.city,
+                region: newAddress.region,
+                postalCode: newAddress.postalCode,
+              }
+            : addr,
+        ),
+      )
+      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+      setShowAddressForm(false)
+      setEditingAddress(null)
+    }
+  }
+
+  const handleDeleteAddress = (addressId) => {
+    setAddresses(addresses.filter((addr) => addr.id !== addressId))
+  }
 
   const handlePhotoUpload = (e) => {
     const files = Array.from(e.target.files)
@@ -693,35 +770,155 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {activeTab === "addresses" && (
+            {activeTab === "addresses" && !showAddressForm && (
               <div className="bg-white rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-black mb-6">Адреса доставки</h2>
-                <div className="text-center py-12">
-                  <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Адреса доставки не добавлены</p>
+                <h2 className="text-xl font-semibold text-black mb-2">Адреса доставки</h2>
+                <p className="text-gray-500 text-sm mb-6">{addresses.length} адреса</p>
+
+                <div className="space-y-4 mb-6">
+                  {addresses.map((address) => (
+                    <div
+                      key={address.id}
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">{address.label}</p>
+                        <p className="text-gray-600">{address.address}</p>
+                        {address.city && <p className="text-sm text-gray-500">{address.city}</p>}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditAddress(address)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteAddress(address.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  onClick={() => setShowAddressForm(true)}
+                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  Добавить адрес
+                </Button>
+              </div>
+            )}
+
+            {activeTab === "addresses" && showAddressForm && (
+              <div className="bg-white rounded-lg p-6">
+                <div className="flex items-center space-x-4 mb-6">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowAddressForm(false)
+                      setEditingAddress(null)
+                      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+                    }}
+                    className="p-0"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <h2 className="text-xl font-semibold text-black">
+                    {editingAddress ? "Редактировать адрес" : "Добавить адрес"}
+                  </h2>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Название адреса</label>
+                    <Input
+                      type="text"
+                      value={newAddress.label}
+                      onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
+                      placeholder="Дом, Работа, и т.д."
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Адрес *</label>
+                    <Input
+                      type="text"
+                      value={newAddress.address}
+                      onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
+                      placeholder="ул. Название, дом 123, кв. 45"
+                      className="w-full"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Город</label>
+                    <Input
+                      type="text"
+                      value={newAddress.city}
+                      onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                      placeholder="Бишкек"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Регион</label>
+                    <Input
+                      type="text"
+                      value={newAddress.region}
+                      onChange={(e) => setNewAddress({ ...newAddress, region: e.target.value })}
+                      placeholder="Чуйская область"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Почтовый индекс</label>
+                    <Input
+                      type="text"
+                      value={newAddress.postalCode}
+                      onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
+                      placeholder="720000"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="flex space-x-4 pt-4">
+                    <Button
+                      onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
+                      className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+                      disabled={!newAddress.address.trim()}
+                    >
+                      {editingAddress ? "Сохранить изменения" : "Добавить адрес"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowAddressForm(false)
+                        setEditingAddress(null)
+                        setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+                      }}
+                      className="flex-1"
+                    >
+                      Отмена
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {activeTab === "payments" && (
-              <div className="bg-white rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-black mb-6">Способы оплаты</h2>
-                <div className="text-center py-12">
-                  <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Способы оплаты не добавлены</p>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "notifications" && (
-              <div className="bg-white rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-black mb-6">Уведомления</h2>
-                <div className="text-center py-12">
-                  <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Настройки уведомлений</p>
-                </div>
-              </div>
-            )}
+            {/* ... existing code for other tabs ... */}
           </div>
         </div>
       </main>
