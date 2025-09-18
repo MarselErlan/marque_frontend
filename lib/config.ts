@@ -10,6 +10,14 @@ export const API_CONFIG = {
   }
 } as const
 
+// Debug: Log the actual API URL being used
+if (typeof window !== 'undefined') {
+  console.log('🔧 API Configuration Debug:')
+  console.log('- NEXT_PUBLIC_API_URL env var:', process.env.NEXT_PUBLIC_API_URL)
+  console.log('- Actual BASE_URL being used:', API_CONFIG.BASE_URL)
+  console.log('- Full send-verification URL:', API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.SEND_VERIFICATION)
+}
+
 // App Configuration
 export const APP_CONFIG = {
   APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://marque.website',
