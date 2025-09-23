@@ -500,89 +500,6 @@ export default function MarquePage() {
     },
   ]
 
-  const brandsRow1 = [
-    { name: "ECCO", logo: "ecco" },
-    { name: "VANS", logo: "vans" },
-    { name: "MANGO", logo: "mango" },
-    { name: "H&M", logo: "h&m" },
-    { name: "LIME", logo: "lime" },
-    { name: "GUCCI", logo: "gucci" },
-  ]
-
-  const brandsRow2 = [
-    { name: "LV", logo: "lv" },
-    { name: "PRADA", logo: "prada" },
-    { name: "CHANEL", logo: "chanel" },
-    { name: "Dior", logo: "dior" },
-    { name: "NIKE", logo: "nike" },
-    { name: "adidas", logo: "adidas" },
-  ]
-
-  const recommendedProducts = [
-    {
-      id: 1,
-      name: "Мужская майка из хлопка",
-      price: "2999 руб",
-      originalPrice: null,
-      image: "/images/black-tshirt.jpg",
-    },
-    {
-      id: 2,
-      name: "Мужская майка из хлопка",
-      price: "2999 руб",
-      originalPrice: null,
-      image: "/images/black-tshirt.jpg",
-    },
-    {
-      id: 3,
-      name: "Мужская майка из хлопка",
-      price: "2999 руб",
-      originalPrice: null,
-      image: "/images/black-tshirt.jpg",
-    },
-    {
-      id: 4,
-      name: "Мужская майка из хлопка",
-      price: "2999 руб",
-      originalPrice: null,
-      image: "/images/black-tshirt.jpg",
-    },
-  ]
-
-  const discountProducts = [
-    {
-      id: 5,
-      name: "Мужская майка из хлопка",
-      price: "1999 руб",
-      originalPrice: "2999 руб",
-      discount: "33%",
-      image: "/images/black-tshirt.jpg",
-    },
-    {
-      id: 6,
-      name: "Мужская майка из хлопка",
-      price: "2399 руб",
-      originalPrice: "2999 руб",
-      discount: "20%",
-      image: "/images/black-tshirt.jpg",
-    },
-    {
-      id: 7,
-      name: "Мужская майка из хлопка",
-      price: "1999 руб",
-      originalPrice: "2999 руб",
-      discount: "33%",
-      image: "/images/black-tshirt.jpg",
-    },
-    {
-      id: 8,
-      name: "Мужская майка из хлопка",
-      price: "1999 руб",
-      originalPrice: "2999 руб",
-      discount: "33%",
-      image: "/images/black-tshirt.jpg",
-    },
-  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -675,152 +592,91 @@ export default function MarquePage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Popular Categories */}
+        {/* Hero Banner Section */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-black mb-8">Популярные категории</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {categories.map((category, index) => (
-              <Link
-                key={index}
-                href={category.href}
-                className={`${category.bgColor} rounded-2xl p-6 cursor-pointer hover:shadow-lg transition-shadow block`}
-              >
-                <h3 className="text-lg font-semibold text-black mb-4">{category.title}</h3>
-                <div className="aspect-square relative overflow-hidden rounded-lg">
-                  <img
-                    src={category.image || "/placeholder.svg"}
-                    alt={category.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Popular Brands */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-black">Популярные бренды</h2>
-            <Button variant="ghost" className="text-brand hover:text-brand-hover">
-              ВСЕ БРЕНДЫ →
-            </Button>
-          </div>
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-              {brandsRow1.map((brand, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-lg p-6 flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow h-16"
-                >
-                  <span className="text-xl font-bold text-black">{brand.name}</span>
-                </div>
-              ))}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[300px]">
+            {/* Left Banner */}
+            <div className="relative bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-8 overflow-hidden">
+              <div className="relative z-10">
+                <div className="text-white text-sm font-medium mb-2">Новая коллекция</div>
+                <div className="text-white text-2xl font-bold">Осень-Зима</div>
+              </div>
+              <div className="absolute bottom-4 right-4 text-white/80 text-sm">
+                от 1999 сом
+              </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-              {brandsRow2.map((brand, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-lg p-6 flex items-center justify-center cursor-pointer hover:shadow-md transition-shadow h-16"
-                >
-                  <span className="text-xl font-bold text-black">{brand.name}</span>
-                </div>
-              ))}
+
+            {/* Center Banner - Main Discount */}
+            <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl p-8 overflow-hidden flex items-center justify-center">
+              <div className="text-center text-white">
+                <div className="text-sm font-medium mb-2">до -80%</div>
+                <div className="text-4xl font-bold mb-2">СКИДКИ</div>
+                <div className="text-4xl font-bold mb-4">НЕДЕЛИ</div>
+                <div className="text-sm opacity-90">на все товары</div>
+              </div>
+            </div>
+
+            {/* Right Banner */}
+            <div className="relative bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-8 overflow-hidden">
+              <div className="relative z-10">
+                <div className="text-white text-lg font-bold mb-2">КАЧЕСТВО</div>
+                <div className="text-white text-lg font-bold mb-2">ЛОКАЛЬНЫХ</div>
+                <div className="text-white text-lg font-bold mb-2">БРЕНДОВ</div>
+                <div className="text-white text-sm mt-4">на Wildberries</div>
+                <div className="text-white text-xs mt-1">при поддержке</div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Recommendations section */}
+        {/* Products Grid */}
         <section className="mb-12">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-black">Рекомендуем</h2>
-            <Button variant="ghost" className="text-brand hover:text-brand-hover">
-              ВСЕ ТОВАРЫ →
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {recommendedProducts.map((product) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 20 }, (_, i) => (
               <Link
-                key={product.id}
-                href={`/product/${product.id}`}
-                className="bg-white rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
+                key={i}
+                href={`/product/${i + 1}`}
+                className="bg-white rounded-xl p-4 cursor-pointer hover:shadow-lg transition-shadow block group"
               >
+                {/* Discount Badge */}
                 <div className="relative mb-4">
-                  <img
-                    src={product.image || "/placeholder.svg?height=200&width=200&query=black t-shirt"}
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleWishlistClick(product.id)
-                    }}
-                  >
-                    <Heart className="w-4 h-4 text-gray-400" />
-                  </button>
-                </div>
-                <h3 className="text-sm font-medium text-black mb-2">{product.name}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-brand">{product.price}</span>
-                  <span className="text-xs text-gray-500">Товар 01</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Big Discounts section */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-black">Большие скидки</h2>
-            <Button variant="ghost" className="text-brand hover:text-brand-hover">
-              ВСЕ ТОВАРЫ →
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {discountProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/product/${product.id}`}
-                className="bg-white rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
-              >
-                <div className="relative mb-4">
-                  <img
-                    src={product.image || "/placeholder.svg?height=200&width=200&query=black t-shirt"}
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleWishlistClick(product.id)
-                    }}
-                  >
-                    <Heart className="w-4 h-4 text-gray-400" />
-                  </button>
-                  {product.discount && (
-                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                      -{product.discount}
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-sm font-medium text-black mb-2">{product.name}</h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-brand">{product.price}</span>
-                    {product.originalPrice && (
-                      <span className="text-sm text-gray-400 line-through">{product.originalPrice}</span>
-                    )}
+                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
+                    -%
                   </div>
-                  <span className="text-xs text-gray-500">Товар 01</span>
+                  <div className="absolute top-2 right-2 z-10">
+                    <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
+                  </div>
+                  <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                    <img
+                      src="/images/black-tshirt.jpg"
+                      alt="Футболка спорт. из хлопка"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                </div>
+                
+                {/* Product Info */}
+                <div className="space-y-2">
+                  <div className="text-xs text-gray-500 uppercase">MARQUE</div>
+                  <h3 className="text-sm font-medium text-black line-clamp-2">
+                    Футболка спорт. из хлопка
+                  </h3>
+                  
+                  {/* Price */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg font-bold text-brand">2999 сом</span>
+                    <span className="text-sm text-gray-400 line-through">3999 сом</span>
+                  </div>
+                  
+                  {/* Size Info */}
+                  <div className="text-xs text-gray-500">Размеры 25</div>
                 </div>
               </Link>
             ))}
           </div>
         </section>
+
+
       </main>
 
       {/* Footer */}

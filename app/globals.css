@@ -148,4 +148,12 @@
   .bg-brand-50 {
     background-color: rgba(142, 127, 231, 0.05);
   }
+  
+  /* Text utilities */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
