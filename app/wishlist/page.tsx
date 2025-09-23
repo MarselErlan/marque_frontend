@@ -100,7 +100,9 @@ export default function WishlistPage() {
           <div className="flex items-center justify-between h-16">
             {/* Left Section - Logo and Catalog */}
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-black tracking-wider">MARQUE</h1>
+              <Link href="/">
+                <h1 className="text-2xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
+              </Link>
               <Button
                 className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
                 onClick={() => {

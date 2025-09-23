@@ -12,13 +12,14 @@ import { API_CONFIG } from "@/lib/config"
 import { getProductsBySales } from "@/lib/products"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function MarquePage() {
   const router = useRouter()
+  const { isLoggedIn, userData, handleLogin, checkAuthStatus } = useAuth()
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
@@ -31,11 +32,11 @@ export default function MarquePage() {
   const [smsCode, setSmsCode] = useState("")
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [isVerifyingCode, setIsVerifyingCode] = useState(false)
-  const [userData, setUserData] = useState<any>(null)
   const [randomProducts, setRandomProducts] = useState<any[]>([])
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [bannerRotationIndex, setBannerRotationIndex] = useState(0)
+  const [isClient, setIsClient] = useState(false)
   // This comment is added to force a Railway redeployment.
 
   const searchSuggestions = [
@@ -52,63 +53,7 @@ export default function MarquePage() {
     { code: "+1", country: "US", flag: "🇺🇸", placeholder: "555-123-4567" }
   ]
 
-  // Check authentication status
-  const checkAuthStatus = () => {
-    try {
-      const authToken = localStorage.getItem('authToken')
-      const savedUserData = localStorage.getItem('userData')
-      const tokenExpiration = localStorage.getItem('tokenExpiration')
-      const isLoggedInFlag = localStorage.getItem('isLoggedIn')
-      
-      // Check if user was logged in
-      if (isLoggedInFlag === 'true' && authToken && savedUserData) {
-        // Check if token is still valid
-        if (tokenExpiration) {
-          const expirationTime = parseInt(tokenExpiration)
-          const currentTime = new Date().getTime()
-          
-          if (currentTime < expirationTime) {
-            // Token is still valid
-            setIsLoggedIn(true)
-            setUserData(JSON.parse(savedUserData))
-            console.log('User is logged in with valid token')
-    } else {
-            // Token has expired, clear auth data
-            console.log('Token expired, logging out user')
-            handleLogout()
-          }
-        } else {
-          // No expiration time found, assume valid for now
-          setIsLoggedIn(true)
-          setUserData(JSON.parse(savedUserData))
-        }
-      } else {
-        // No valid authentication found
-        setIsLoggedIn(false)
-        setUserData(null)
-      }
-    } catch (error) {
-      console.error('Error checking auth status:', error)
-      setIsLoggedIn(false)
-      setUserData(null)
-    }
-  }
-
-  // Logout function to clear all auth data
-  const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('tokenType')
-    localStorage.removeItem('sessionId')
-    localStorage.removeItem('expiresInMinutes')
-    localStorage.removeItem('market')
-    localStorage.removeItem('userData')
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('tokenExpiration')
-    
-    setIsLoggedIn(false)
-    setUserData(null)
-    console.log('User logged out successfully')
-  }
+  // checkAuthStatus and handleLogout are now handled by the useAuth hook.
 
   // Load cart count from localStorage
   const loadCartCount = () => {
@@ -124,8 +69,8 @@ export default function MarquePage() {
 
   // Load cart count on component mount
   useEffect(() => {
+    setIsClient(true)
     loadCartCount()
-    checkAuthStatus()
   }, [])
 
   // Authentication handlers
@@ -215,28 +160,11 @@ export default function MarquePage() {
           const data = await response.json()
           console.log('SMS verification successful:', data)
           
-          // Store complete authentication data
+          // Use handleLogin from useAuth hook
           if (data.data && data.data.access_token) {
-            // Store authentication tokens and session info
-            localStorage.setItem('authToken', data.data.access_token)
-            localStorage.setItem('tokenType', data.data.token_type || 'bearer')
-            localStorage.setItem('sessionId', data.data.session_id || '')
-            localStorage.setItem('expiresInMinutes', data.data.expires_in_minutes?.toString() || '30')
-            localStorage.setItem('market', data.data.market || data.data.user?.market || 'us')
+            handleLogin(data.data.user, data.data)
             
-            // Store user data
-            localStorage.setItem('userData', JSON.stringify(data.data.user))
-            localStorage.setItem('isLoggedIn', 'true')
-            
-            // Calculate and store token expiration time
-            const expirationTime = new Date().getTime() + (data.data.expires_in_minutes || 30) * 60 * 1000
-            localStorage.setItem('tokenExpiration', expirationTime.toString())
-            
-            // Update component state
-            setUserData(data.data.user)
-      setIsLoggedIn(true)
-            
-            console.log('Authentication data stored:', {
+            console.log('Authentication data stored via useAuth hook:', {
               userId: data.data.user?.id,
               phone: data.data.user?.phone,
               market: data.data.market,
@@ -400,7 +328,7 @@ export default function MarquePage() {
                   <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                     <div className="relative">
                     <ShoppingCart className="w-5 h-5 mb-1" />
-                      {cartItemCount > 0 && (
+                      {isClient && cartItemCount > 0 && (
                         <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                           {cartItemCount > 99 ? '99+' : cartItemCount}
                         </span>
@@ -413,7 +341,7 @@ export default function MarquePage() {
                     className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
                   >
                     <User className="w-5 h-5 mb-1" />
-                    <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
+                    <span>{isClient && isLoggedIn ? "Профиль" : "Войти"}</span>
                   </button>
                 </div>
               </div>
@@ -718,7 +646,9 @@ export default function MarquePage() {
           <div className="flex items-center justify-between h-16">
             {/* Left Section - Logo and Catalog */}
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-black tracking-wider">MARQUE</h1>
+              <Link href="/">
+                <h1 className="text-2xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
+              </Link>
               <Button
                 className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
                 onClick={handleCatalogClick}
@@ -777,7 +707,7 @@ export default function MarquePage() {
               <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                 <div className="relative">
                   <ShoppingCart className="w-5 h-5 mb-1" />
-                  {cartItemCount > 0 && (
+                  {isClient && cartItemCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                       {cartItemCount > 99 ? '99+' : cartItemCount}
                     </span>
@@ -790,7 +720,7 @@ export default function MarquePage() {
                 className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
               >
                   <User className="w-5 h-5 mb-1" />
-                <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
+                <span>{isClient && isLoggedIn ? "Профиль" : "Войти"}</span>
               </button>
             </div>
           </div>
@@ -809,8 +739,8 @@ export default function MarquePage() {
                    index === 1 
                      ? 'z-20 scale-100 opacity-100' // Center - large and prominent
                      : index === 0 
-                       ? 'z-10 scale-100 opacity-70 hover:opacity-85 hover:scale-105' // Left - full size at left edge
-                       : 'z-10 scale-100 opacity-70 hover:opacity-85 hover:scale-105' // Right - full size at right edge
+                       ? 'z-10 scale-100 opacity-100 hover:opacity-100 hover:scale-105' // Left - full size at left edge
+                       : 'z-10 scale-100 opacity-100 hover:opacity-100 hover:scale-105' // Right - full size at right edge
                  }`}
                 onClick={() => handleBannerClick(index)}
                 style={{
