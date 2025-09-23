@@ -644,6 +644,19 @@ export default function MarquePage() {
     return () => clearInterval(interval)
   }, [heroBanners.length])
 
+  // Handle banner click to move to center
+  const handleBannerClick = (clickedIndex: number) => {
+    // If left banner (index 0) is clicked, move it to center
+    if (clickedIndex === 0) {
+      setBannerRotationIndex(prev => (prev - 1 + heroBanners.length) % heroBanners.length)
+    }
+    // If right banner (index 2) is clicked, move it to center
+    else if (clickedIndex === 2) {
+      setBannerRotationIndex(prev => (prev + 1) % heroBanners.length)
+    }
+    // If center banner (index 1) is clicked, do nothing or add custom action
+  }
+
   // Get current 3 banners in rotation order (right → center → left → right)
   const getCurrentBanners = () => {
     const banners = []
@@ -792,13 +805,14 @@ export default function MarquePage() {
             {getCurrentBanners().map((banner, index) => (
               <div
                 key={`${banner.id}-${bannerRotationIndex}-${index}`}
-                 className={`absolute rounded-[24px] overflow-hidden transition-all duration-1000 ease-in-out transform ${
+                 className={`absolute rounded-[24px] overflow-hidden transition-all duration-1000 ease-in-out transform cursor-pointer ${
                    index === 1 
                      ? 'z-20 scale-100 opacity-100' // Center - large and prominent
                      : index === 0 
-                       ? 'z-10 scale-100 opacity-70' // Left - full size at left edge
-                       : 'z-10 scale-100 opacity-70' // Right - full size at right edge
+                       ? 'z-10 scale-100 opacity-70 hover:opacity-85 hover:scale-105' // Left - full size at left edge
+                       : 'z-10 scale-100 opacity-70 hover:opacity-85 hover:scale-105' // Right - full size at right edge
                  }`}
+                onClick={() => handleBannerClick(index)}
                 style={{
                   width: index === 1 ? '900px' : '712px', // Center 900px, sides 712px
                   height: index === 1 ? '506px' : '400px', // Center 506px, sides 400px
