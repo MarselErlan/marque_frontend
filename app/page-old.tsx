@@ -11,31 +11,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { API_CONFIG } from "@/lib/config"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Header } from "@/components/Header"
+import { AuthModals } from "@/components/AuthModals"
+import { useAuth } from "@/hooks/useAuth"
+import { useCart } from "@/hooks/useCart"
 
 export default function MarquePage() {
   const router = useRouter()
+  
+  // Use custom hooks for auth and cart
+  const { isLoggedIn, userData, handleLogin, handleLogout } = useAuth()
+  const { cartItemCount } = useCart()
+  
+  // Local state for modals and UI
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
   const [selectedCatalogCategory, setSelectedCatalogCategory] = useState("Мужчинам")
-  const [cartItemCount, setCartItemCount] = useState(0)
-  
-  // Authentication states
-  const [countryCode, setCountryCode] = useState("+996")
-  const [phoneNumber, setPhoneNumber] = useState("")
-  const [smsCode, setSmsCode] = useState("")
-  const [isSendingSms, setIsSendingSms] = useState(false)
-  const [isVerifyingCode, setIsVerifyingCode] = useState(false)
-  const [userData, setUserData] = useState<any>(null)
   const [randomProducts, setRandomProducts] = useState<any[]>([])
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [bannerRotationIndex, setBannerRotationIndex] = useState(0)
-  // This comment is added to force a Railway redeployment.
 
   const searchSuggestions = [
     "футболка",
@@ -51,75 +47,11 @@ export default function MarquePage() {
     { code: "+1", country: "US", flag: "🇺🇸", placeholder: "555-123-4567" }
   ]
 
-  // Check authentication status
-  const checkAuthStatus = () => {
-    try {
-      const authToken = localStorage.getItem('authToken')
-      const savedUserData = localStorage.getItem('userData')
-      const tokenExpiration = localStorage.getItem('tokenExpiration')
-      const isLoggedInFlag = localStorage.getItem('isLoggedIn')
-      
-      // Check if user was logged in
-      if (isLoggedInFlag === 'true' && authToken && savedUserData) {
-        // Check if token is still valid
-        if (tokenExpiration) {
-          const expirationTime = parseInt(tokenExpiration)
-          const currentTime = new Date().getTime()
-          
-          if (currentTime < expirationTime) {
-            // Token is still valid
-            setIsLoggedIn(true)
-            setUserData(JSON.parse(savedUserData))
-            console.log('User is logged in with valid token')
-    } else {
-            // Token has expired, clear auth data
-            console.log('Token expired, logging out user')
-            handleLogout()
-          }
-        } else {
-          // No expiration time found, assume valid for now
-          setIsLoggedIn(true)
-          setUserData(JSON.parse(savedUserData))
-        }
-      } else {
-        // No valid authentication found
-        setIsLoggedIn(false)
-        setUserData(null)
-      }
-    } catch (error) {
-      console.error('Error checking auth status:', error)
-      setIsLoggedIn(false)
-      setUserData(null)
-    }
-  }
+  // Auth status is handled by useAuth hook
 
-  // Logout function to clear all auth data
-  const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('tokenType')
-    localStorage.removeItem('sessionId')
-    localStorage.removeItem('expiresInMinutes')
-    localStorage.removeItem('market')
-    localStorage.removeItem('userData')
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('tokenExpiration')
-    
-    setIsLoggedIn(false)
-    setUserData(null)
-    console.log('User logged out successfully')
-  }
+  // Logout is handled by useAuth hook
 
-  // Load cart count from localStorage
-  const loadCartCount = () => {
-    try {
-      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
-      const totalItems = existingCart.reduce((total: number, item: any) => total + item.quantity, 0)
-      setCartItemCount(totalItems)
-    } catch (error) {
-      console.error('Error loading cart count:', error)
-      setCartItemCount(0)
-    }
-  }
+  // Cart count is handled by useCart hook
 
   // Load cart count on component mount
   useEffect(() => {
@@ -129,19 +61,7 @@ export default function MarquePage() {
 
   // Authentication handlers
   const handleLoginClick = () => {
-    setIsLoginModalOpen(false)
     setIsPhoneModalOpen(true)
-  }
-
-  // New handler for header login button
-  const handleHeaderLoginClick = () => {
-    if (isLoggedIn) {
-      // User is already logged in, navigate to profile
-      router.push('/profile')
-    } else {
-      // User is not logged in, start phone verification
-      setIsPhoneModalOpen(true)
-    }
   }
 
   const handlePhoneSubmit = async () => {
@@ -700,89 +620,12 @@ export default function MarquePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Left Section - Logo and Catalog */}
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-black tracking-wider">MARQUE</h1>
-              <Button
-                className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
-                onClick={handleCatalogClick}
-              >
-                <span className="mr-2">⋮⋮⋮</span>
-                Каталог
-              </Button>
-            </div>
-
-            {/* Center Section - Search Bar */}
-            <div className="flex-1 flex justify-center px-8">
-              <div className="relative max-w-2xl w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  type="text"
-                  placeholder="Товар, бренд или артикул"
-                  className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={handleSearchFocus}
-                  onBlur={handleSearchBlur}
-                />
-                {showSearchSuggestions && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50">
-                    {searchSuggestions
-                      .filter((suggestion) => suggestion.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((suggestion, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                          onClick={() => handleSuggestionClick(suggestion)}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Search className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-700">{suggestion}</span>
-                          </div>
-                          <button
-                            className="p-1 hover:bg-gray-200 rounded"
-                            onClick={(e) => removeSuggestion(suggestion, e)}
-                          >
-                            <X className="w-3 h-3 text-gray-400" />
-                          </button>
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-              </div>
-
-            {/* Right Section - User Actions */}
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
-                  <Heart className="w-5 h-5 mb-1" />
-                  <span>Избранные</span>
-                </Link>
-              <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-                <div className="relative">
-                  <ShoppingCart className="w-5 h-5 mb-1" />
-                  {cartItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                      {cartItemCount > 99 ? '99+' : cartItemCount}
-                    </span>
-                  )}
-                </div>
-                  <span>Корзина</span>
-                </Link>
-              <button 
-                onClick={handleHeaderLoginClick}
-                className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
-              >
-                  <User className="w-5 h-5 mb-1" />
-                <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header 
+        isLoggedIn={isLoggedIn}
+        cartItemCount={cartItemCount}
+        onCatalogClick={handleCatalogClick}
+        onLoginClick={() => setIsPhoneModalOpen(true)}
+      />
 
       {/* Main Content */}
       <main className="w-full relative" style={{minHeight: '2000px'}}>
@@ -826,8 +669,8 @@ export default function MarquePage() {
                       />
                       {/* Overlay for depth */}
                       <div className="absolute inset-0 bg-black/10"></div>
-                </div>
-                  )}
+                  </div>
+                )}
                   
                   {banner.type === 'discount' && (
                     <div className="relative h-full overflow-hidden">
@@ -849,9 +692,9 @@ export default function MarquePage() {
                           <div className="absolute top-12 right-12 w-24 h-24 bg-white/10 rounded-full animate-bounce"></div>
                           <div className="absolute bottom-12 left-12 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
                           <div className="absolute top-1/2 left-12 w-16 h-16 bg-white/10 rounded-full animate-ping"></div>
-          </div>
-                </div>
+              </div>
             </div>
+          </div>
                   )}
                   
                   {banner.type === 'quality' && (
@@ -868,11 +711,11 @@ export default function MarquePage() {
                       />
                       {/* Overlay for depth */}
                       <div className="absolute inset-0 bg-black/10"></div>
-          </div>
-                  )}
                 </div>
-            </div>
-            ))}
+                  )}
+          </div>
+                </div>
+              ))}
             
             {/* Navigation indicators */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
@@ -1185,6 +1028,14 @@ export default function MarquePage() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Authentication Modals */}
+      <AuthModals
+        isPhoneModalOpen={isPhoneModalOpen}
+        setIsPhoneModalOpen={setIsPhoneModalOpen}
+        isSmsModalOpen={isSmsModalOpen}
+        setIsSmsModalOpen={setIsSmsModalOpen}
+        onLoginSuccess={handleLogin}
+      />
     </div>
   )
 }

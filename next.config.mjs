@@ -6,26 +6,40 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  
   // Environment variables
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marquebackend-production.up.railway.app/api/v1',
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://marque.website',
   },
+  
+  // Image optimization
   images: {
     unoptimized: true,
     domains: ['marque.website', 'marquebackend-production.up.railway.app'],
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  // Enable output standalone for Docker
+  
+  // Production optimizations
   output: 'standalone',
-  // Optimize for production
   swcMinify: true,
-  // Enable experimental features for better performance
-  experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-  },
-  // Compress responses
   compress: true,
-  // Add security headers
+  poweredByHeader: false,
+  
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react', 
+      '@radix-ui/react-icons',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select'
+    ],
+    webVitalsAttribution: ['CLS', 'LCP'],
+  },
+  
+  // Security headers
   async headers() {
     return [
       {
@@ -43,11 +57,33 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/images/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
         ],
       },
     ]
   },
-  // Runtime proxy to backend for any relative API calls
+  
+  // API proxy
   async rewrites() {
     return [
       {
