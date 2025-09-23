@@ -124,3 +124,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom brand color classes */
+@layer utilities {
+  .bg-brand {
+    background-color: #8E7FE7;
+  }
+  .bg-brand-hover {
+    background-color: #7B6EE0;
+  }
+  .text-brand {
+    color: #8E7FE7;
+  }
+  .border-brand {
+    border-color: #8E7FE7;
+  }
+  .border-brand-light {
+    border-color: #B5ADEF;
+  }
+  .bg-brand-light {
+    background-color: rgba(142, 127, 231, 0.1);
+  }
+  .bg-brand-50 {
+    background-color: rgba(142, 127, 231, 0.05);
+  }
+}

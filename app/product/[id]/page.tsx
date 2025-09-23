@@ -435,7 +435,7 @@ export default function ProductDetailPage() {
 
             {/* Navigation */}
             <div className="flex items-center space-x-4">
-              <Button className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg">
+              <Button className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg">
                 <span className="mr-2">⋮⋮⋮</span>
                 Каталог
               </Button>
@@ -452,11 +452,11 @@ export default function ProductDetailPage() {
 
               {/* User Actions */}
               <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
                 </Link>
-                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600 relative">
+                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                   <div className="relative">
                     <ShoppingCart className="w-5 h-5 mb-1" />
                     {cartItemCount > 0 && (
@@ -469,7 +469,7 @@ export default function ProductDetailPage() {
                 </Link>
                 <button 
                   onClick={handleHeaderLoginClick}
-                  className="flex flex-col items-center cursor-pointer hover:text-purple-600 bg-transparent border-none p-0"
+                  className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
                 >
                   <User className="w-5 h-5 mb-1" />
                   <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
@@ -484,11 +484,11 @@ export default function ProductDetailPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link href="/category/мужчинам" className="hover:text-purple-600">
+          <Link href="/category/мужчинам" className="hover:text-brand">
             Мужчинам
           </Link>
           <span>›</span>
-          <Link href="/subcategory/мужчинам/футболки-и-поло" className="hover:text-purple-600">
+          <Link href="/subcategory/мужчинам/футболки-и-поло" className="hover:text-brand">
             Футболки и поло
           </Link>
           <span>›</span>
@@ -561,7 +561,7 @@ export default function ProductDetailPage() {
                     key={size}
                     className={`px-4 py-2 border rounded-lg ${
                       selectedSize === size
-                        ? "border-purple-500 bg-purple-50 text-purple-600"
+                        ? "border-purple-500 bg-purple-50 text-brand"
                         : "border-gray-300 text-gray-700 hover:border-gray-400"
                     }`}
                     onClick={() => setSelectedSize(size)}
@@ -604,7 +604,7 @@ export default function ProductDetailPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="px-6 py-3 rounded-lg border-purple-500 text-purple-600 hover:bg-purple-50"
+                    className="px-6 py-3 rounded-lg border-purple-500 text-brand hover:bg-purple-50"
                     onClick={handleGoToCart}
                   >
                     Перейти в корзину
@@ -612,7 +612,7 @@ export default function ProductDetailPage() {
                 </div>
               ) : (
                 <Button
-                  className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg disabled:opacity-50"
+                  className="flex-1 bg-brand hover:bg-brand-hover text-white py-3 rounded-lg disabled:opacity-50"
                   onClick={handleAddToCart}
                   disabled={isAddingToCart}
                 >
@@ -656,7 +656,7 @@ export default function ProductDetailPage() {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-black">Отзывы</h2>
-            <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
+            <Button variant="ghost" className="text-brand hover:text-purple-700">
               ВСЕ ОТЗЫВЫ →
             </Button>
           </div>
@@ -666,7 +666,7 @@ export default function ProductDetailPage() {
               <div key={review.id} className="bg-white rounded-lg p-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <span className="text-purple-600 font-semibold text-sm">
+                    <span className="text-brand font-semibold text-sm">
                       {review.author
                         .split(" ")
                         .map((n) => n[0])
@@ -712,7 +712,7 @@ export default function ProductDetailPage() {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-black">Похожие товары</h2>
-            <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
+            <Button variant="ghost" className="text-brand hover:text-purple-700">
               ВСЕ ТОВАРЫ →
             </Button>
           </div>
@@ -736,7 +736,7 @@ export default function ProductDetailPage() {
                 </div>
                 <h3 className="text-sm font-medium text-black mb-2">{product.name}</h3>
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-purple-600">{product.price}</span>
+                  <span className="text-lg font-bold text-brand">{product.price}</span>
                   <span className="text-xs text-gray-500">Продано {product.sold}</span>
                 </div>
               </Link>
@@ -787,14 +787,14 @@ export default function ProductDetailPage() {
         <DialogContent className="sm:max-w-md">
           <div className="flex flex-col items-center space-y-6 py-6">
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-purple-600" />
+              <LogIn className="w-8 h-8 text-brand" />
             </div>
             <div className="text-center space-y-2">
               <h2 className="text-xl font-semibold text-black">Войдите чтобы добавить товар в избранное</h2>
             </div>
             <div className="flex space-x-3 w-full">
               <Button
-                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="flex-1 bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleLoginClick}
               >
                 Войти
@@ -845,7 +845,7 @@ export default function ProductDetailPage() {
                 />
               </div>
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handlePhoneSubmit}
                 disabled={isSendingSms || !phoneNumber.trim()}
               >
@@ -854,8 +854,8 @@ export default function ProductDetailPage() {
             </div>
             <p className="text-xs text-gray-500 text-center">
               Нажимая "Продолжить", вы соглашаетесь с{" "}
-              <span className="text-purple-600 cursor-pointer">Политикой конфиденциальности</span> и{" "}
-              <span className="text-purple-600 cursor-pointer">Пользовательским соглашением</span>
+              <span className="text-brand cursor-pointer">Политикой конфиденциальности</span> и{" "}
+              <span className="text-brand cursor-pointer">Пользовательским соглашением</span>
             </p>
           </div>
         </DialogContent>
@@ -896,7 +896,7 @@ export default function ProductDetailPage() {
                 maxLength={6}
               />
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleSmsVerification}
                 disabled={smsCode.length < 6 || isVerifyingCode}
               >

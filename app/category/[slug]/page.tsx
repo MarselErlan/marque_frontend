@@ -141,7 +141,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                   className="w-16 h-16 object-cover rounded-lg"
                 />
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900 group-hover:text-purple-600">{subcategory.name}</h3>
+                  <h3 className="font-medium text-gray-900 group-hover:text-brand">{subcategory.name}</h3>
                   <p className="text-gray-500 text-sm">{subcategory.count}</p>
                 </div>
                 <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
@@ -176,7 +176,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 <div className="p-4">
                   <h3 className="font-medium text-gray-900 mb-2">{product.name}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-600 font-bold">{product.price} сом</span>
+                    <span className="text-brand font-bold">{product.price} сом</span>
                   </div>
                   <p className="text-gray-500 text-sm mt-1">Продано {product.sold}</p>
                 </div>

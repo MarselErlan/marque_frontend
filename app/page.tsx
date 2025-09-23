@@ -369,7 +369,7 @@ export default function MarquePage() {
               {/* Navigation */}
               <div className="flex items-center space-x-4">
                 <Button
-                  className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg"
+                  className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
                   onClick={() => setShowCatalog(false)}
                 >
                   <X className="w-4 h-4 mr-2" />
@@ -388,11 +388,11 @@ export default function MarquePage() {
 
                 {/* User Actions */}
                 <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                  <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
                     <Heart className="w-5 h-5 mb-1" />
                     <span>Избранные</span>
                   </Link>
-                  <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600 relative">
+                  <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                     <div className="relative">
                       <ShoppingCart className="w-5 h-5 mb-1" />
                       {cartItemCount > 0 && (
@@ -405,7 +405,7 @@ export default function MarquePage() {
                   </Link>
                   <button 
                     onClick={handleHeaderLoginClick}
-                    className="flex flex-col items-center cursor-pointer hover:text-purple-600 bg-transparent border-none p-0"
+                    className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
                   >
                     <User className="w-5 h-5 mb-1" />
                     <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
@@ -427,7 +427,7 @@ export default function MarquePage() {
                     key={index}
                     className={`px-4 py-3 rounded-lg cursor-pointer transition-colors ${
                       category.active
-                        ? "bg-purple-50 text-purple-600 border-l-4 border-purple-600"
+                        ? "bg-brand-50 text-brand border-l-4 border-brand"
                         : "text-gray-700 hover:bg-gray-50"
                     }`}
                     onClick={() => setSelectedCatalogCategory(category.name)}
@@ -477,7 +477,7 @@ export default function MarquePage() {
     {
       title: "Женщинам",
       image: "/images/female-model-olive.jpg",
-      bgColor: "bg-purple-50",
+      bgColor: "bg-brand-50",
       href: "/category/zhenshchinam",
     },
     {
@@ -598,7 +598,7 @@ export default function MarquePage() {
             {/* Navigation */}
             <div className="flex items-center space-x-4">
               <Button
-                className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg"
+                className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
                 onClick={handleCatalogClick}
               >
                 <span className="mr-2">⋮⋮⋮</span>
@@ -645,11 +645,11 @@ export default function MarquePage() {
 
               {/* User Actions */}
               <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
                 </Link>
-                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600 relative">
+                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                   <div className="relative">
                     <ShoppingCart className="w-5 h-5 mb-1" />
                     {cartItemCount > 0 && (
@@ -662,7 +662,7 @@ export default function MarquePage() {
                 </Link>
                 <button 
                   onClick={handleHeaderLoginClick}
-                  className="flex flex-col items-center cursor-pointer hover:text-purple-600 bg-transparent border-none p-0"
+                  className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
                 >
                   <User className="w-5 h-5 mb-1" />
                   <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
@@ -702,7 +702,7 @@ export default function MarquePage() {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-black">Популярные бренды</h2>
-            <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
+            <Button variant="ghost" className="text-brand hover:text-brand-hover">
               ВСЕ БРЕНДЫ →
             </Button>
           </div>
@@ -734,7 +734,7 @@ export default function MarquePage() {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-black">Рекомендуем</h2>
-            <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
+            <Button variant="ghost" className="text-brand hover:text-brand-hover">
               ВСЕ ТОВАРЫ →
             </Button>
           </div>
@@ -763,7 +763,7 @@ export default function MarquePage() {
                 </div>
                 <h3 className="text-sm font-medium text-black mb-2">{product.name}</h3>
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-purple-600">{product.price}</span>
+                  <span className="text-lg font-bold text-brand">{product.price}</span>
                   <span className="text-xs text-gray-500">Товар 01</span>
                 </div>
               </Link>
@@ -775,7 +775,7 @@ export default function MarquePage() {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-black">Большие скидки</h2>
-            <Button variant="ghost" className="text-purple-600 hover:text-purple-700">
+            <Button variant="ghost" className="text-brand hover:text-brand-hover">
               ВСЕ ТОВАРЫ →
             </Button>
           </div>
@@ -810,7 +810,7 @@ export default function MarquePage() {
                 <h3 className="text-sm font-medium text-black mb-2">{product.name}</h3>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-purple-600">{product.price}</span>
+                    <span className="text-lg font-bold text-brand">{product.price}</span>
                     {product.originalPrice && (
                       <span className="text-sm text-gray-400 line-through">{product.originalPrice}</span>
                     )}
@@ -877,7 +877,7 @@ export default function MarquePage() {
                 placeholder="+996 505-23-12-55"
               />
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handlePhoneSubmit}
               >
                 Продолжить
@@ -885,8 +885,8 @@ export default function MarquePage() {
             </div>
             <p className="text-xs text-gray-500 text-center">
               Нажимая "Продолжить", вы соглашаетесь с{" "}
-              <span className="text-purple-600 cursor-pointer">Политикой конфиденциальности</span> и{" "}
-              <span className="text-purple-600 cursor-pointer">Пользовательским соглашением</span>
+              <span className="text-brand cursor-pointer">Политикой конфиденциальности</span> и{" "}
+              <span className="text-brand cursor-pointer">Пользовательским соглашением</span>
             </p>
           </div>
         </DialogContent>
@@ -927,7 +927,7 @@ export default function MarquePage() {
                 maxLength={6}
               />
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleSmsVerification}
                 disabled={smsCode.length < 6}
               >
@@ -942,15 +942,15 @@ export default function MarquePage() {
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
         <DialogContent className="sm:max-w-md">
           <div className="flex flex-col items-center space-y-6 py-6">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-brand-light rounded-full flex items-center justify-center">
+              <LogIn className="w-8 h-8 text-brand" />
             </div>
             <div className="text-center space-y-2">
               <h2 className="text-xl font-semibold text-black">Войдите чтобы добавить товар в избранное</h2>
             </div>
             <div className="flex space-x-3 w-full">
               <Button
-                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="flex-1 bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleLoginClick}
               >
                 Войти
@@ -971,15 +971,15 @@ export default function MarquePage() {
       <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
         <DialogContent className="sm:max-w-md">
           <div className="flex flex-col items-center space-y-6 py-6">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-brand-light rounded-full flex items-center justify-center">
+              <LogIn className="w-8 h-8 text-brand" />
             </div>
             <div className="text-center space-y-2">
               <h2 className="text-xl font-semibold text-black">Войдите чтобы добавить товар в избранное</h2>
             </div>
             <div className="flex space-x-3 w-full">
               <Button
-                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="flex-1 bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleLoginClick}
               >
                 Войти
@@ -1030,7 +1030,7 @@ export default function MarquePage() {
                 />
               </div>
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handlePhoneSubmit}
                 disabled={isSendingSms || !phoneNumber.trim()}
               >
@@ -1039,8 +1039,8 @@ export default function MarquePage() {
             </div>
             <p className="text-xs text-gray-500 text-center">
               Нажимая "Продолжить", вы соглашаетесь с{" "}
-              <span className="text-purple-600 cursor-pointer">Политикой конфиденциальности</span> и{" "}
-              <span className="text-purple-600 cursor-pointer">Пользовательским соглашением</span>
+              <span className="text-brand cursor-pointer">Политикой конфиденциальности</span> и{" "}
+              <span className="text-brand cursor-pointer">Пользовательским соглашением</span>
             </p>
           </div>
         </DialogContent>
@@ -1081,7 +1081,7 @@ export default function MarquePage() {
                 maxLength={6}
               />
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleSmsVerification}
                 disabled={smsCode.length < 6 || isVerifyingCode}
               >

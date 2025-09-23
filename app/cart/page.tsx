@@ -403,7 +403,7 @@ export default function CartPage() {
 
             {/* Navigation */}
             <div className="flex items-center space-x-4">
-              <Button className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg">
+              <Button className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg">
                 <span className="mr-2">⋮⋮⋮</span>
                 Каталог
               </Button>
@@ -420,11 +420,11 @@ export default function CartPage() {
 
               {/* User Actions */}
               <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
                 </Link>
-                <div className="flex flex-col items-center cursor-pointer text-purple-600 relative">
+                <div className="flex flex-col items-center cursor-pointer text-brand relative">
                   <div className="relative">
                     <ShoppingCart className="w-5 h-5 mb-1" />
                     {cartItemCount > 0 && (
@@ -437,7 +437,7 @@ export default function CartPage() {
                 </div>
                 <button 
                   onClick={handleHeaderLoginClick}
-                  className="flex flex-col items-center cursor-pointer hover:text-purple-600 bg-transparent border-none p-0"
+                  className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
                 >
                   <User className="w-5 h-5 mb-1" />
                   <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
@@ -464,7 +464,7 @@ export default function CartPage() {
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">Ваша корзина пуста</h3>
                 <p className="text-gray-500 mb-6">Добавьте товары в корзину, чтобы сделать заказ</p>
                 <Link href="/">
-                  <Button className="bg-purple-500 hover:bg-purple-600 text-white">
+                  <Button className="bg-brand hover:bg-brand-hover text-white">
                     Перейти к покупкам
                   </Button>
                 </Link>
@@ -549,7 +549,7 @@ export default function CartPage() {
                         key={date}
                         className={`px-3 py-2 text-xs rounded border ${
                           selectedDeliveryDate === date
-                            ? "bg-purple-500 text-white border-purple-500"
+                            ? "bg-brand text-white border-purple-500"
                             : "bg-gray-50 text-gray-700 border-gray-200"
                         }`}
                         onClick={() => setSelectedDeliveryDate(date)}
@@ -613,7 +613,7 @@ export default function CartPage() {
 
               {/* Checkout Button */}
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleCheckout}
               >
                 Перейти к оформлению
@@ -686,7 +686,7 @@ export default function CartPage() {
               <Input placeholder="Этаж" className="w-full" />
             </div>
             <Button
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              className="w-full bg-brand hover:bg-brand-hover text-white"
               onClick={handleAddressSubmit}
               disabled={!checkoutAddress}
             >
@@ -711,7 +711,7 @@ export default function CartPage() {
                   value="card"
                   checked={checkoutPaymentMethod === "card"}
                   onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-purple-600"
+                  className="w-4 h-4 text-brand"
                 />
                 <span>Банковская карта</span>
               </label>
@@ -722,7 +722,7 @@ export default function CartPage() {
                   value="cash"
                   checked={checkoutPaymentMethod === "cash"}
                   onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-purple-600"
+                  className="w-4 h-4 text-brand"
                 />
                 <span>Наличные при получении</span>
               </label>
@@ -733,7 +733,7 @@ export default function CartPage() {
                   value="online"
                   checked={checkoutPaymentMethod === "online"}
                   onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-purple-600"
+                  className="w-4 h-4 text-brand"
                 />
                 <span>Онлайн оплата</span>
               </label>
@@ -749,7 +749,7 @@ export default function CartPage() {
               </div>
             )}
             <Button
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              className="w-full bg-brand hover:bg-brand-hover text-white"
               onClick={handlePaymentSubmit}
               disabled={!checkoutPaymentMethod}
             >
@@ -771,7 +771,7 @@ export default function CartPage() {
             </div>
             <h3 className="text-lg font-semibold mb-2">Заказ принят к исполнению!</h3>
             <p className="text-gray-600 mb-6">Мы отправили детали заказа на ваш номер телефона</p>
-            <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white" onClick={handleOrderComplete}>
+            <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleOrderComplete}>
               ОК
             </Button>
           </div>
@@ -786,7 +786,7 @@ export default function CartPage() {
           </DialogHeader>
           <div className="flex flex-col items-center space-y-6 py-6">
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-purple-600" />
+              <LogIn className="w-8 h-8 text-brand" />
             </div>
             <div className="text-center space-y-2">
               <h2 className="text-xl font-semibold text-black">Войдите чтобы оформить заказ</h2>
@@ -794,7 +794,7 @@ export default function CartPage() {
             </div>
             <div className="flex space-x-3 w-full">
               <Button
-                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="flex-1 bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleLoginClick}
               >
                 Войти
@@ -845,7 +845,7 @@ export default function CartPage() {
                 />
               </div>
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handlePhoneSubmit}
                 disabled={isSendingSms || !phoneNumber.trim()}
               >
@@ -854,8 +854,8 @@ export default function CartPage() {
             </div>
             <p className="text-xs text-gray-500 text-center">
               Нажимая "Продолжить", вы соглашаетесь с{" "}
-              <span className="text-purple-600 cursor-pointer">Политикой конфиденциальности</span> и{" "}
-              <span className="text-purple-600 cursor-pointer">Пользовательским соглашением</span>
+              <span className="text-brand cursor-pointer">Политикой конфиденциальности</span> и{" "}
+              <span className="text-brand cursor-pointer">Пользовательским соглашением</span>
             </p>
           </div>
         </DialogContent>
@@ -896,7 +896,7 @@ export default function CartPage() {
                 maxLength={6}
               />
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg"
+                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
                 onClick={handleSmsVerification}
                 disabled={smsCode.length < 6 || isVerifyingCode}
               >

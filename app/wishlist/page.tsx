@@ -72,15 +72,15 @@ export default function WishlistPage() {
 
               {/* User Actions */}
               <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <div className="flex flex-col items-center cursor-pointer text-purple-600">
+                <div className="flex flex-col items-center cursor-pointer text-brand">
                   <Heart className="w-5 h-5 mb-1 fill-current" />
                   <span>Избранные</span>
                 </div>
-                <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <div className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <ShoppingCart className="w-5 h-5 mb-1" />
                   <span>Корзина</span>
                 </div>
-                <div className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <div className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <User className="w-5 h-5 mb-1" />
                   <span>Войти</span>
                 </div>
@@ -93,7 +93,7 @@ export default function WishlistPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center space-x-4 mb-8">
-          <Link href="/" className="text-gray-600 hover:text-purple-600">
+          <Link href="/" className="text-gray-600 hover:text-brand">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="text-3xl font-bold text-black">Избранные</h1>
@@ -138,7 +138,7 @@ export default function WishlistPage() {
                 <Link href={`/product/${product.id}`}>
                   <h3 className="text-sm font-medium text-black mb-2">{product.name}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-purple-600">{product.price}</span>
+                    <span className="text-lg font-bold text-brand">{product.price}</span>
                     <span className="text-xs text-gray-500">Продано {product.sold}</span>
                   </div>
                 </Link>

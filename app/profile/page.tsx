@@ -301,7 +301,7 @@ export default function ProfilePage() {
       date: "15.07.2025",
       deliveryDate: "21.07.2025",
       status: "ДОСТАВЛЕН",
-      statusColor: "text-purple-600",
+      statusColor: "text-brand",
       total: "5233 сом",
       isActive: true,
       items: [
@@ -593,7 +593,7 @@ export default function ProfilePage() {
 
             {/* Navigation - Desktop */}
             <div className="hidden md:flex items-center space-x-4">
-              <Button className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg">
+              <Button className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg">
                 <span className="mr-2">⋮⋮⋮</span>
                 Каталог
               </Button>
@@ -610,15 +610,15 @@ export default function ProfilePage() {
 
               {/* User Actions */}
               <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
                 </Link>
-                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-purple-600">
+                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <ShoppingCart className="w-5 h-5 mb-1" />
                   <span>Корзина</span>
                 </Link>
-                <div className="flex flex-col items-center cursor-pointer text-purple-600">
+                <div className="flex flex-col items-center cursor-pointer text-brand">
                   <User className="w-5 h-5 mb-1" />
                   <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
                 </div>
@@ -629,7 +629,7 @@ export default function ProfilePage() {
             <div className="md:hidden flex items-center space-x-4">
               <Heart className="w-6 h-6 text-gray-600" />
               <ShoppingCart className="w-6 h-6 text-gray-600" />
-              <User className="w-6 h-6 text-purple-600" />
+              <User className="w-6 h-6 text-brand" />
             </div>
           </div>
         </div>
@@ -655,7 +655,7 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(item.id)}
                 className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 ${
                   activeTab === item.id
-                    ? "border-purple-600 text-purple-600 bg-purple-50"
+                    ? "border-purple-600 text-brand bg-purple-50"
                     : "border-transparent text-gray-500"
                 }`}
               >
@@ -681,7 +681,7 @@ export default function ProfilePage() {
                       key={item.id}
                       onClick={() => setActiveTab(item.id)}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                        activeTab === item.id ? "bg-purple-500 text-white" : "text-gray-700 hover:bg-gray-50"
+                        activeTab === item.id ? "bg-brand text-white" : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       <Icon className="w-5 h-5" />
@@ -703,14 +703,14 @@ export default function ProfilePage() {
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
                       <User className="w-10 h-10 text-gray-400" />
                     </div>
-                    <button className="absolute bottom-0 right-0 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                    <button className="absolute bottom-0 right-0 w-6 h-6 bg-brand rounded-full flex items-center justify-center">
                       <Camera className="w-3 h-3 text-white" />
                     </button>
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold text-black">{userName}</h2>
                     <p className="text-gray-500">{phoneNumber}</p>
-                    <button className="text-purple-600 text-sm hover:underline mt-1">Редактировать фото</button>
+                    <button className="text-brand text-sm hover:underline mt-1">Редактировать фото</button>
                   </div>
                 </div>
 
@@ -827,7 +827,7 @@ export default function ProfilePage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-purple-600 border-purple-200 hover:bg-purple-50 bg-transparent"
+                              className="text-brand border-brand-light hover:bg-brand-50 bg-transparent"
                               onClick={() => {
                                 setSelectedOrder(order)
                                 setShowReviewForm(true)
@@ -881,7 +881,7 @@ export default function ProfilePage() {
 
                   {selectedOrder.canReview && (
                     <Button
-                      className="bg-purple-500 hover:bg-purple-600 text-white"
+                      className="bg-brand hover:bg-brand-hover text-white"
                       onClick={() => setShowReviewForm(true)}
                     >
                       Написать отзыв
@@ -946,7 +946,7 @@ export default function ProfilePage() {
                         className="hidden"
                         id="photo-upload"
                       />
-                      <label htmlFor="photo-upload" className="cursor-pointer text-purple-600 hover:text-purple-700">
+                      <label htmlFor="photo-upload" className="cursor-pointer text-brand hover:text-purple-700">
                         Выберите файлы
                       </label>
                     </div>
@@ -977,7 +977,7 @@ export default function ProfilePage() {
                 {/* Submit Button */}
                 <Button
                   onClick={handleSubmitReview}
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                  className="w-full bg-brand hover:bg-brand-hover text-white"
                   disabled={reviewPhotos.length === 0 || reviewRating === 0}
                 >
                   Отправить отзыв
@@ -996,7 +996,7 @@ export default function ProfilePage() {
                     ))}
                   </div>
                   <p className="text-sm text-gray-500 mt-2">Доставка {selectedOrder.deliveryDate}</p>
-                  <p className="text-sm text-purple-600 cursor-pointer hover:underline">Написать отзыв</p>
+                  <p className="text-sm text-brand cursor-pointer hover:underline">Написать отзыв</p>
                 </div>
               </div>
             )}
@@ -1041,7 +1041,7 @@ export default function ProfilePage() {
 
                 <Button
                   onClick={() => setShowAddressForm(true)}
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                  className="w-full bg-brand hover:bg-brand-hover text-white"
                 >
                   Добавить адрес
                 </Button>
@@ -1128,7 +1128,7 @@ export default function ProfilePage() {
                   <div className="flex space-x-4 pt-4">
                     <Button
                       onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
-                      className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+                      className="flex-1 bg-brand hover:bg-brand-hover text-white"
                       disabled={!newAddress.address.trim()}
                     >
                       {editingAddress ? "Сохранить изменения" : "Добавить адрес"}
@@ -1190,7 +1190,7 @@ export default function ProfilePage() {
 
                 <Button
                   onClick={() => setShowPaymentForm(true)}
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                  className="w-full bg-brand hover:bg-brand-hover text-white"
                 >
                   Добавить способ оплаты
                 </Button>
@@ -1284,7 +1284,7 @@ export default function ProfilePage() {
                   <div className="flex space-x-4 pt-4">
                     <Button
                       onClick={editingPayment ? handleUpdatePayment : handleAddPayment}
-                      className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+                      className="flex-1 bg-brand hover:bg-brand-hover text-white"
                       disabled={
                         !newPayment.cardNumber.trim() || !newPayment.expiryDate.trim() || !newPayment.cvv.trim()
                       }
@@ -1320,7 +1320,7 @@ export default function ProfilePage() {
                       }
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                         notificationSettings.emailNotifications
-                          ? "bg-purple-100 text-purple-700"
+                          ? "bg-brand-light text-purple-700"
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
@@ -1333,7 +1333,7 @@ export default function ProfilePage() {
                       }
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                         notificationSettings.pushNotifications
-                          ? "bg-purple-100 text-purple-700"
+                          ? "bg-brand-light text-purple-700"
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
@@ -1399,8 +1399,8 @@ export default function ProfilePage() {
                               </div>
                             )}
                             {notification.products.length === 0 && (
-                              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <Bell className="w-5 h-5 text-purple-600" />
+                              <div className="w-10 h-10 bg-brand-light rounded-lg flex items-center justify-center">
+                                <Bell className="w-5 h-5 text-brand" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
