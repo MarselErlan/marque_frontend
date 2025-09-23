@@ -594,9 +594,9 @@ export default function MarquePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Banner Section */}
         <section className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[300px] md:h-[400px]">
-            {/* Left Banner */}
-            <div className="relative bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-6 overflow-hidden flex flex-col justify-between">
+          <div className="flex gap-4 h-[506px] overflow-x-auto">
+            {/* Left Banner - 712x400 */}
+            <div className="relative bg-gradient-to-br from-orange-400 to-orange-600 rounded-[24px] p-6 overflow-hidden flex flex-col justify-between flex-shrink-0" style={{width: '712px', height: '400px'}}>
               <div>
                 <div className="bg-brand text-white text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
                   Новая коллекция
@@ -617,24 +617,24 @@ export default function MarquePage() {
               </div>
             </div>
 
-            {/* Center Banner - Main Discount */}
-            <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl p-6 overflow-hidden flex items-center justify-center">
+            {/* Center Banner - Main Discount - 900x506 */}
+            <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-[24px] p-8 overflow-hidden flex items-center justify-center flex-shrink-0" style={{width: '900px', height: '506px'}}>
               <div className="text-center text-white relative z-10">
-                <div className="text-lg font-bold mb-2">до -80%</div>
-                <div className="text-5xl md:text-6xl font-black mb-0 leading-none">СКИДКИ</div>
-                <div className="text-5xl md:text-6xl font-black mb-2 leading-none">НЕДЕЛИ</div>
-                <div className="text-sm opacity-90">на все товары</div>
+                <div className="text-xl font-bold mb-3">до -80%</div>
+                <div className="text-7xl font-black mb-0 leading-none">СКИДКИ</div>
+                <div className="text-7xl font-black mb-3 leading-none">НЕДЕЛИ</div>
+                <div className="text-base opacity-90">на все товары</div>
               </div>
               {/* Abstract shapes background */}
               <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute top-4 right-8 w-20 h-20 bg-white/10 rounded-full"></div>
-                <div className="absolute bottom-8 left-6 w-16 h-16 bg-white/10 rounded-full"></div>
-                <div className="absolute top-1/2 left-4 w-12 h-12 bg-white/10 rounded-full"></div>
+                <div className="absolute top-6 right-12 w-24 h-24 bg-white/10 rounded-full"></div>
+                <div className="absolute bottom-12 left-8 w-20 h-20 bg-white/10 rounded-full"></div>
+                <div className="absolute top-1/2 left-6 w-16 h-16 bg-white/10 rounded-full"></div>
               </div>
             </div>
 
-            {/* Right Banner */}
-            <div className="relative bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-6 overflow-hidden flex flex-col justify-between">
+            {/* Right Banner - 712x400 */}
+            <div className="relative bg-gradient-to-br from-green-400 to-green-600 rounded-[24px] p-6 overflow-hidden flex flex-col justify-between flex-shrink-0" style={{width: '712px', height: '400px'}}>
               <div>
                 <div className="text-white text-2xl font-black mb-1 leading-tight">КАЧЕСТВО</div>
                 <div className="text-white text-2xl font-black mb-1 leading-tight">ЛОКАЛЬНЫХ</div>
