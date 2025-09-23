@@ -1,11 +1,20 @@
 "use client"
-import { useState } from "react"
-import { Search, Heart, ShoppingCart, User, ArrowLeft } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, Heart, ShoppingCart, User, ArrowLeft, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { useAuth } from "@/hooks/useAuth"
+import { useRouter } from "next/navigation"
 
 export default function WishlistPage() {
+  const router = useRouter()
+  const { isLoggedIn, userData } = useAuth()
+  const [cartItemCount, setCartItemCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
   // Mock wishlist state - in real app this would come from context/store
   const [wishlistItems, setWishlistItems] = useState([
     {
@@ -38,6 +47,47 @@ export default function WishlistPage() {
     },
   ])
 
+  useEffect(() => {
+    setIsClient(true)
+    const loadCartCount = () => {
+      try {
+        const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
+        const totalItems = existingCart.reduce((total: number, item: any) => total + item.quantity, 0)
+        setCartItemCount(totalItems)
+      } catch (error) {
+        console.error('Error loading cart count:', error)
+        setCartItemCount(0)
+      }
+    }
+    loadCartCount()
+  }, [])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    setShowSearchSuggestions(value.length > 0)
+  }
+
+  const handleSearchFocus = () => {
+    if (searchQuery.length > 0) {
+      setShowSearchSuggestions(true)
+    }
+  }
+
+  const handleSearchBlur = () => {
+    setTimeout(() => setShowSearchSuggestions(false), 200)
+  }
+
+  const handleHeaderLoginClick = () => {
+    if (isLoggedIn) {
+      router.push('/profile')
+    } else {
+      // Here you might want to open a login modal
+      // For now, let's just log to console
+      console.log("Login clicked")
+    }
+  }
+
   const removeFromWishlist = (productId: number) => {
     setWishlistItems((items) => items.filter((item) => item.id !== productId))
   }
@@ -48,43 +98,65 @@ export default function WishlistPage() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-black tracking-wider">MARQUE</h1>
-            </div>
-
-            {/* Navigation */}
+            {/* Left Section - Logo and Catalog */}
             <div className="flex items-center space-x-4">
-              <Button className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg">
+              <h1 className="text-2xl font-bold text-black tracking-wider">MARQUE</h1>
+              <Button
+                className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
+                onClick={() => {
+                  /* handle catalog click */
+                }}
+              >
                 <span className="mr-2">⋮⋮⋮</span>
                 Каталог
               </Button>
+            </div>
 
-              {/* Search Bar */}
-              <div className="relative">
+            {/* Center Section - Search Bar */}
+            <div className="flex-1 flex justify-center px-8">
+              <div className="relative max-w-2xl w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="text"
                   placeholder="Товар, бренд или артикул"
-                  className="pl-10 pr-4 py-2 w-80 bg-gray-100 border-0 rounded-lg"
+                  className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={handleSearchFocus}
+                  onBlur={handleSearchBlur}
                 />
+                {showSearchSuggestions && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50">
+                    {/* Search suggestions would go here */}
+                  </div>
+                )}
               </div>
+            </div>
 
-              {/* User Actions */}
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <div className="flex flex-col items-center cursor-pointer text-brand">
-                  <Heart className="w-5 h-5 mb-1 fill-current" />
-                  <span>Избранные</span>
-                </div>
-                <div className="flex flex-col items-center cursor-pointer hover:text-brand">
+            {/* Right Section - User Actions */}
+            <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <Link href="/wishlist" className="flex flex-col items-center cursor-pointer text-brand">
+                <Heart className="w-5 h-5 mb-1 fill-current" />
+                <span>Избранные</span>
+              </Link>
+              <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
+                <div className="relative">
                   <ShoppingCart className="w-5 h-5 mb-1" />
-                  <span>Корзина</span>
+                  {isClient && cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {cartItemCount > 99 ? '99+' : cartItemCount}
+                    </span>
+                  )}
                 </div>
-                <div className="flex flex-col items-center cursor-pointer hover:text-brand">
-                  <User className="w-5 h-5 mb-1" />
-                  <span>Войти</span>
-                </div>
-              </div>
+                <span>Корзина</span>
+              </Link>
+              <button
+                onClick={handleHeaderLoginClick}
+                className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
+              >
+                <User className="w-5 h-5 mb-1" />
+                <span>{isClient && isLoggedIn ? "Профиль" : "Войти"}</span>
+              </button>
             </div>
           </div>
         </div>

@@ -8,9 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { API_CONFIG } from "@/lib/config"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function CartPage() {
   const router = useRouter()
+  const { isLoggedIn, userData, handleLogin } = useAuth()
   const [cartItems, setCartItems] = useState<any[]>([])
   const [cartItemCount, setCartItemCount] = useState(0)
 
@@ -22,8 +24,7 @@ export default function CartPage() {
   const [checkoutAddress, setCheckoutAddress] = useState("")
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
   
-  // Authentication states
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  // Authentication states from useAuth hook are now used, local states can be removed.
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false)
@@ -32,7 +33,6 @@ export default function CartPage() {
   const [smsCode, setSmsCode] = useState("")
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [isVerifyingCode, setIsVerifyingCode] = useState(false)
-  const [userData, setUserData] = useState<any>(null)
 
   const deliveryDates = ["21 июл", "22 июл", "23 июл", "24 июл", "25 июл"]
   const deliveryCost = 350
@@ -56,63 +56,8 @@ export default function CartPage() {
     }
   }
 
-  // Check authentication status
-  const checkAuthStatus = () => {
-    try {
-      const authToken = localStorage.getItem('authToken')
-      const savedUserData = localStorage.getItem('userData')
-      const tokenExpiration = localStorage.getItem('tokenExpiration')
-      const isLoggedInFlag = localStorage.getItem('isLoggedIn')
-      
-      // Check if user was logged in
-      if (isLoggedInFlag === 'true' && authToken && savedUserData) {
-        // Check if token is still valid
-        if (tokenExpiration) {
-          const expirationTime = parseInt(tokenExpiration)
-          const currentTime = new Date().getTime()
-          
-          if (currentTime < expirationTime) {
-            // Token is still valid
-            setIsLoggedIn(true)
-            setUserData(JSON.parse(savedUserData))
-            console.log('User is logged in with valid token')
-          } else {
-            // Token has expired, clear auth data
-            console.log('Token expired, logging out user')
-            handleLogout()
-          }
-        } else {
-          // No expiration time found, assume valid for now
-          setIsLoggedIn(true)
-          setUserData(JSON.parse(savedUserData))
-        }
-      } else {
-        // No valid authentication found
-        setIsLoggedIn(false)
-        setUserData(null)
-      }
-    } catch (error) {
-      console.error('Error checking auth status:', error)
-      setIsLoggedIn(false)
-      setUserData(null)
-    }
-  }
-
-  // Logout function to clear all auth data
-  const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('tokenType')
-    localStorage.removeItem('sessionId')
-    localStorage.removeItem('expiresInMinutes')
-    localStorage.removeItem('market')
-    localStorage.removeItem('userData')
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('tokenExpiration')
-    
-    setIsLoggedIn(false)
-    setUserData(null)
-    console.log('User logged out successfully')
-  }
+  // checkAuthStatus and handleLogout are now handled by the useAuth hook.
+  // They can be removed from this component.
 
   // Load cart items from localStorage on component mount
   useEffect(() => {
@@ -130,7 +75,7 @@ export default function CartPage() {
     
     loadCartItems()
     loadCartCount()
-    checkAuthStatus()
+    // checkAuthStatus() is no longer needed here as useAuth handles it.
   }, [])
 
   // Save cart items to localStorage whenever cartItems changes
@@ -321,28 +266,11 @@ export default function CartPage() {
           const data = await response.json()
           console.log('SMS verification successful:', data)
           
-          // Store complete authentication data
+          // Use handleLogin from useAuth hook
           if (data.data && data.data.access_token) {
-            // Store authentication tokens and session info
-            localStorage.setItem('authToken', data.data.access_token)
-            localStorage.setItem('tokenType', data.data.token_type || 'bearer')
-            localStorage.setItem('sessionId', data.data.session_id || '')
-            localStorage.setItem('expiresInMinutes', data.data.expires_in_minutes?.toString() || '30')
-            localStorage.setItem('market', data.data.market || data.data.user?.market || 'us')
+            handleLogin(data.data.user, data.data)
             
-            // Store user data
-            localStorage.setItem('userData', JSON.stringify(data.data.user))
-            localStorage.setItem('isLoggedIn', 'true')
-            
-            // Calculate and store token expiration time
-            const expirationTime = new Date().getTime() + (data.data.expires_in_minutes || 30) * 60 * 1000
-            localStorage.setItem('tokenExpiration', expirationTime.toString())
-            
-            // Update component state
-            setUserData(data.data.user)
-            setIsLoggedIn(true)
-            
-            console.log('Authentication data stored:', {
+            console.log('Authentication data stored via useAuth hook:', {
               userId: data.data.user?.id,
               phone: data.data.user?.phone,
               market: data.data.market,

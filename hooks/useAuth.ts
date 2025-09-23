@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { API_CONFIG } from '@/lib/config'
 
@@ -21,61 +21,10 @@ export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({
     isLoggedIn: false,
     userData: null,
-    isLoading: true
+    isLoading: true,
   })
 
-  // Check authentication status
-  const checkAuthStatus = () => {
-    try {
-      const authToken = localStorage.getItem('authToken')
-      const savedUserData = localStorage.getItem('userData')
-      const tokenExpiration = localStorage.getItem('tokenExpiration')
-      const isLoggedInFlag = localStorage.getItem('isLoggedIn')
-      
-      if (isLoggedInFlag === 'true' && authToken && savedUserData) {
-        if (tokenExpiration) {
-          const expirationTime = parseInt(tokenExpiration)
-          const currentTime = new Date().getTime()
-          
-          if (currentTime < expirationTime) {
-            setAuthState({
-              isLoggedIn: true,
-              userData: JSON.parse(savedUserData),
-              isLoading: false
-            })
-            return
-          } else {
-            console.log('Token expired, logging out user')
-            handleLogout()
-            return
-          }
-        } else {
-          setAuthState({
-            isLoggedIn: true,
-            userData: JSON.parse(savedUserData),
-            isLoading: false
-          })
-          return
-        }
-      }
-      
-      setAuthState({
-        isLoggedIn: false,
-        userData: null,
-        isLoading: false
-      })
-    } catch (error) {
-      console.error('Error checking auth status:', error)
-      setAuthState({
-        isLoggedIn: false,
-        userData: null,
-        isLoading: false
-      })
-    }
-  }
-
-  // Logout function
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('authToken')
     localStorage.removeItem('tokenType')
     localStorage.removeItem('sessionId')
@@ -84,27 +33,77 @@ export const useAuth = () => {
     localStorage.removeItem('userData')
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('tokenExpiration')
-    
+
     setAuthState({
       isLoggedIn: false,
       userData: null,
-      isLoading: false
+      isLoading: false,
     })
-    
     console.log('User logged out successfully')
-  }
+  }, [])
+
+  // Check authentication status
+  const checkAuthStatus = useCallback(() => {
+    try {
+      const authToken = localStorage.getItem('authToken')
+      const savedUserData = localStorage.getItem('userData')
+      const tokenExpiration = localStorage.getItem('tokenExpiration')
+      const isLoggedInFlag = localStorage.getItem('isLoggedIn')
+
+      if (isLoggedInFlag === 'true' && authToken && savedUserData) {
+        if (tokenExpiration) {
+          const expirationTime = parseInt(tokenExpiration, 10)
+          const currentTime = new Date().getTime()
+
+          if (currentTime < expirationTime) {
+            setAuthState({
+              isLoggedIn: true,
+              userData: JSON.parse(savedUserData),
+              isLoading: false,
+            })
+          } else {
+            console.log('Token expired, logging out user')
+            handleLogout()
+          }
+        } else {
+          setAuthState({
+            isLoggedIn: true,
+            userData: JSON.parse(savedUserData),
+            isLoading: false,
+          })
+        }
+      } else {
+        setAuthState({
+          isLoggedIn: false,
+          userData: null,
+          isLoading: false,
+        })
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error)
+      setAuthState({
+        isLoggedIn: false,
+        userData: null,
+        isLoading: false,
+      })
+    }
+  }, [handleLogout])
 
   // Login function
   const handleLogin = (userData: UserData, authData: any) => {
     try {
       // Calculate token expiration (30 days from now)
-      const expirationTime = new Date().getTime() + (30 * 24 * 60 * 60 * 1000)
-      
+      const expiresInMinutes = authData.expires_in_minutes || 43200 // 30 days
+      const expirationTime = new Date().getTime() + expiresInMinutes * 60 * 1000
+
       // Store authentication data
       localStorage.setItem('authToken', authData.access_token || authData.token)
       localStorage.setItem('tokenType', authData.token_type || 'bearer')
       localStorage.setItem('sessionId', authData.session_id || '')
-      localStorage.setItem('expiresInMinutes', authData.expires_in_minutes?.toString() || '43200')
+      localStorage.setItem(
+        'expiresInMinutes',
+        expiresInMinutes.toString(),
+      )
       localStorage.setItem('market', authData.market || 'KG')
       localStorage.setItem('userData', JSON.stringify(userData))
       localStorage.setItem('isLoggedIn', 'true')
@@ -113,7 +112,7 @@ export const useAuth = () => {
       setAuthState({
         isLoggedIn: true,
         userData,
-        isLoading: false
+        isLoading: false,
       })
 
       console.log('User logged in successfully')
@@ -125,12 +124,12 @@ export const useAuth = () => {
   // Initialize auth check
   useEffect(() => {
     checkAuthStatus()
-  }, [])
+  }, [checkAuthStatus])
 
   return {
     ...authState,
     checkAuthStatus,
     handleLogout,
-    handleLogin
+    handleLogin,
   }
 }

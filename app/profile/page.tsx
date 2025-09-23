@@ -23,24 +23,47 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
+
+interface Address {
+  id: number
+  label: string
+  address: string
+  city?: string
+  region?: string
+  postalCode?: string
+}
+
+interface PaymentMethod {
+  id: number
+  type: string
+  brand: string
+  lastFour: string
+  fullNumber: string
+}
+
+interface ReviewPhoto {
+  id: number
+  file: File
+  url: string
+}
 
 export default function ProfilePage() {
   const router = useRouter()
+  const { isLoggedIn, userData, handleLogout, checkAuthStatus } = useAuth()
   const [activeTab, setActiveTab] = useState("profile")
   const [orderFilter, setOrderFilter] = useState("active")
   const [userName, setUserName] = useState("Анна Ахматова")
   const [phoneNumber, setPhoneNumber] = useState("+996 505 32 53 11")
   const [additionalPhone, setAdditionalPhone] = useState("")
   
-  // Authentication states
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userData, setUserData] = useState<any>(null)
-  const [selectedOrder, setSelectedOrder] = useState(null)
+  // Authentication states are now managed by the useAuth hook.
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState("")
-  const [reviewPhotos, setReviewPhotos] = useState([])
+  const [reviewPhotos, setReviewPhotos] = useState<ReviewPhoto[]>([])
   const [showReviewForm, setShowReviewForm] = useState(false)
-  const [addresses, setAddresses] = useState([
+  const [addresses, setAddresses] = useState<Address[]>([
     {
       id: 1,
       label: "Адрес",
@@ -53,7 +76,7 @@ export default function ProfilePage() {
     },
   ])
   const [showAddressForm, setShowAddressForm] = useState(false)
-  const [editingAddress, setEditingAddress] = useState(null)
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [newAddress, setNewAddress] = useState({
     label: "",
     address: "",
@@ -62,7 +85,7 @@ export default function ProfilePage() {
     postalCode: "",
   })
 
-  const [paymentMethods, setPaymentMethods] = useState([
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     {
       id: 1,
       type: "Банковская карта",
@@ -79,7 +102,7 @@ export default function ProfilePage() {
     },
   ])
   const [showPaymentForm, setShowPaymentForm] = useState(false)
-  const [editingPayment, setEditingPayment] = useState(null)
+  const [editingPayment, setEditingPayment] = useState<PaymentMethod | null>(null)
   const [newPayment, setNewPayment] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -139,76 +162,18 @@ export default function ProfilePage() {
     },
   ]
 
-  // Check authentication status
-  const checkAuthStatus = () => {
-    try {
-      const authToken = localStorage.getItem('authToken')
-      const savedUserData = localStorage.getItem('userData')
-      const tokenExpiration = localStorage.getItem('tokenExpiration')
-      const isLoggedInFlag = localStorage.getItem('isLoggedIn')
-      
-      // Check if user was logged in
-      if (isLoggedInFlag === 'true' && authToken && savedUserData) {
-        // Check if token is still valid
-        if (tokenExpiration) {
-          const expirationTime = parseInt(tokenExpiration)
-          const currentTime = new Date().getTime()
-          
-          if (currentTime < expirationTime) {
-            // Token is still valid
-            setIsLoggedIn(true)
-            const userData = JSON.parse(savedUserData)
-            setUserData(userData)
-            setUserName(userData.full_name || userData.name || "Анна Ахматова")
-            setPhoneNumber(userData.phone || "+996 505 32 53 11")
-            console.log('User is logged in with valid token')
-          } else {
-            // Token has expired, redirect to home
-            console.log('Token expired, redirecting to home')
-            handleLogout()
-          }
-        } else {
-          // No expiration time found, assume valid for now
-          setIsLoggedIn(true)
-          const userData = JSON.parse(savedUserData)
-          setUserData(userData)
-          setUserName(userData.full_name || userData.name || "Анна Ахматова")
-          setPhoneNumber(userData.phone || "+996 505 32 53 11")
-        }
-      } else {
-        // No valid authentication found, redirect to home
-        console.log('No authentication found, redirecting to home')
-        router.push('/')
-      }
-    } catch (error) {
-      console.error('Error checking auth status:', error)
-      router.push('/')
-    }
-  }
-
-  // Logout function to clear all auth data
-  const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('tokenType')
-    localStorage.removeItem('sessionId')
-    localStorage.removeItem('expiresInMinutes')
-    localStorage.removeItem('market')
-    localStorage.removeItem('userData')
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('tokenExpiration')
-    
-    setIsLoggedIn(false)
-    setUserData(null)
-    console.log('User logged out successfully')
-    
-    // Redirect to home page
-    router.push('/')
-  }
+  // checkAuthStatus and handleLogout are now handled by the useAuth hook.
 
   // Check auth status on component mount
   useEffect(() => {
-    checkAuthStatus()
-  }, [])
+    // If loading is finished and user is not logged in, redirect
+    if (!isLoggedIn) {
+      router.push('/')
+    } else if (userData) {
+      setUserName(userData.full_name || userData.name || "Анна Ахматова")
+      setPhoneNumber(userData.phone || "+996 505 32 53 11")
+    }
+  }, [isLoggedIn, userData, router])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
@@ -424,7 +389,7 @@ export default function ProfilePage() {
 
   const handleAddAddress = () => {
     if (newAddress.address.trim()) {
-      const address = {
+      const address: Address = {
         id: Date.now(),
         label: newAddress.label || "Адрес",
         address: newAddress.address,
@@ -438,7 +403,7 @@ export default function ProfilePage() {
     }
   }
 
-  const handleEditAddress = (address) => {
+  const handleEditAddress = (address: Address) => {
     setEditingAddress(address)
     setNewAddress({
       label: address.label,
@@ -451,7 +416,7 @@ export default function ProfilePage() {
   }
 
   const handleUpdateAddress = () => {
-    if (newAddress.address.trim()) {
+    if (newAddress.address.trim() && editingAddress) {
       setAddresses(
         addresses.map((addr) =>
           addr.id === editingAddress.id
@@ -472,13 +437,13 @@ export default function ProfilePage() {
     }
   }
 
-  const handleDeleteAddress = (addressId) => {
+  const handleDeleteAddress = (addressId: number) => {
     setAddresses(addresses.filter((addr) => addr.id !== addressId))
   }
 
-  const handlePhotoUpload = (e) => {
-    const files = Array.from(e.target.files)
-    const newPhotos = files.map((file) => ({
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : []
+    const newPhotos: ReviewPhoto[] = files.map((file) => ({
       id: Date.now() + Math.random(),
       file,
       url: URL.createObjectURL(file),
@@ -486,7 +451,7 @@ export default function ProfilePage() {
     setReviewPhotos((prev) => [...prev, ...newPhotos])
   }
 
-  const removePhoto = (photoId) => {
+  const removePhoto = (photoId: number) => {
     setReviewPhotos((prev) => prev.filter((photo) => photo.id !== photoId))
   }
 
@@ -512,7 +477,7 @@ export default function ProfilePage() {
       const lastFour = newPayment.cardNumber.slice(-4)
       const brand = newPayment.cardNumber.startsWith("4") ? "Visa" : "Mastercard"
 
-      const payment = {
+      const payment: PaymentMethod = {
         id: Date.now(),
         type: "Банковская карта",
         brand,
@@ -525,7 +490,7 @@ export default function ProfilePage() {
     }
   }
 
-  const handleEditPayment = (payment) => {
+  const handleEditPayment = (payment: PaymentMethod) => {
     setEditingPayment(payment)
     setNewPayment({
       cardNumber: `****${payment.lastFour}`,
@@ -537,7 +502,7 @@ export default function ProfilePage() {
   }
 
   const handleUpdatePayment = () => {
-    if (newPayment.cardNumber.trim() && newPayment.expiryDate.trim() && newPayment.cvv.trim()) {
+    if (newPayment.cardNumber.trim() && newPayment.expiryDate.trim() && newPayment.cvv.trim() && editingPayment) {
       const lastFour = newPayment.cardNumber.slice(-4)
       const brand = newPayment.cardNumber.startsWith("4") ? "Visa" : "Mastercard"
 
@@ -559,7 +524,7 @@ export default function ProfilePage() {
     }
   }
 
-  const handleDeletePayment = (paymentId) => {
+  const handleDeletePayment = (paymentId: number) => {
     setPaymentMethods(paymentMethods.filter((payment) => payment.id !== paymentId))
   }
 

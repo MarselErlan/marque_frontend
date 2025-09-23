@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { API_CONFIG } from "@/lib/config"
+import { getProductsBySales } from "@/lib/products"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -557,10 +558,9 @@ export default function MarquePage() {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 100))
       
-      // SIMULATION: Get images from product database
-      // In real implementation, this would fetch from your actual database
-      // The database can return ANY AMOUNT of images - 5, 10, 50, 100+
-      const availableImages = allProducts.map(product => ({
+      // SIMULATION: Get images from centralized product dataset
+      // Use shared lib products to avoid broken image paths
+      const availableImages = getProductsBySales().map(product => ({
         id: product.id,
         src: product.image,
         alt: product.name,
@@ -585,44 +585,44 @@ export default function MarquePage() {
   const allProducts = [
     // Best-selling products first
     { id: 1, name: "Футболка спорт. из хлопка", brand: "MARQUE", price: 2999, originalPrice: 3999, discount: true, image: "/images/black-tshirt.jpg", category: "men", sizes: "25", salesCount: 1247 },
-    { id: 5, name: "Кроссовки беговые", brand: "SPORT", price: 8999, originalPrice: null, discount: false, image: "/images/sneakers.jpg", category: "men", sizes: "40-45", salesCount: 985 },
-    { id: 2, name: "Джинсы slim fit", brand: "DENIM", price: 5999, originalPrice: 7999, discount: true, image: "/images/jeans.jpg", category: "men", sizes: "30-36", salesCount: 876 },
-    { id: 6, name: "Платье летнее", brand: "BLOOM", price: 4599, originalPrice: 6599, discount: true, image: "/images/dress.jpg", category: "women", sizes: "XS-L", salesCount: 743 },
-    { id: 22, name: "Часы наручные", brand: "TIME", price: 8999, originalPrice: null, discount: false, image: "/images/watch.jpg", category: "accessories", sizes: "One", salesCount: 692 },
-    { id: 3, name: "Худи oversized", brand: "STREET", price: 4999, originalPrice: null, discount: false, image: "/images/hoodie.jpg", category: "men", sizes: "S-XL", salesCount: 634 },
-    { id: 16, name: "Леггинсы спортивные", brand: "FIT", price: 3599, originalPrice: null, discount: false, image: "/images/sport-leggings.jpg", category: "sport", sizes: "XS-L", salesCount: 587 },
-    { id: 9, name: "Джинсы высокая посадка", brand: "DENIM", price: 5499, originalPrice: null, discount: false, image: "/images/high-waist-jeans.jpg", category: "women", sizes: "26-32", salesCount: 521 },
-    { id: 21, name: "Рюкзак городской", brand: "URBAN", price: 4999, originalPrice: 6999, discount: true, image: "/images/backpack.jpg", category: "accessories", sizes: "One", salesCount: 478 },
-    { id: 7, name: "Блузка шифоновая", brand: "ELEGANT", price: 3299, originalPrice: null, discount: false, image: "/images/blouse.jpg", category: "women", sizes: "36-42", salesCount: 456 },
-    { id: 20, name: "Кроссовки для зала", brand: "GYM", price: 7999, originalPrice: null, discount: false, image: "/images/gym-shoes.jpg", category: "sport", sizes: "36-45", salesCount: 423 },
-    { id: 4, name: "Рубашка классическая", brand: "CLASSIC", price: 3499, originalPrice: 4499, discount: true, image: "/images/shirt.jpg", category: "men", sizes: "38-44", salesCount: 389 },
-    { id: 10, name: "Кардиган вязаный", brand: "COZY", price: 4299, originalPrice: 5299, discount: true, image: "/images/cardigan.jpg", category: "women", sizes: "S-XL", salesCount: 342 },
-    { id: 17, name: "Топ для фитнеса", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/images/sport-top.jpg", category: "sport", sizes: "S-L", salesCount: 298 },
-    { id: 24, name: "Сумка женская", brand: "FASHION", price: 5599, originalPrice: null, discount: false, image: "/images/handbag.jpg", category: "accessories", sizes: "One", salesCount: 267 },
-    { id: 11, name: "Футболка детская", brand: "KIDS", price: 1999, originalPrice: 2499, discount: true, image: "/images/kids-tshirt.jpg", category: "kids", sizes: "4-12", salesCount: 234 },
-    { id: 19, name: "Толстовка спортивная", brand: "SPORT", price: 4599, originalPrice: 5599, discount: true, image: "/images/sport-hoodie.jpg", category: "sport", sizes: "S-XXL", salesCount: 212 },
-    { id: 8, name: "Юбка мини", brand: "YOUNG", price: 2799, originalPrice: 3799, discount: true, image: "/images/skirt.jpg", category: "women", sizes: "S-L", salesCount: 187 },
-    { id: 14, name: "Кроссовки детские", brand: "SPORT", price: 4999, originalPrice: null, discount: false, image: "/images/kids-sneakers.jpg", category: "kids", sizes: "28-35", salesCount: 156 },
-    { id: 23, name: "Кепка бейсболка", brand: "STREET", price: 1999, originalPrice: 2499, discount: true, image: "/images/cap.jpg", category: "accessories", sizes: "One", salesCount: 143 },
-    { id: 18, name: "Шорты беговые", brand: "RUN", price: 2599, originalPrice: null, discount: false, image: "/images/running-shorts.jpg", category: "sport", sizes: "S-XL", salesCount: 132 },
-    { id: 12, name: "Платье для девочки", brand: "PRINCESS", price: 3299, originalPrice: null, discount: false, image: "/images/girls-dress.jpg", category: "kids", sizes: "4-10", salesCount: 119 },
-    { id: 25, name: "Ремень кожаный", brand: "LEATHER", price: 3299, originalPrice: 4299, discount: true, image: "/images/belt.jpg", category: "accessories", sizes: "90-110", salesCount: 98 },
-    { id: 15, name: "Куртка демисезон", brand: "WARM", price: 6999, originalPrice: 8999, discount: true, image: "/images/kids-jacket.jpg", category: "kids", sizes: "4-12", salesCount: 87 },
-    { id: 13, name: "Шорты для мальчика", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/images/boys-shorts.jpg", category: "kids", sizes: "4-12", salesCount: 76 },
-  ]
+    { id: 5, name: "Кроссовки беговые", brand: "SPORT", price: 8999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "men", sizes: "40-45", salesCount: 985 },
+    { id: 2, name: "Джинсы slim fit", brand: "DENIM", price: 5999, originalPrice: 7999, discount: true, image: "/images/black-tshirt.jpg", category: "men", sizes: "30-36", salesCount: 876 },
+    { id: 6, name: "Платье летнее", brand: "BLOOM", price: 4599, originalPrice: 6599, discount: true, image: "/images/black-tshirt.jpg", category: "women", sizes: "XS-L", salesCount: 743 },
+    { id: 22, name: "Часы наручные", brand: "TIME", price: 8999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 692 },
+    { id: 3, name: "Худи oversized", brand: "STREET", price: 4999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "men", sizes: "S-XL", salesCount: 634 },
+    { id: 16, name: "Леггинсы спортивные", brand: "FIT", price: 3599, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "sport", sizes: "XS-L", salesCount: 587 },
+    { id: 9, name: "Джинсы высокая посадка", brand: "DENIM", price: 5499, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "women", sizes: "26-32", salesCount: 521 },
+    { id: 21, name: "Рюкзак городской", brand: "URBAN", price: 4999, originalPrice: 6999, discount: true, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 478 },
+    { id: 7, name: "Блузка шифоновая", brand: "ELEGANT", price: 3299, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "women", sizes: "36-42", salesCount: 456 },
+    { id: 20, name: "Кроссовки для зала", brand: "GYM", price: 7999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "sport", sizes: "36-45", salesCount: 423 },
+    { id: 4, name: "Рубашка классическая", brand: "CLASSIC", price: 3499, originalPrice: 4499, discount: true, image: "/images/black-tshirt.jpg", category: "men", sizes: "38-44", salesCount: 389 },
+    { id: 10, name: "Кардиган вязаный", brand: "COZY", price: 4299, originalPrice: 5299, discount: true, image: "/images/black-tshirt.jpg", category: "women", sizes: "S-XL", salesCount: 342 },
+    { id: 17, name: "Топ для фитнеса", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/images/black-tshirt.jpg", category: "sport", sizes: "S-L", salesCount: 298 },
+    { id: 24, name: "Сумка женская", brand: "FASHION", price: 5599, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 267 },
+    { id: 11, name: "Футболка детская", brand: "KIDS", price: 1999, originalPrice: 2499, discount: true, image: "/images/black-tshirt.jpg", category: "kids", sizes: "4-12", salesCount: 234 },
+    { id: 19, name: "Толстовка спортивная", brand: "SPORT", price: 4599, originalPrice: 5599, discount: true, image: "/images/black-tshirt.jpg", category: "sport", sizes: "S-XXL", salesCount: 212 },
+    { id: 8, name: "Юбка мини", brand: "YOUNG", price: 2799, originalPrice: 3799, discount: true, image: "/images/black-tshirt.jpg", category: "women", sizes: "S-L", salesCount: 187 },
+    { id: 14, name: "Кроссовки детские", brand: "SPORT", price: 4999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "kids", sizes: "28-35", salesCount: 156 },
+    { id: 23, name: "Кепка бейсболка", brand: "STREET", price: 1999, originalPrice: 2499, discount: true, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 143 },
+    { id: 18, name: "Шорты беговые", brand: "RUN", price: 2599, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "sport", sizes: "S-XL", salesCount: 132 },
+    { id: 12, name: "Платье для девочки", brand: "PRINCESS", price: 3299, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "kids", sizes: "4-10", salesCount: 119 },
+    { id: 25, name: "Ремень кожаный", brand: "LEATHER", price: 3299, originalPrice: 4299, discount: true, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "90-110", salesCount: 98 },
+    { id: 15, name: "Куртка демисезон", brand: "WARM", price: 6999, originalPrice: 8999, discount: true, image: "/images/black-tshirt.jpg", category: "kids", sizes: "4-12", salesCount: 87 },
+      { id: 13, name: "Шорты для мальчика", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/black-t-shirt.png", category: "kids", sizes: "4-12", salesCount: 76 },
+    ]
 
-  // Function to get products ordered by sales (best-selling first)
-  const getProductsBySales = (count: number = 25) => {
-    // Products are already sorted by salesCount in descending order
-    const products = []
+  // Use the optimized function from lib/products
+  const getProductsBySalesLocal = (count: number = 25) => {
+    const products = getProductsBySales()
+    const result = []
     for (let i = 0; i < count; i++) {
-      const product = allProducts[i % allProducts.length]
-      products.push({
+      const product = products[i % products.length]
+      result.push({
         ...product,
         id: `${product.id}-${Date.now()}-${i}`, // Unique ID for each instance
       })
     }
-    return products
+    return result
   }
 
   // Load carousel images from database on component mount
@@ -670,7 +670,7 @@ export default function MarquePage() {
   // Infinite scroll effect
   useEffect(() => {
     // Initial load - products ordered by sales
-    setRandomProducts(getProductsBySales(25))
+    setRandomProducts(getProductsBySalesLocal(25))
 
     const handleScroll = () => {
       if (isLoadingMore) return
@@ -685,7 +685,7 @@ export default function MarquePage() {
         
         // Simulate loading delay
         setTimeout(() => {
-          setRandomProducts(prev => [...prev, ...getProductsBySales(15)])
+          setRandomProducts(prev => [...prev, ...getProductsBySalesLocal(15)])
           setIsLoadingMore(false)
         }, 500)
       }
@@ -927,11 +927,11 @@ export default function MarquePage() {
                 </div>
                   <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                     <img
-                      src={product.image}
-                    alt={product.name}
+                      src="/images/black-tshirt.jpg"
+                      alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    </div>
+                  </div>
                 </div>
                 
                 {/* Product Info */}
