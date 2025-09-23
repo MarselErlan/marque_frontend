@@ -33,6 +33,8 @@ export default function MarquePage() {
   const [userData, setUserData] = useState<any>(null)
   const [randomProducts, setRandomProducts] = useState<any[]>([])
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const [bannerRotationIndex, setBannerRotationIndex] = useState(0)
   // This comment is added to force a Railway redeployment.
 
   const searchSuggestions = [
@@ -502,6 +504,118 @@ export default function MarquePage() {
     },
   ]
 
+  // Hero banners for rotation (design dimensions)
+  const heroBanners = [
+    {
+      id: 'collection',
+      type: 'collection',
+      width: '712px',
+      height: '400px',
+      gradient: 'from-orange-400 to-orange-600',
+      content: (
+        <>
+          <div>
+            <div className="bg-brand text-white text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
+              Новая коллекция
+            </div>
+            <div className="text-white text-xl font-bold">Осень-Зима</div>
+          </div>
+          <div className="text-white/90 text-sm">от 1999 сом</div>
+          <div className="absolute right-4 top-4 w-32 h-48 opacity-20">
+            <img 
+              src="/images/coat.jpg" 
+              alt="Coat" 
+              className="w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'discount',
+      type: 'discount',
+      width: '900px',
+      height: '506px',
+      gradient: 'from-purple-500 via-pink-500 to-orange-500',
+      content: (
+        <>
+          <div className="relative z-10 mb-4">
+            <div className="text-lg font-bold mb-2 text-white">до -80%</div>
+            <div className="text-5xl font-black mb-0 leading-none text-white">СКИДКИ</div>
+            <div className="text-5xl font-black mb-3 leading-none text-white">НЕДЕЛИ</div>
+          </div>
+          <div className="text-sm opacity-90 text-white relative z-10 mt-6">на все товары</div>
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-6 right-12 w-24 h-24 bg-white/10 rounded-full animate-bounce"></div>
+            <div className="absolute bottom-12 left-8 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
+            <div className="absolute top-1/2 left-6 w-16 h-16 bg-white/10 rounded-full animate-ping"></div>
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'quality',
+      type: 'quality',
+      width: '712px',
+      height: '400px',
+      gradient: 'from-green-400 to-green-600',
+      content: (
+        <>
+          <div>
+            <div className="text-white text-2xl font-black mb-1 leading-tight">КАЧЕСТВО</div>
+            <div className="text-white text-2xl font-black mb-1 leading-tight">ЛОКАЛЬНЫХ</div>
+            <div className="text-white text-2xl font-black mb-4 leading-tight">БРЕНДОВ</div>
+          </div>
+          <div>
+            <div className="text-white text-lg font-bold mb-1">на Wildberries</div>
+            <div className="text-white text-sm opacity-80">при поддержке</div>
+            <div className="mt-2 flex items-center">
+              <div className="bg-white/20 px-2 py-1 rounded text-xs text-white font-medium">ПЛАТФОРМЫ РОСТА</div>
+            </div>
+          </div>
+        </>
+      )
+    }
+  ]
+
+  // Dynamic carousel images from database (can be any amount)
+  const [carouselImages, setCarouselImages] = useState<any[]>([])
+
+  // Fetch carousel images from database (dynamic amount)
+  const fetchCarouselImagesFromDB = async () => {
+    // TODO: Replace with actual API call to your database
+    // Example: const response = await fetch('/api/carousel-images')
+    // Example: return await response.json()
+    
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // SIMULATION: Get images from product database
+      // In real implementation, this would fetch from your actual database
+      // The database can return ANY AMOUNT of images - 5, 10, 50, 100+
+      const availableImages = allProducts.map(product => ({
+        id: product.id,
+        src: product.image,
+        alt: product.name,
+        category: product.category,
+        brand: product.brand,
+        // Add any other database fields like price, rating, etc.
+      }))
+      
+      // Shuffle and return ALL available images from database
+      // The carousel will cycle through ALL of them, regardless of count
+      const shuffledImages = [...availableImages].sort(() => Math.random() - 0.5)
+      
+      console.log(`✅ Loaded ${shuffledImages.length} images from database for carousel`)
+      return shuffledImages // Dynamic amount based on database content
+    } catch (error) {
+      console.error('❌ Error fetching carousel images:', error)
+      return []
+    }
+  }
+
   // Comprehensive product database for random generation
   const allProducts = [
     // Men's Category
@@ -554,6 +668,35 @@ export default function MarquePage() {
     return products
   }
 
+  // Load carousel images from database on component mount
+  useEffect(() => {
+    const loadCarouselImages = async () => {
+      const images = await fetchCarouselImagesFromDB()
+      setCarouselImages(images)
+    }
+    
+    loadCarouselImages()
+  }, [])
+
+  // Banner rotation effect - every 15 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerRotationIndex(prev => (prev + 1) % heroBanners.length)
+    }, 15000) // Rotate every 15 seconds
+
+    return () => clearInterval(interval)
+  }, [heroBanners.length])
+
+  // Get current 3 banners in rotation order (right → center → left → right)
+  const getCurrentBanners = () => {
+    const banners = []
+    for (let i = 0; i < 3; i++) {
+      const index = (bannerRotationIndex + i) % heroBanners.length
+      banners.push(heroBanners[index])
+    }
+    return banners
+  }
+
   // Infinite scroll effect
   useEffect(() => {
     // Initial load
@@ -581,6 +724,21 @@ export default function MarquePage() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isLoadingMore])
+
+  // Get current 3 images for carousel display (from any amount available in DB)
+  const getCurrentCarouselImages = () => {
+    if (carouselImages.length === 0) return [] // No images loaded yet
+    
+    const images = []
+    const totalImages = carouselImages.length
+    
+    // Always show 3 images, but cycle through all available from database
+    for (let i = 0; i < 3; i++) {
+      const index = (carouselIndex + i) % totalImages
+      images.push(carouselImages[index])
+    }
+    return images
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -672,71 +830,104 @@ export default function MarquePage() {
       </header>
 
       {/* Main Content */}
-      <main className="w-full flex justify-center relative" style={{minHeight: '2000px'}}>
-        <div style={{width: '1680px', paddingLeft: '160px', paddingRight: '160px', paddingTop: '32px', paddingBottom: '32px', position: 'relative'}}>
-        {/* Hero Banner Section */}
-        <section className="mb-8">
-          <div className="flex gap-4 h-[506px] overflow-x-auto">
-            {/* Left Banner - 712x400 */}
-            <div className="relative bg-gradient-to-br from-orange-400 to-orange-600 rounded-[24px] p-6 overflow-hidden flex flex-col justify-between flex-shrink-0" style={{width: '712px', height: '400px'}}>
-              <div>
-                <div className="bg-brand text-white text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
-                  Новая коллекция
-                </div>
-                <div className="text-white text-xl font-bold">Осень-Зима</div>
-              </div>
-              <div className="text-white/90 text-sm">
-                от 1999 сом
-              </div>
-              {/* Coat image placeholder */}
-              <div className="absolute right-4 top-4 w-32 h-48 opacity-20">
-                <img 
-                  src="/images/coat.jpg" 
-                  alt="Coat" 
+      <main className="w-full relative" style={{minHeight: '2000px'}}>
+        {/* Picture Carousel - Full Page Width */}
+        <section className="w-full mb-8">
+          <div className="flex items-center justify-center h-[506px] relative overflow-hidden w-full">
+            {getCurrentBanners().map((banner, index) => (
+              <div
+                key={`${banner.id}-${bannerRotationIndex}-${index}`}
+                 className={`absolute rounded-[24px] overflow-hidden transition-all duration-1000 ease-in-out transform ${
+                   index === 1 
+                     ? 'z-20 scale-100 opacity-100' // Center - large and prominent
+                     : index === 0 
+                       ? 'z-10 scale-100 opacity-70' // Left - full size at left edge
+                       : 'z-10 scale-100 opacity-70' // Right - full size at right edge
+                 }`}
+                style={{
+                  width: index === 1 ? '900px' : '712px', // Center 900px, sides 712px
+                  height: index === 1 ? '506px' : '400px', // Center 506px, sides 400px
+                  left: index === 1 ? '50%' : 
+                        index === 0 ? '-356px' : // Left: half of 712px off screen
+                        'calc(100vw - 356px)', // Right: half of 712px off screen from right
+                  transform: index === 1 ? 'translateX(-50%)' : 
+                           index === 0 ? 'translateX(0)' : 
+                           'translateX(0)'
+                }}
+              >
+                {/* Pure image/content without text overlay for focus on pictures */}
+                <div className={`w-full h-full bg-gradient-to-br ${banner.gradient} rounded-[24px] relative overflow-hidden`}>
+                  {banner.type === 'collection' && (
+                    <div className="absolute inset-0">
+                      <img 
+                        src="/images/coat.jpg" 
+                        alt="Collection" 
                     className="w-full h-full object-cover"
-                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
                   />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                      <div className="absolute bottom-6 left-6 text-white">
+                        <div className="text-2xl font-bold">Новая коллекция</div>
+                        <div className="text-lg opacity-90">Осень-Зима</div>
                 </div>
           </div>
-
-            {/* Center Banner - Main Discount - 900x506 */}
-            <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-[24px] p-8 overflow-hidden flex items-center justify-center flex-shrink-0" style={{width: '900px', height: '506px'}}>
-              <div className="text-center text-white relative z-10">
-                <div className="text-xl font-bold mb-3">до -80%</div>
-                <div className="text-7xl font-black mb-0 leading-none">СКИДКИ</div>
-                <div className="text-7xl font-black mb-3 leading-none">НЕДЕЛИ</div>
-                <div className="text-base opacity-90">на все товары</div>
+                  )}
+                  
+                  {banner.type === 'discount' && (
+                    <div className="flex items-center justify-center h-full relative">
+                      <div className="text-center text-white z-10">
+                        <div className="text-6xl font-black mb-2 leading-none">СКИДКИ</div>
+                        <div className="text-6xl font-black mb-4 leading-none">НЕДЕЛИ</div>
+                        <div className="text-2xl font-bold">до -80%</div>
           </div>
-              {/* Abstract shapes background */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute top-6 right-12 w-24 h-24 bg-white/10 rounded-full"></div>
-                <div className="absolute bottom-12 left-8 w-20 h-20 bg-white/10 rounded-full"></div>
-                <div className="absolute top-1/2 left-6 w-16 h-16 bg-white/10 rounded-full"></div>
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className="absolute top-12 right-12 w-24 h-24 bg-white/10 rounded-full animate-bounce"></div>
+                        <div className="absolute bottom-12 left-12 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
+                        <div className="absolute top-1/2 left-12 w-16 h-16 bg-white/10 rounded-full animate-ping"></div>
                 </div>
             </div>
-
-            {/* Right Banner - 712x400 */}
-            <div className="relative bg-gradient-to-br from-green-400 to-green-600 rounded-[24px] p-6 overflow-hidden flex flex-col justify-between flex-shrink-0" style={{width: '712px', height: '400px'}}>
-              <div>
-                <div className="text-white text-2xl font-black mb-1 leading-tight">КАЧЕСТВО</div>
-                <div className="text-white text-2xl font-black mb-1 leading-tight">ЛОКАЛЬНЫХ</div>
-                <div className="text-white text-2xl font-black mb-4 leading-tight">БРЕНДОВ</div>
+                  )}
+                  
+                  {banner.type === 'quality' && (
+                    <div className="absolute inset-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-400/80 to-green-600/80"></div>
+                      <div className="absolute top-6 left-6 text-white">
+                        <div className="text-3xl font-black mb-1">КАЧЕСТВО</div>
+                        <div className="text-3xl font-black mb-1">ЛОКАЛЬНЫХ</div>
+                        <div className="text-3xl font-black">БРЕНДОВ</div>
                 </div>
-              <div>
-                <div className="text-white text-lg font-bold mb-1">на Wildberries</div>
-                <div className="text-white text-sm opacity-80">при поддержке</div>
-                <div className="mt-2 flex items-center">
-                  <div className="bg-white/20 px-2 py-1 rounded text-xs text-white font-medium">
-                    ПЛАТФОРМЫ РОСТА
+                      <div className="absolute bottom-6 left-6 text-white">
+                        <div className="text-xl font-bold">на Wildberries</div>
+                        <div className="bg-white/20 px-3 py-1 rounded-lg text-sm font-medium mt-2 inline-block">
+                          ПЛАТФОРМЫ РОСТА
             </div>
           </div>
           </div>
+                  )}
                 </div>
+                </div>
+            ))}
+            
+            {/* Navigation indicators */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
+              {heroBanners.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === bannerRotationIndex % heroBanners.length
+                      ? 'bg-white' 
+                      : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Products Grid */}
-        <section className="mb-12" style={{position: 'absolute', top: '722px', left: '160px'}}>
+        {/* Content Container */}
+        <div style={{width: '1680px', paddingLeft: '160px', paddingRight: '160px', margin: '0 auto', position: 'relative'}}>
+          {/* Products Grid */}
+          <section className="mb-12" style={{position: 'absolute', top: '100px', left: '160px'}}>
           <div className="grid grid-cols-5" style={{width: '1360px', minHeight: '1156px', gap: '24px'}}>
             {randomProducts.map((product, i) => (
               <Link
@@ -749,18 +940,18 @@ export default function MarquePage() {
                   {product.discount && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
                       %
-                    </div>
+                </div>
                   )}
                   <div className="absolute top-2 right-2 z-10">
                     <Heart className="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" />
-                  </div>
+                </div>
                   <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                     <img
                       src={product.image}
-                      alt={product.name}
+                    alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                  </div>
+                    </div>
                 </div>
                 
                 {/* Product Info */}
