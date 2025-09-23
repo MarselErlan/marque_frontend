@@ -67,7 +67,7 @@ export default function MarquePage() {
             setIsLoggedIn(true)
             setUserData(JSON.parse(savedUserData))
             console.log('User is logged in with valid token')
-          } else {
+    } else {
             // Token has expired, clear auth data
             console.log('Token expired, logging out user')
             handleLogout()
@@ -171,8 +171,8 @@ export default function MarquePage() {
       if (response.ok) {
         const data = await response.json()
         console.log('SMS sent successfully:', data)
-        setIsPhoneModalOpen(false)
-        setIsSmsModalOpen(true)
+    setIsPhoneModalOpen(false)
+    setIsSmsModalOpen(true)
       } else {
         const errorData = await response.json()
         console.error('Failed to send SMS:', errorData)
@@ -229,7 +229,7 @@ export default function MarquePage() {
             
             // Update component state
             setUserData(data.data.user)
-            setIsLoggedIn(true)
+      setIsLoggedIn(true)
             
             console.log('Authentication data stored:', {
               userId: data.data.user?.id,
@@ -241,7 +241,7 @@ export default function MarquePage() {
           }
           
           setIsSmsModalOpen(false)
-          setSmsCode("")
+      setSmsCode("")
           setPhoneNumber("")
           setCountryCode("+996")
           console.log("User logged in successfully with phone:", `${countryCode} ${phoneNumber}`)
@@ -394,7 +394,7 @@ export default function MarquePage() {
                   </Link>
                   <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                     <div className="relative">
-                      <ShoppingCart className="w-5 h-5 mb-1" />
+                    <ShoppingCart className="w-5 h-5 mb-1" />
                       {cartItemCount > 0 && (
                         <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                           {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -504,16 +504,16 @@ export default function MarquePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <header className="bg-white border-b border-gray-200 w-full flex justify-center">
+        <div style={{width: '1680px', height: '96px', paddingTop: '24px', paddingRight: '160px', paddingBottom: '24px', paddingLeft: '160px'}}>
+          <div className="flex items-center justify-between h-12" style={{gap: '40px'}}>
             {/* Logo */}
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-black tracking-wider">MARQUE</h1>
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center" style={{gap: '40px'}}>
               <Button
                 className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
                 onClick={handleCatalogClick}
@@ -561,14 +561,14 @@ export default function MarquePage() {
               </div>
 
               {/* User Actions */}
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <div className="flex items-center text-sm text-gray-600" style={{gap: '40px'}}>
                 <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
                   <Heart className="w-5 h-5 mb-1" />
                   <span>Избранные</span>
                 </Link>
                 <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                   <div className="relative">
-                    <ShoppingCart className="w-5 h-5 mb-1" />
+                  <ShoppingCart className="w-5 h-5 mb-1" />
                     {cartItemCount > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                         {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -591,7 +591,8 @@ export default function MarquePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full flex justify-center">
+        <div style={{width: '1680px', paddingLeft: '160px', paddingRight: '160px', paddingTop: '32px', paddingBottom: '32px'}}>
         {/* Hero Banner Section */}
         <section className="mb-8">
           <div className="flex gap-4 h-[506px] overflow-x-auto">
@@ -611,11 +612,11 @@ export default function MarquePage() {
                 <img 
                   src="/images/coat.jpg" 
                   alt="Coat" 
-                  className="w-full h-full object-cover"
+                    className="w-full h-full object-cover"
                   onError={(e) => { e.currentTarget.style.display = 'none' }}
-                />
-              </div>
-            </div>
+                  />
+                </div>
+          </div>
 
             {/* Center Banner - Main Discount - 900x506 */}
             <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-[24px] p-8 overflow-hidden flex items-center justify-center flex-shrink-0" style={{width: '900px', height: '506px'}}>
@@ -624,13 +625,13 @@ export default function MarquePage() {
                 <div className="text-7xl font-black mb-0 leading-none">СКИДКИ</div>
                 <div className="text-7xl font-black mb-3 leading-none">НЕДЕЛИ</div>
                 <div className="text-base opacity-90">на все товары</div>
-              </div>
+          </div>
               {/* Abstract shapes background */}
               <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-6 right-12 w-24 h-24 bg-white/10 rounded-full"></div>
                 <div className="absolute bottom-12 left-8 w-20 h-20 bg-white/10 rounded-full"></div>
                 <div className="absolute top-1/2 left-6 w-16 h-16 bg-white/10 rounded-full"></div>
-              </div>
+                </div>
             </div>
 
             {/* Right Banner - 712x400 */}
@@ -639,17 +640,17 @@ export default function MarquePage() {
                 <div className="text-white text-2xl font-black mb-1 leading-tight">КАЧЕСТВО</div>
                 <div className="text-white text-2xl font-black mb-1 leading-tight">ЛОКАЛЬНЫХ</div>
                 <div className="text-white text-2xl font-black mb-4 leading-tight">БРЕНДОВ</div>
-              </div>
+                </div>
               <div>
                 <div className="text-white text-lg font-bold mb-1">на Wildberries</div>
                 <div className="text-white text-sm opacity-80">при поддержке</div>
                 <div className="mt-2 flex items-center">
                   <div className="bg-white/20 px-2 py-1 rounded text-xs text-white font-medium">
                     ПЛАТФОРМЫ РОСТА
-                  </div>
-                </div>
-              </div>
             </div>
+          </div>
+          </div>
+                </div>
           </div>
         </section>
 
@@ -676,7 +677,7 @@ export default function MarquePage() {
                       alt="Футболка спорт. из хлопка"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                  </div>
+                    </div>
                 </div>
                 
                 {/* Product Info */}
@@ -699,8 +700,7 @@ export default function MarquePage() {
             ))}
           </div>
         </section>
-
-
+        </div>
       </main>
 
       {/* Footer */}
