@@ -593,37 +593,61 @@ export default function MarquePage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Banner Section */}
-        <section className="mb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[300px]">
+        <section className="mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[300px] md:h-[400px]">
             {/* Left Banner */}
-            <div className="relative bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-8 overflow-hidden">
-              <div className="relative z-10">
-                <div className="text-white text-sm font-medium mb-2">Новая коллекция</div>
-                <div className="text-white text-2xl font-bold">Осень-Зима</div>
+            <div className="relative bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl p-6 overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="bg-brand text-white text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
+                  Новая коллекция
+                </div>
+                <div className="text-white text-xl font-bold">Осень-Зима</div>
               </div>
-              <div className="absolute bottom-4 right-4 text-white/80 text-sm">
+              <div className="text-white/90 text-sm">
                 от 1999 сом
+              </div>
+              {/* Coat image placeholder */}
+              <div className="absolute right-4 top-4 w-32 h-48 opacity-20">
+                <img 
+                  src="/images/coat.jpg" 
+                  alt="Coat" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
               </div>
             </div>
 
             {/* Center Banner - Main Discount */}
-            <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl p-8 overflow-hidden flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-sm font-medium mb-2">до -80%</div>
-                <div className="text-4xl font-bold mb-2">СКИДКИ</div>
-                <div className="text-4xl font-bold mb-4">НЕДЕЛИ</div>
+            <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl p-6 overflow-hidden flex items-center justify-center">
+              <div className="text-center text-white relative z-10">
+                <div className="text-lg font-bold mb-2">до -80%</div>
+                <div className="text-5xl md:text-6xl font-black mb-0 leading-none">СКИДКИ</div>
+                <div className="text-5xl md:text-6xl font-black mb-2 leading-none">НЕДЕЛИ</div>
                 <div className="text-sm opacity-90">на все товары</div>
+              </div>
+              {/* Abstract shapes background */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-4 right-8 w-20 h-20 bg-white/10 rounded-full"></div>
+                <div className="absolute bottom-8 left-6 w-16 h-16 bg-white/10 rounded-full"></div>
+                <div className="absolute top-1/2 left-4 w-12 h-12 bg-white/10 rounded-full"></div>
               </div>
             </div>
 
             {/* Right Banner */}
-            <div className="relative bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-8 overflow-hidden">
-              <div className="relative z-10">
-                <div className="text-white text-lg font-bold mb-2">КАЧЕСТВО</div>
-                <div className="text-white text-lg font-bold mb-2">ЛОКАЛЬНЫХ</div>
-                <div className="text-white text-lg font-bold mb-2">БРЕНДОВ</div>
-                <div className="text-white text-sm mt-4">на Wildberries</div>
-                <div className="text-white text-xs mt-1">при поддержке</div>
+            <div className="relative bg-gradient-to-br from-green-400 to-green-600 rounded-2xl p-6 overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="text-white text-2xl font-black mb-1 leading-tight">КАЧЕСТВО</div>
+                <div className="text-white text-2xl font-black mb-1 leading-tight">ЛОКАЛЬНЫХ</div>
+                <div className="text-white text-2xl font-black mb-4 leading-tight">БРЕНДОВ</div>
+              </div>
+              <div>
+                <div className="text-white text-lg font-bold mb-1">на Wildberries</div>
+                <div className="text-white text-sm opacity-80">при поддержке</div>
+                <div className="mt-2 flex items-center">
+                  <div className="bg-white/20 px-2 py-1 rounded text-xs text-white font-medium">
+                    ПЛАТФОРМЫ РОСТА
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -631,20 +655,20 @@ export default function MarquePage() {
 
         {/* Products Grid */}
         <section className="mb-12">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {Array.from({ length: 20 }, (_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {Array.from({ length: 15 }, (_, i) => (
               <Link
                 key={i}
                 href={`/product/${i + 1}`}
-                className="bg-white rounded-xl p-4 cursor-pointer hover:shadow-lg transition-shadow block group"
+                className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
               >
                 {/* Discount Badge */}
-                <div className="relative mb-4">
-                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
-                    -%
+                <div className="relative mb-3">
+                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
+                    %
                   </div>
                   <div className="absolute top-2 right-2 z-10">
-                    <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
+                    <Heart className="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" />
                   </div>
                   <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                     <img
@@ -656,16 +680,16 @@ export default function MarquePage() {
                 </div>
                 
                 {/* Product Info */}
-                <div className="space-y-2">
-                  <div className="text-xs text-gray-500 uppercase">MARQUE</div>
-                  <h3 className="text-sm font-medium text-black line-clamp-2">
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-500 uppercase font-medium">MARQUE</div>
+                  <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
                     Футболка спорт. из хлопка
                   </h3>
                   
                   {/* Price */}
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-brand">2999 сом</span>
-                    <span className="text-sm text-gray-400 line-through">3999 сом</span>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-base font-bold text-brand">2999 сом</span>
+                    <span className="text-xs text-gray-400 line-through">3999 сом</span>
                   </div>
                   
                   {/* Size Info */}
