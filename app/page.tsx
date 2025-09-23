@@ -31,6 +31,8 @@ export default function MarquePage() {
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [isVerifyingCode, setIsVerifyingCode] = useState(false)
   const [userData, setUserData] = useState<any>(null)
+  const [randomProducts, setRandomProducts] = useState<any[]>([])
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   // This comment is added to force a Railway redeployment.
 
   const searchSuggestions = [
@@ -500,6 +502,85 @@ export default function MarquePage() {
     },
   ]
 
+  // Comprehensive product database for random generation
+  const allProducts = [
+    // Men's Category
+    { id: 1, name: "Футболка спорт. из хлопка", brand: "MARQUE", price: 2999, originalPrice: 3999, discount: true, image: "/images/black-tshirt.jpg", category: "men", sizes: "25" },
+    { id: 2, name: "Джинсы slim fit", brand: "DENIM", price: 5999, originalPrice: 7999, discount: true, image: "/images/jeans.jpg", category: "men", sizes: "30-36" },
+    { id: 3, name: "Худи oversized", brand: "STREET", price: 4999, originalPrice: null, discount: false, image: "/images/hoodie.jpg", category: "men", sizes: "S-XL" },
+    { id: 4, name: "Рубашка классическая", brand: "CLASSIC", price: 3499, originalPrice: 4499, discount: true, image: "/images/shirt.jpg", category: "men", sizes: "38-44" },
+    { id: 5, name: "Кроссовки беговые", brand: "SPORT", price: 8999, originalPrice: null, discount: false, image: "/images/sneakers.jpg", category: "men", sizes: "40-45" },
+    
+    // Women's Category
+    { id: 6, name: "Платье летнее", brand: "BLOOM", price: 4599, originalPrice: 6599, discount: true, image: "/images/dress.jpg", category: "women", sizes: "XS-L" },
+    { id: 7, name: "Блузка шифоновая", brand: "ELEGANT", price: 3299, originalPrice: null, discount: false, image: "/images/blouse.jpg", category: "women", sizes: "36-42" },
+    { id: 8, name: "Юбка мини", brand: "YOUNG", price: 2799, originalPrice: 3799, discount: true, image: "/images/skirt.jpg", category: "women", sizes: "S-L" },
+    { id: 9, name: "Джинсы высокая посадка", brand: "DENIM", price: 5499, originalPrice: null, discount: false, image: "/images/high-waist-jeans.jpg", category: "women", sizes: "26-32" },
+    { id: 10, name: "Кардиган вязаный", brand: "COZY", price: 4299, originalPrice: 5299, discount: true, image: "/images/cardigan.jpg", category: "women", sizes: "S-XL" },
+    
+    // Kids Category
+    { id: 11, name: "Футболка детская", brand: "KIDS", price: 1999, originalPrice: 2499, discount: true, image: "/images/kids-tshirt.jpg", category: "kids", sizes: "4-12" },
+    { id: 12, name: "Платье для девочки", brand: "PRINCESS", price: 3299, originalPrice: null, discount: false, image: "/images/girls-dress.jpg", category: "kids", sizes: "4-10" },
+    { id: 13, name: "Шорты для мальчика", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/images/boys-shorts.jpg", category: "kids", sizes: "4-12" },
+    { id: 14, name: "Кроссовки детские", brand: "SPORT", price: 4999, originalPrice: null, discount: false, image: "/images/kids-sneakers.jpg", category: "kids", sizes: "28-35" },
+    { id: 15, name: "Куртка демисезон", brand: "WARM", price: 6999, originalPrice: 8999, discount: true, image: "/images/kids-jacket.jpg", category: "kids", sizes: "4-12" },
+    
+    // Sport Category
+    { id: 16, name: "Леггинсы спортивные", brand: "FIT", price: 3599, originalPrice: null, discount: false, image: "/images/sport-leggings.jpg", category: "sport", sizes: "XS-L" },
+    { id: 17, name: "Топ для фитнеса", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/images/sport-top.jpg", category: "sport", sizes: "S-L" },
+    { id: 18, name: "Шорты беговые", brand: "RUN", price: 2599, originalPrice: null, discount: false, image: "/images/running-shorts.jpg", category: "sport", sizes: "S-XL" },
+    { id: 19, name: "Толстовка спортивная", brand: "SPORT", price: 4599, originalPrice: 5599, discount: true, image: "/images/sport-hoodie.jpg", category: "sport", sizes: "S-XXL" },
+    { id: 20, name: "Кроссовки для зала", brand: "GYM", price: 7999, originalPrice: null, discount: false, image: "/images/gym-shoes.jpg", category: "sport", sizes: "36-45" },
+    
+    // Accessories
+    { id: 21, name: "Рюкзак городской", brand: "URBAN", price: 4999, originalPrice: 6999, discount: true, image: "/images/backpack.jpg", category: "accessories", sizes: "One" },
+    { id: 22, name: "Часы наручные", brand: "TIME", price: 8999, originalPrice: null, discount: false, image: "/images/watch.jpg", category: "accessories", sizes: "One" },
+    { id: 23, name: "Кепка бейсболка", brand: "STREET", price: 1999, originalPrice: 2499, discount: true, image: "/images/cap.jpg", category: "accessories", sizes: "One" },
+    { id: 24, name: "Сумка женская", brand: "FASHION", price: 5599, originalPrice: null, discount: false, image: "/images/handbag.jpg", category: "accessories", sizes: "One" },
+    { id: 25, name: "Ремень кожаный", brand: "LEATHER", price: 3299, originalPrice: 4299, discount: true, image: "/images/belt.jpg", category: "accessories", sizes: "90-110" },
+  ]
+
+  // Function to generate random products
+  const generateRandomProducts = (count: number = 25) => {
+    const shuffled = [...allProducts].sort(() => Math.random() - 0.5)
+    const products = []
+    for (let i = 0; i < count; i++) {
+      const randomProduct = shuffled[i % allProducts.length]
+      products.push({
+        ...randomProduct,
+        id: `${randomProduct.id}-${Date.now()}-${i}`, // Unique ID for each instance
+      })
+    }
+    return products
+  }
+
+  // Infinite scroll effect
+  useEffect(() => {
+    // Initial load
+    setRandomProducts(generateRandomProducts(25))
+
+    const handleScroll = () => {
+      if (isLoadingMore) return
+
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+
+      // Load more when user scrolls to 80% of the page
+      if (scrollTop + windowHeight >= documentHeight * 0.8) {
+        setIsLoadingMore(true)
+        
+        // Simulate loading delay
+        setTimeout(() => {
+          setRandomProducts(prev => [...prev, ...generateRandomProducts(15)])
+          setIsLoadingMore(false)
+        }, 500)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isLoadingMore])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -591,8 +672,8 @@ export default function MarquePage() {
       </header>
 
       {/* Main Content */}
-      <main className="w-full flex justify-center">
-        <div style={{width: '1680px', paddingLeft: '160px', paddingRight: '160px', paddingTop: '32px', paddingBottom: '32px'}}>
+      <main className="w-full flex justify-center relative" style={{minHeight: '2000px'}}>
+        <div style={{width: '1680px', paddingLeft: '160px', paddingRight: '160px', paddingTop: '32px', paddingBottom: '32px', position: 'relative'}}>
         {/* Hero Banner Section */}
         <section className="mb-8">
           <div className="flex gap-4 h-[506px] overflow-x-auto">
@@ -655,50 +736,62 @@ export default function MarquePage() {
         </section>
 
         {/* Products Grid */}
-        <section className="mb-12">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {Array.from({ length: 15 }, (_, i) => (
+        <section className="mb-12" style={{position: 'absolute', top: '722px', left: '160px'}}>
+          <div className="grid grid-cols-5" style={{width: '1360px', minHeight: '1156px', gap: '24px'}}>
+            {randomProducts.map((product, i) => (
               <Link
-                key={i}
-                href={`/product/${i + 1}`}
+                key={`${product.id}-${i}`}
+                href={`/product/${product.id}`}
                 className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
               >
                 {/* Discount Badge */}
                 <div className="relative mb-3">
-                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
-                    %
-                  </div>
+                  {product.discount && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
+                      %
+                    </div>
+                  )}
                   <div className="absolute top-2 right-2 z-10">
                     <Heart className="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" />
                   </div>
                   <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                     <img
-                      src="/images/black-tshirt.jpg"
-                      alt="Футболка спорт. из хлопка"
+                      src={product.image}
+                      alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    </div>
+                  </div>
                 </div>
                 
                 {/* Product Info */}
                 <div className="space-y-1">
-                  <div className="text-xs text-gray-500 uppercase font-medium">MARQUE</div>
+                  <div className="text-xs text-gray-500 uppercase font-medium">{product.brand}</div>
                   <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
-                    Футболка спорт. из хлопка
+                    {product.name}
                   </h3>
                   
                   {/* Price */}
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-base font-bold text-brand">2999 сом</span>
-                    <span className="text-xs text-gray-400 line-through">3999 сом</span>
+                    <span className="text-base font-bold text-brand">{product.price} сом</span>
+                    {product.originalPrice && (
+                      <span className="text-xs text-gray-400 line-through">{product.originalPrice} сом</span>
+                    )}
                   </div>
                   
                   {/* Size Info */}
-                  <div className="text-xs text-gray-500">Размеры 25</div>
+                  <div className="text-xs text-gray-500">Размеры {product.sizes}</div>
                 </div>
               </Link>
             ))}
           </div>
+          
+          {/* Loading Indicator */}
+          {isLoadingMore && (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+              <span className="ml-3 text-gray-600">Загружаем ещё товары...</span>
+            </div>
+          )}
         </section>
         </div>
       </main>
