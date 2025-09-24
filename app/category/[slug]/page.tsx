@@ -1,9 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronLeft, Heart, ShoppingCart, User } from "lucide-react"
+import { ChevronRight, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { Header } from "@/components/Header"
+import { useAuth } from "@/hooks/useAuth"
+import { AuthModals } from "@/components/AuthModals"
+import { useWishlist } from "@/hooks/useWishlist"
+import { allProducts, Product } from "@/lib/products" // Using allProducts for recommendations
 
 const categoryData = {
   muzhchinam: {
@@ -64,87 +69,61 @@ const categoryData = {
   },
 }
 
-const recommendedProducts = Array.from({ length: 8 }, (_, i) => ({
-  id: i + 1,
-  name: "Футболка спорт. из хлопка",
-  price: 2999,
-  sold: 23,
-  image: "/images/black-tshirt.jpg",
-}))
-
 export default function CategoryPage({ params }: { params: { slug: string } }) {
-  const [favorites, setFavorites] = useState<number[]>([])
+  const auth = useAuth()
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const category = categoryData[params.slug as keyof typeof categoryData]
+  const recommendedProducts = allProducts.slice(0, 8) // Use real product data
 
   if (!category) {
     return <div>Category not found</div>
   }
 
-  const toggleFavorite = (productId: number) => {
-    setFavorites((prev) => (prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]))
+  const handleWishlistClick = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault()
+    e.stopPropagation()
+    auth.requireAuth(() => {
+      if (isInWishlist(product.id)) {
+        removeFromWishlist(product.id)
+      } else {
+        addToWishlist(product)
+      }
+    })
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-6">
-            <div className="text-2xl font-bold text-gray-900">MARQUE</div>
-            <Button className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg">📋 Каталог</Button>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Товар, бренд или артикул"
-                className="w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer">
-              <Heart className="w-5 h-5" />
-              <span>Избранные</span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer">
-              <ShoppingCart className="w-5 h-5" />
-              <span>Корзина</span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-600 hover:text-gray-900 cursor-pointer">
-              <User className="w-5 h-5" />
-              <span>Войти</span>
-            </div>
-          </div>
-        </div>
+      <AuthModals {...auth} />
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <Header />
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-6">
-          <Link href="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-            <ChevronLeft className="w-4 h-4" />
-            {category.title}
+          <Link href="/" className="text-gray-600 hover:text-brand">
+            Главная
           </Link>
+          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <span className="font-medium text-black">{category.title}</span>
         </div>
 
         {/* Subcategories Grid */}
-        <div className="grid grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
           {category.subcategories.map((subcategory, index) => (
             <Link
               key={index}
               href={`/subcategory/${params.slug}/${subcategory.slug}`}
-              className="bg-white rounded-lg p-6 hover:shadow-md transition-shadow group"
+              className="bg-white rounded-lg p-4 hover:shadow-lg transition-shadow group flex items-center gap-4"
             >
-              <div className="flex items-center gap-4">
-                <img
-                  src={subcategory.image || "/placeholder.svg"}
-                  alt={subcategory.name}
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900 group-hover:text-brand">{subcategory.name}</h3>
-                  <p className="text-gray-500 text-sm">{subcategory.count}</p>
-                </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+              <img
+                src={subcategory.image || "/placeholder.svg"}
+                alt={subcategory.name}
+                className="w-16 h-16 object-cover rounded-lg"
+              />
+              <div className="flex-1">
+                <h3 className="font-medium text-black group-hover:text-brand">{subcategory.name}</h3>
+                <p className="text-gray-500 text-sm">{subcategory.count} товаров</p>
               </div>
             </Link>
           ))}
@@ -152,49 +131,50 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
         {/* Recommended Products */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Рекомендуем из этой категории</h2>
-          <div className="grid grid-cols-4 gap-6">
+          <h2 className="text-2xl font-bold text-black mb-6">Рекомендуем из этой категории</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {recommendedProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                <div className="relative">
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    className="w-full h-64 object-cover"
-                  />
-                  <button
-                    onClick={() => toggleFavorite(product.id)}
-                    className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <Heart
-                      className={`w-5 h-5 ${
-                        favorites.includes(product.id) ? "fill-red-500 text-red-500" : "text-gray-400"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-medium text-gray-900 mb-2">{product.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-brand font-bold">{product.price} сом</span>
+              <Link key={product.id} href={`/product/${product.id}`} className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group">
+                <div className="relative mb-3">
+                   <div className="absolute top-2 right-2 z-10">
+                    <button onClick={(e) => handleWishlistClick(e, product)} className="p-1.5 bg-gray-100/80 rounded-full">
+                      <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
+                    </button>
                   </div>
-                  <p className="text-gray-500 text-sm mt-1">Продано {product.sold}</p>
+                  <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                    <img
+                      src={product.image || "/images/black-tshirt.jpg"}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
                 </div>
-              </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-500 uppercase font-medium">{product.brand}</div>
+                  <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">{product.name}</h3>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-base font-bold text-brand">{product.price} сом</span>
+                    {product.originalPrice && (
+                      <span className="text-xs text-gray-400 line-through">{product.originalPrice} сом</span>
+                    )}
+                  </div>
+                   <div className="text-xs text-gray-500">Продано {product.salesCount}</div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 gap-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-6">MARQUE</h3>
-              <div className="space-y-4">
-                <h4 className="font-semibold">Популярные категории</h4>
-                <div className="space-y-2 text-gray-300">
+              <div className="space-y-2">
+                <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                <div className="space-y-2 text-sm text-gray-400">
                   <div>Мужчинам</div>
                   <div>Женщинам</div>
                   <div>Детям</div>
@@ -205,22 +185,20 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
               </div>
             </div>
             <div>
-              <div className="space-y-4">
-                <h4 className="font-semibold">Бренды</h4>
-                <div className="space-y-2 text-gray-300">
-                  <div>Ecco</div>
-                  <div>Vans</div>
-                  <div>MANGO</div>
-                  <div>H&M</div>
-                  <div>LIME</div>
-                  <div>GUCCI</div>
-                </div>
+              <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
+              <div className="space-y-2 text-sm text-gray-400">
+                <div>ECCO</div>
+                <div>VANS</div>
+                <div>MANGO</div>
+                <div>H&M</div>
+                <div>LIME</div>
+                <div>GUCCI</div>
               </div>
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 flex justify-between text-gray-400">
+          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
             <div>Политика конфиденциальности</div>
-            <div>Условия пользования</div>
+            <div>Пользовательское соглашение</div>
           </div>
         </div>
       </footer>

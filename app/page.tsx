@@ -11,15 +11,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { API_CONFIG } from "@/lib/config"
 import { getProductsBySales } from "@/lib/products"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
+import { AuthModals } from "@/components/AuthModals"
+import { useWishlist } from "@/hooks/useWishlist"
 
 export default function MarquePage() {
   const router = useRouter()
-  const { isLoggedIn, userData, handleLogin, checkAuthStatus } = useAuth()
-  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const auth = useAuth()
+  const { isLoggedIn } = auth
+  const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
@@ -71,142 +73,29 @@ export default function MarquePage() {
   useEffect(() => {
     setIsClient(true)
     loadCartCount()
-  }, [])
-
-  // Authentication handlers
-  const handleLoginClick = () => {
-    setIsLoginModalOpen(false)
-    setIsPhoneModalOpen(true)
-  }
+    if (searchParams.get('catalog') === 'true') {
+      setShowCatalog(true)
+    }
+  }, [searchParams])
 
   // New handler for header login button
   const handleHeaderLoginClick = () => {
-    if (isLoggedIn) {
-      // User is already logged in, navigate to profile
+    auth.requireAuth(() => {
       router.push('/profile')
-    } else {
-      // User is not logged in, start phone verification
-      setIsPhoneModalOpen(true)
-    }
+    })
   }
 
-  const handlePhoneSubmit = async () => {
-    // Validate phone number is not empty
-    if (!phoneNumber.trim()) {
-      alert('Пожалуйста, введите номер телефона')
-      return
-    }
-
-    setIsSendingSms(true)
-    const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
-    
-    try {
-      console.log('Sending SMS to:', fullPhoneNumber)
-      console.log('API URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`)
-      
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          phone: fullPhoneNumber
-        }),
-      })
-
-      console.log('Response status:', response.status)
-      
-      if (response.ok) {
-        const data = await response.json()
-        console.log('SMS sent successfully:', data)
-    setIsPhoneModalOpen(false)
-    setIsSmsModalOpen(true)
+  const handleWishlistClick = (e: React.MouseEvent, product: any) => {
+    e.preventDefault()
+    e.stopPropagation()
+    auth.requireAuth(() => {
+      if (isInWishlist(product.id)) {
+        removeFromWishlist(product.id)
       } else {
-        const errorData = await response.json()
-        console.error('Failed to send SMS:', errorData)
-        alert(`Не удалось отправить SMS: ${errorData.message || 'Попробуйте еще раз.'}`)
+        addToWishlist(product)
       }
-    } catch (error) {
-      console.error('Error sending SMS:', error)
-      alert('Ошибка подключения. Убедитесь что API сервер запущен.')
-    } finally {
-      setIsSendingSms(false)
-    }
+    })
   }
-
-  const handleSmsVerification = async () => {
-    if (smsCode.length >= 6) {
-      setIsVerifyingCode(true)
-      try {
-        const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
-        console.log('Verifying SMS code for:', fullPhoneNumber)
-        
-        const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VERIFY_CODE}`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            phone: fullPhoneNumber,
-            code: smsCode
-          }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          console.log('SMS verification successful:', data)
-          
-          // Use handleLogin from useAuth hook
-          if (data.data && data.data.access_token) {
-            handleLogin(data.data.user, data.data)
-            
-            console.log('Authentication data stored via useAuth hook:', {
-              userId: data.data.user?.id,
-              phone: data.data.user?.phone,
-              market: data.data.market,
-              sessionId: data.data.session_id,
-              expiresIn: data.data.expires_in_minutes
-            })
-          }
-          
-          setIsSmsModalOpen(false)
-      setSmsCode("")
-          setPhoneNumber("")
-          setCountryCode("+996")
-          console.log("User logged in successfully with phone:", `${countryCode} ${phoneNumber}`)
-        } else {
-          const errorData = await response.json()
-          console.error('Failed to verify SMS code:', errorData)
-          alert('Неверный код. Попробуйте еще раз.')
-        }
-      } catch (error) {
-        console.error('Error verifying SMS code:', error)
-        alert('Ошибка подключения. Проверьте интернет соединение.')
-      } finally {
-        setIsVerifyingCode(false)
-      }
-    }
-  }
-
-  const handleCountryCodeChange = (newCountryCode: string) => {
-    setCountryCode(newCountryCode)
-    // Don't set the placeholder as the actual value
-  }
-
-  const getFullPhoneNumber = () => `${countryCode} ${phoneNumber}`
-
-  const handleWishlistClick = (productId: number) => {
-    if (!isLoggedIn) {
-      setIsLoginModalOpen(true)
-    } else {
-      console.log(`Added product ${productId} to wishlist`)
-    }
-  }
-
 
   const handleCatalogClick = () => {
     setShowCatalog(true)
@@ -321,8 +210,13 @@ export default function MarquePage() {
 
                 {/* User Actions */}
                 <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
+                  <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                     <Heart className="w-5 h-5 mb-1" />
+                    {isClient && wishlistItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {wishlistItemCount}
+                      </span>
+                    )}
                     <span>Избранные</span>
                   </Link>
                   <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
@@ -640,9 +534,11 @@ export default function MarquePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AuthModals {...auth} />
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        {/* Desktop Header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden md:block">
           <div className="flex items-center justify-between h-16">
             {/* Left Section - Logo and Catalog */}
             <div className="flex items-center space-x-4">
@@ -700,8 +596,13 @@ export default function MarquePage() {
 
             {/* Right Section - User Actions */}
               <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
+              <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                   <Heart className="w-5 h-5 mb-1" />
+                  {isClient && wishlistItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {wishlistItemCount}
+                    </span>
+                  )}
                   <span>Избранные</span>
                 </Link>
               <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
@@ -725,12 +626,62 @@ export default function MarquePage() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Header */}
+        <div className="md:hidden px-4 pt-2 pb-3">
+          <div className="flex items-center justify-between">
+            <Link href="/">
+              <h1 className="text-xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
+            </Link>
+            <div className="flex items-center space-x-4">
+              <Link href="/wishlist" className="p-2 relative">
+                <Heart className="w-6 h-6 text-gray-600" />
+                {isClient && wishlistItemCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {wishlistItemCount}
+                  </span>
+                )}
+              </Link>
+              <Link href="/cart" className="p-2 relative">
+                <ShoppingCart className="w-6 h-6 text-gray-600" />
+                {isClient && cartItemCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+              <button onClick={handleHeaderLoginClick} className="p-2">
+                <User className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center space-x-2">
+            <Button
+              className="bg-brand hover:bg-brand-hover text-white p-2 rounded-lg"
+              onClick={handleCatalogClick}
+            >
+              <span className="text-xl">⋮⋮⋮</span>
+            </Button>
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="Товар, бренд или артикул"
+                className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={handleSearchFocus}
+                onBlur={handleSearchBlur}
+              />
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* Main Content */}
-      <main className="w-full relative" style={{minHeight: '2000px'}}>
-        {/* Picture Carousel - Full Page Width */}
-        <section className="w-full mb-8 mt-8">
+      <main className="w-full relative">
+        {/* Picture Carousel - Desktop Only */}
+        <section className="w-full mb-8 mt-8 hidden md:block">
           <div className="flex items-center justify-center h-[506px] relative overflow-hidden w-full">
             {getCurrentBanners().map((banner, index) => (
               <div
@@ -833,302 +784,131 @@ export default function MarquePage() {
             </div>
           </div>
         </section>
+        
+        {/* Mobile Banner Carousel */}
+        <section className="w-full my-4 md:hidden">
+          <div className="h-48 relative overflow-hidden flex items-center justify-center">
+            {getCurrentBanners().map((banner, index) => (
+              <div
+                key={`${banner.id}-${bannerRotationIndex}-${index}`}
+                className={`absolute rounded-xl overflow-hidden transition-all duration-1000 ease-in-out transform cursor-pointer`}
+                onClick={() => handleBannerClick(index)}
+                style={{
+                  width: 'calc(100vw - 80px)',
+                  height: index === 1 ? '100%' : '90%',
+                  zIndex: index === 1 ? 20 : 10,
+                  left: '50%',
+                  transform: 
+                    index === 1 ? 'translateX(-50%)' : 
+                    (index === 0 ? 'translateX(calc(-50% - 45vw)) scale(0.9)' : 'translateX(calc(-50% + 45vw)) scale(0.9)'),
+                }}
+              >
+                <div className={`w-full h-full bg-gradient-to-br ${banner.gradient} rounded-xl relative overflow-hidden`}>
+                  {banner.type === 'collection' && (
+                    <div className="relative h-full overflow-hidden">
+                      <img src="/b93dc4af6b33446ca2a5472bc63797bc73a9eae2.png" alt="Collection Banner" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/10"></div>
+                    </div>
+                  )}
+                  {banner.type === 'discount' && (
+                    <div className="relative h-full overflow-hidden">
+                      <img src="/fcdeeb08e8c20a6a5cf5276b59b60923dfb8c706(1).png" alt="Sale Banner" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white p-4">
+                        <span className="text-sm font-bold bg-yellow-400 text-black px-2 py-0.5 rounded-md">до -80%</span>
+                        <h2 className="text-3xl font-black mt-2">СКИДКИ</h2>
+                        <p className="text-lg font-bold">ПОСПЕЛИ</p>
+                      </div>
+                    </div>
+                  )}
+                  {banner.type === 'quality' && (
+                    <div className="relative h-full overflow-hidden">
+                      <img src="/5891ae04bafdf76a4d441c78c7e1f8a0a3a1d631.png" alt="Quality Banner" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/10"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {/* Navigation indicators */}
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
+              {heroBanners.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                    index === bannerRotationIndex % heroBanners.length
+                      ? 'bg-white' 
+                      : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Content Container */}
-        <div style={{width: '1680px', paddingLeft: '160px', paddingRight: '160px', margin: '0 auto', position: 'relative'}}>
+        <div className="px-4 md:px-0" style={{maxWidth: '1680px', margin: '0 auto'}}>
           {/* Products Grid */}
-          <section className="mb-12" style={{position: 'absolute', top: '100px', left: '160px'}}>
-          <div className="grid grid-cols-5" style={{width: '1360px', minHeight: '1156px', gap: '24px'}}>
-            {randomProducts.map((product, i) => (
-              <Link
-                key={`${product.id}-${i}`}
-                href={`/product/${product.id}`}
-                className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
-              >
-                {/* Discount Badge */}
-                <div className="relative mb-3">
-                  {product.discount && (
-                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
-                      %
-                </div>
-                  )}
-                  <div className="absolute top-2 right-2 z-10">
-                    <Heart className="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" />
-                </div>
-                  <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
-                    <img
-                      src="/images/black-tshirt.jpg"
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+          <section className="mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6" style={{minHeight: '1156px'}}>
+              {randomProducts.map((product, i) => (
+                <Link
+                  key={`${product.id}-${i}`}
+                  href={`/product/${product.id}`}
+                  className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                >
+                  {/* Discount Badge */}
+                  <div className="relative mb-3">
+                    {product.discount && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
+                        %
                   </div>
-                </div>
-                
-                {/* Product Info */}
-                <div className="space-y-1">
-                  <div className="text-xs text-gray-500 uppercase font-medium">{product.brand}</div>
-                  <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
-                    {product.name}
-                  </h3>
-                  
-                  {/* Price */}
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-base font-bold text-brand">{product.price} сом</span>
-                    {product.originalPrice && (
-                      <span className="text-xs text-gray-400 line-through">{product.originalPrice} сом</span>
                     )}
+                    <div className="absolute top-2 right-2 z-10">
+                      <button onClick={(e) => handleWishlistClick(e, product)}>
+                        <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
+                      </button>
+                    </div>
+                    <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                      <img
+                        src="/images/black-tshirt.jpg"
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
                   </div>
                   
-                  {/* Size Info */}
-                  <div className="text-xs text-gray-500">Размеры {product.sizes}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          
-          {/* Loading Indicator */}
-          {isLoadingMore && (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
-              <span className="ml-3 text-gray-600">Загружаем ещё товары...</span>
-                </div>
-          )}
-        </section>
-              </div>
+                  {/* Product Info */}
+                  <div className="space-y-1">
+                    <div className="text-xs text-gray-500 uppercase font-medium">{product.brand}</div>
+                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
+                      {product.name}
+                    </h3>
+                    
+                    {/* Price */}
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-base font-bold text-brand">{product.price} сом</span>
+                      {product.originalPrice && (
+                        <span className="text-xs text-gray-400 line-through">{product.originalPrice} сом</span>
+                      )}
+                    </div>
+                    
+                    {/* Size Info */}
+                    <div className="text-xs text-gray-500">Размеры {product.sizes}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            
+            {/* Loading Indicator */}
+            {isLoadingMore && (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+                <span className="ml-3 text-gray-600">Загружаем ещё товары...</span>
+                  </div>
+            )}
+          </section>
+        </div>
       </main>
-
-
-      {/* Phone Verification Modal */}
-      <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-semibold">Введите номер</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-center text-gray-600 text-sm">Мы отправим вам код подтверждения</p>
-            <div className="space-y-4">
-              <Input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="text-center text-lg py-3"
-                placeholder="+996 505-23-12-55"
-              />
-              <Button
-                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
-                onClick={handlePhoneSubmit}
-              >
-                Продолжить
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500 text-center">
-              Нажимая "Продолжить", вы соглашаетесь с{" "}
-              <span className="text-brand cursor-pointer">Политикой конфиденциальности</span> и{" "}
-              <span className="text-brand cursor-pointer">Пользовательским соглашением</span>
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* SMS Verification Modal */}
-      <Dialog open={isSmsModalOpen} onOpenChange={setIsSmsModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center justify-center relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute left-0 p-1"
-                onClick={() => {
-                  setIsSmsModalOpen(false)
-                  setIsPhoneModalOpen(true)
-                }}
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <DialogTitle className="text-center text-xl font-semibold">Код из СМС</DialogTitle>
-            </div>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-center text-gray-600 text-sm">
-              Мы отправили вам код на номер
-              <br />
-              {phoneNumber}
-            </p>
-            <div className="space-y-4">
-              <Input
-                type="text"
-                value={smsCode}
-                onChange={(e) => setSmsCode(e.target.value)}
-                className="text-center text-lg py-3 tracking-widest"
-                placeholder="233 512"
-                maxLength={6}
-              />
-              <Button
-                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
-                onClick={handleSmsVerification}
-                disabled={smsCode.length < 6}
-              >
-                Подтвердить
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Login Required Modal */}
-      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <div className="flex flex-col items-center space-y-6 py-6">
-            <div className="w-16 h-16 bg-brand-light rounded-full flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-brand" />
-            </div>
-            <div className="text-center space-y-2">
-              <h2 className="text-xl font-semibold text-black">Войдите чтобы добавить товар в избранное</h2>
-            </div>
-            <div className="flex space-x-3 w-full">
-              <Button
-                className="flex-1 bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
-                onClick={handleLoginClick}
-              >
-                Войти
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 py-3 rounded-lg bg-transparent"
-                onClick={() => setIsLoginModalOpen(false)}
-              >
-                Закрыть
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Login Required Modal */}
-      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <div className="flex flex-col items-center space-y-6 py-6">
-            <div className="w-16 h-16 bg-brand-light rounded-full flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-brand" />
-            </div>
-            <div className="text-center space-y-2">
-              <h2 className="text-xl font-semibold text-black">Войдите чтобы добавить товар в избранное</h2>
-            </div>
-            <div className="flex space-x-3 w-full">
-              <Button
-                className="flex-1 bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
-                onClick={handleLoginClick}
-              >
-                Войти
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 py-3 rounded-lg bg-transparent"
-                onClick={() => setIsLoginModalOpen(false)}
-              >
-                Закрыть
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Phone Verification Modal */}
-      <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-semibold">Введите номер</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-center text-gray-600 text-sm">Мы отправим вам код подтверждения</p>
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <Select value={countryCode} onValueChange={handleCountryCodeChange}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countryCodes.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        <div className="flex items-center space-x-2">
-                          <span>{country.flag}</span>
-                          <span>{country.code}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="flex-1 text-lg py-3"
-                  placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || "Phone number"}
-                />
-              </div>
-              <Button
-                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
-                onClick={handlePhoneSubmit}
-                disabled={isSendingSms || !phoneNumber.trim()}
-              >
-                {isSendingSms ? "Отправляем SMS..." : "Продолжить"}
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500 text-center">
-              Нажимая "Продолжить", вы соглашаетесь с{" "}
-              <span className="text-brand cursor-pointer">Политикой конфиденциальности</span> и{" "}
-              <span className="text-brand cursor-pointer">Пользовательским соглашением</span>
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* SMS Verification Modal */}
-      <Dialog open={isSmsModalOpen} onOpenChange={setIsSmsModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center justify-center relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute left-0 p-1"
-                onClick={() => {
-                  setIsSmsModalOpen(false)
-                  setIsPhoneModalOpen(true)
-                }}
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <DialogTitle className="text-center text-xl font-semibold">Код из СМС</DialogTitle>
-            </div>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-center text-gray-600 text-sm">
-              Мы отправили вам код на номер
-              <br />
-              <span className="font-semibold">{getFullPhoneNumber()}</span>
-            </p>
-            <div className="space-y-4">
-              <Input
-                type="text"
-                value={smsCode}
-                onChange={(e) => setSmsCode(e.target.value)}
-                className="text-center text-lg py-3 tracking-widest"
-                placeholder="233 512"
-                maxLength={6}
-              />
-              <Button
-                className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg"
-                onClick={handleSmsVerification}
-                disabled={smsCode.length < 6 || isVerifyingCode}
-              >
-                {isVerifyingCode ? "Проверяем код..." : "Подтвердить"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

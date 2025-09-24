@@ -24,6 +24,28 @@ import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
+import { useWishlist } from "@/hooks/useWishlist"
+import { AuthModals } from "@/components/AuthModals"
+
+interface OrderItem {
+  id: number
+  name: string
+  image: string
+  size: string
+  color: string
+}
+
+interface Order {
+  id: string
+  date: string
+  deliveryDate: string
+  status: string
+  statusColor: string
+  total: string
+  isActive: boolean
+  items: OrderItem[]
+  canReview: boolean
+}
 
 interface Address {
   id: number
@@ -50,15 +72,18 @@ interface ReviewPhoto {
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { isLoggedIn, userData, handleLogout, checkAuthStatus } = useAuth()
+  const auth = useAuth()
+  const { isLoggedIn, userData, handleLogout } = auth
+  const { wishlistItemCount } = useWishlist()
   const [activeTab, setActiveTab] = useState("profile")
   const [orderFilter, setOrderFilter] = useState("active")
   const [userName, setUserName] = useState("Анна Ахматова")
   const [phoneNumber, setPhoneNumber] = useState("+996 505 32 53 11")
   const [additionalPhone, setAdditionalPhone] = useState("")
+  const [isClient, setIsClient] = useState(false)
   
   // Authentication states are now managed by the useAuth hook.
-  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState("")
   const [reviewPhotos, setReviewPhotos] = useState<ReviewPhoto[]>([])
@@ -166,14 +191,15 @@ export default function ProfilePage() {
 
   // Check auth status on component mount
   useEffect(() => {
+    setIsClient(true)
     // If loading is finished and user is not logged in, redirect
-    if (!isLoggedIn) {
+    if (!auth.isLoading && !auth.isLoggedIn) {
       router.push('/')
     } else if (userData) {
       setUserName(userData.full_name || userData.name || "Анна Ахматова")
       setPhoneNumber(userData.phone || "+996 505 32 53 11")
     }
-  }, [isLoggedIn, userData, router])
+  }, [auth.isLoading, auth.isLoggedIn, userData, router])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
@@ -194,7 +220,7 @@ export default function ProfilePage() {
     {} as Record<string, typeof notifications>,
   )
 
-  const orders = [
+  const orders: Order[] = [
     {
       id: "23529",
       date: "15.07.2025",
@@ -536,6 +562,31 @@ export default function ProfilePage() {
     { id: "notifications", label: "Уведомления", icon: Bell },
   ]
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchFocus = () => {
+    setShowSearchSuggestions(true);
+  };
+
+  const handleSearchBlur = () => {
+    setTimeout(() => setShowSearchSuggestions(false), 200);
+  };
+
+  const handleHeaderLoginClick = () => {
+    if (isLoggedIn) {
+      router.push('/profile');
+    } else {
+      auth.requireAuth(() => router.push('/profile'));
+    }
+  };
+
+
   const mobileTabItems = [
     { id: "profile", label: "Профиль" },
     { id: "orders", label: "Заказы" },
@@ -545,83 +596,115 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AuthModals {...auth} />
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        {/* Desktop Header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden md:block">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <Link href="/">
                 <h1 className="text-2xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
               </Link>
-            </div>
-
-            {/* Navigation - Desktop */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Button className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg">
+              <Button
+                className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
+                onClick={() => router.push('/?catalog=true')}
+              >
                 <span className="mr-2">⋮⋮⋮</span>
                 Каталог
               </Button>
-
-              {/* Search Bar */}
-              <div className="relative">
+            </div>
+            <div className="flex-1 flex justify-center px-8">
+              <div className="relative max-w-2xl w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="text"
                   placeholder="Товар, бренд или артикул"
-                  className="pl-10 pr-4 py-2 w-80 bg-gray-100 border-0 rounded-lg"
+                  className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={handleSearchFocus}
+                  onBlur={handleSearchBlur}
                 />
-              </div>
-
-              {/* User Actions */}
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand">
-                  <Heart className="w-5 h-5 mb-1" />
-                  <span>Избранные</span>
-                </Link>
-                <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand">
-                  <ShoppingCart className="w-5 h-5 mb-1" />
-                  <span>Корзина</span>
-                </Link>
-                <div className="flex flex-col items-center cursor-pointer text-brand">
-                  <User className="w-5 h-5 mb-1" />
-                  <span>{isLoggedIn ? "Профиль" : "Войти"}</span>
-                </div>
+                {showSearchSuggestions && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50">
+                    {/* Search suggestions would go here */}
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Navigation - Mobile */}
-            <div className="md:hidden flex items-center space-x-4">
-              <Heart className="w-6 h-6 text-gray-600" />
-              <ShoppingCart className="w-6 h-6 text-gray-600" />
-              <User className="w-6 h-6 text-brand" />
+            <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
+                <Heart className="w-5 h-5 mb-1" />
+                {isClient && wishlistItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {wishlistItemCount}
+                  </span>
+                )}
+                <span>Избранные</span>
+              </Link>
+              <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
+                <div className="relative">
+                  <ShoppingCart className="w-5 h-5 mb-1" />
+                  {isClient && cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {cartItemCount > 99 ? '99+' : cartItemCount}
+                    </span>
+                  )}
+                </div>
+                <span>Корзина</span>
+              </Link>
+              <button
+                onClick={handleHeaderLoginClick}
+                className="flex flex-col items-center cursor-pointer text-brand bg-transparent border-none p-0"
+              >
+                <User className="w-5 h-5 mb-1" />
+                <span>{isClient && isLoggedIn ? "Профиль" : "Войти"}</span>
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Mobile Search Bar */}
-        <div className="md:hidden px-4 pb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Товар, бренд или артикул"
-              className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
-            />
+        {/* Mobile Header */}
+        <div className="md:hidden px-4 pt-2 pb-3">
+          <div className="flex items-center justify-between">
+            <Link href="/">
+              <h1 className="text-xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
+            </Link>
+            <div className="flex items-center space-x-4">
+              <Link href="/wishlist" className="p-2 relative">
+                <Heart className="w-6 h-6 text-gray-600" />
+                 {isClient && wishlistItemCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {wishlistItemCount}
+                  </span>
+                )}
+              </Link>
+              <Link href="/cart" className="p-2 relative">
+                <ShoppingCart className="w-6 h-6 text-gray-600" />
+                {isClient && cartItemCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+              <button onClick={handleHeaderLoginClick} className="p-2">
+                <User className="w-6 h-6 text-brand" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Mobile Tabs */}
-        <div className="md:hidden border-t border-gray-200">
+        <div className="md:hidden border-t border-gray-200 overflow-x-auto">
           <div className="flex">
             {mobileTabItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 ${
+                className={`flex-1 px-4 py-3 text-sm font-medium whitespace-nowrap ${
                   activeTab === item.id
-                    ? "border-purple-600 text-brand bg-purple-50"
-                    : "border-transparent text-gray-500"
+                    ? "border-b-2 border-brand text-brand"
+                    : "border-b-2 border-transparent text-gray-500"
                 }`}
               >
                 {item.label}
@@ -632,7 +715,7 @@ export default function ProfilePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar - Desktop Only */}
           <div className="hidden lg:block w-64">
