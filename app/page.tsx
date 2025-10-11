@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
+import { ProductCardSkeletonGrid } from "@/components/ProductCardSkeleton"
 
 export default function MarquePage() {
   const router = useRouter()
@@ -765,10 +766,7 @@ export default function MarquePage() {
           {/* Products Grid */}
           <section className="mb-12">
             {isLoadingInitial ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
-                <span className="ml-4 text-gray-600">Загружаем товары...</span>
-              </div>
+              <ProductCardSkeletonGrid count={12} />
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6" style={{minHeight: '1156px'}}>
                 {randomProducts.map((product, i) => (

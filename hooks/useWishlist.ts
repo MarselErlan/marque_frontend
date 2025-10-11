@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Product } from '@/lib/products'
 import { wishlistApi } from '@/lib/api'
+import { toast } from '@/lib/toast'
 
 export const useWishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([])
@@ -82,9 +83,11 @@ export const useWishlist = () => {
         const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id
         await wishlistApi.add(productId)
         await loadWishlist() // Reload wishlist from backend
+        toast.success('Товар добавлен в избранное!')
         return
       } catch (error) {
         console.error('Failed to add to backend wishlist:', error)
+        toast.error('Не удалось добавить в избранное')
         // Fall back to localStorage
       }
     }
@@ -92,8 +95,10 @@ export const useWishlist = () => {
     // Add to localStorage wishlist
     setWishlistItems((prevItems) => {
       if (prevItems.find((item) => item.id === product.id)) {
+        toast.info('Товар уже в избранном')
         return prevItems // Already in wishlist
       }
+      toast.success('Товар добавлен в избранное!')
       return [...prevItems, product]
     })
   }, [])
@@ -107,15 +112,18 @@ export const useWishlist = () => {
         const numericId = typeof productId === 'string' ? parseInt(productId) : productId
         await wishlistApi.remove(numericId)
         await loadWishlist() // Reload wishlist from backend
+        toast.success('Товар удален из избранного')
         return
       } catch (error) {
         console.error('Failed to remove from backend wishlist:', error)
+        toast.error('Не удалось удалить из избранного')
         // Fall back to localStorage
       }
     }
     
     // Remove from localStorage wishlist
     setWishlistItems((prevItems) => prevItems.filter((item) => item.id !== productId))
+    toast.success('Товар удален из избранного')
   }, [isAuthenticated])
 
   const isInWishlist = useCallback((productId: string) => {

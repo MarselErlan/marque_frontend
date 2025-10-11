@@ -10,6 +10,7 @@ import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { useCart } from "@/hooks/useCart"
 import { Header } from "@/components/Header"
+import { toast } from "@/lib/toast"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -17,13 +18,13 @@ export default function ProductDetailPage() {
   const auth = useAuth()
   const { isLoggedIn } = auth
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
+  const { addToCart, cartItemCount } = useCart()
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [cartItemCount, setCartItemCount] = useState(0)
   
   const [isClient, setIsClient] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -73,66 +74,51 @@ export default function ProductDetailPage() {
     }
   }, [params.id])
 
-  // Load cart count from localStorage
-  const loadCartCount = () => {
-    try {
-      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
-      const totalItems = existingCart.reduce((total: number, item: any) => total + item.quantity, 0)
-      setCartItemCount(totalItems)
-    } catch (error) {
-      console.error('Error loading cart count:', error)
-      setCartItemCount(0)
-    }
-  }
-
-  // Load cart count on component mount
+  // Load client state on component mount
   useEffect(() => {
     setIsClient(true)
-    loadCartCount()
   }, [])
 
   const handleAddToCart = async () => {
+    // Validate size and color selection
+    if (!selectedSize) {
+      toast.error('Пожалуйста, выберите размер')
+      return
+    }
+    if (!selectedColor) {
+      toast.error('Пожалуйста, выберите цвет')
+      return
+    }
+    
     setIsAddingToCart(true)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Add item to cart (in real app, this would be stored in context/state management)
-    const cartItem = {
-      id: Date.now(), // Generate unique ID
-      productId: product.id,
-      name: product.name,
-      size: selectedSize,
-      color: selectedColor,
-      quantity: quantity,
-      price: parseInt(product.price.replace(/\D/g, '')), // Extract numeric price
-      image: product.images[0]
+    try {
+      // Prepare cart item
+      const cartItem = {
+        id: product.id,
+        name: product.title,
+        price: product.price_min,
+        originalPrice: product.original_price_min,
+        brand: product.brand?.name || 'MARQUE',
+        image: product.images?.[0]?.url || '/images/black-tshirt.jpg',
+        size: selectedSize,
+        color: selectedColor,
+        sku_id: product.selected_sku_id // You might need to determine this based on size/color
+      }
+      
+      // Add to cart using the hook
+      await addToCart(cartItem)
+      
+      // Show success state
+      setIsAddedToCart(true)
+      
+      // Reset success state after 2 seconds
+      setTimeout(() => setIsAddedToCart(false), 2000)
+    } catch (error) {
+      console.error('Failed to add to cart:', error)
+    } finally {
+      setIsAddingToCart(false)
     }
-    
-    // Store in localStorage for demo purposes
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
-    const existingItemIndex = existingCart.findIndex(
-      (item: any) => item.productId === product.id && item.size === selectedSize && item.color === selectedColor
-    )
-    
-    if (existingItemIndex >= 0) {
-      existingCart[existingItemIndex].quantity += quantity
-    } else {
-      existingCart.push(cartItem)
-    }
-    
-    localStorage.setItem('cart', JSON.stringify(existingCart))
-    
-    setIsAddingToCart(false)
-    setIsAddedToCart(true)
-    
-    // Update cart count
-    loadCartCount()
-    
-    // Reset success state after 2 seconds
-    setTimeout(() => setIsAddedToCart(false), 2000)
-    
-    console.log("Added to cart:", cartItem)
   }
 
   const handleCompare = () => {

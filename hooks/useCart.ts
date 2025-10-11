@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { cartApi } from '@/lib/api'
+import { toast } from '@/lib/toast'
 
 export interface CartItem {
   id: string | number
@@ -83,9 +84,11 @@ export const useCart = () => {
       try {
         await cartApi.add(product.sku_id, 1)
         await loadCart() // Reload cart from backend
+        toast.success('Товар добавлен в корзину!')
         return
       } catch (error) {
         console.error('Failed to add to backend cart:', error)
+        toast.error('Не удалось добавить товар')
         // Fall back to localStorage
       }
     }
@@ -112,6 +115,7 @@ export const useCart = () => {
       }
 
       saveCart(newItems)
+      toast.success('Товар добавлен в корзину!')
       return newItems
     })
   }
@@ -125,9 +129,11 @@ export const useCart = () => {
       try {
         await cartApi.remove(Number(productId))
         await loadCart() // Reload cart from backend
+        toast.success('Товар удален из корзины')
         return
       } catch (error) {
         console.error('Failed to remove from backend cart:', error)
+        toast.error('Не удалось удалить товар')
         // Fall back to localStorage
       }
     }
@@ -138,6 +144,7 @@ export const useCart = () => {
         !(item.id === productId && item.size === size && item.color === color)
       )
       saveCart(newItems)
+      toast.success('Товар удален из корзины')
       return newItems
     })
   }
