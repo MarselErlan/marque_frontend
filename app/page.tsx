@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Search, Heart, ShoppingCart, User, LogIn, ArrowLeft, X } from "lucide-react"
+import { Search, Heart, ShoppingCart, User, LogIn, ArrowLeft, ArrowRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -215,7 +215,7 @@ export default function MarquePage() {
     }
   }
 
-  // Catalog Sidebar Overlay (slides in from left)
+  // Catalog Sidebar Overlay (2-level navigation)
   const CatalogSidebar = () => {
     if (!showCatalog) return null
     
@@ -227,7 +227,7 @@ export default function MarquePage() {
           onClick={() => setShowCatalog(false)}
         />
         
-        {/* Sidebar */}
+        {/* First Sidebar - Main Categories */}
         <div className="fixed inset-y-0 left-0 w-80 bg-white shadow-xl z-50 overflow-y-auto animate-in slide-in-from-left duration-300">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -240,43 +240,66 @@ export default function MarquePage() {
             </button>
           </div>
 
-          {/* Categories List */}
+          {/* Main Categories List */}
           <nav className="p-4">
             {catalogCategories.map((category, index) => (
-              <div key={index}>
-                <div
-                  className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 ${
-                    category.active
-                      ? "bg-brand text-white font-semibold"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                  onClick={() => setSelectedCatalogCategory(category.name)}
-                >
-                  {category.name}
-                </div>
-                
-                {/* Show subcategories when this category is selected */}
-                {category.active && (
-                  <div className="ml-4 mt-2 mb-4 space-y-1">
-                    {getCurrentCategories().map((subcat, subIndex) => (
-                      <Link
-                        key={subIndex}
-                        href={`/subcategory/${selectedCatalogCategory.toLowerCase()}/${subcat.name.toLowerCase().replace(/\s+/g, "-")}`}
-                        className="block px-4 py-2 text-sm text-gray-600 hover:text-brand hover:bg-gray-50 rounded-lg transition-colors"
-                        onClick={() => setShowCatalog(false)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{subcat.name}</span>
-                          <span className="text-xs text-gray-400">{subcat.count}</span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
+              <div
+                key={index}
+                className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between ${
+                  category.active
+                    ? "bg-brand text-white font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                onClick={() => setSelectedCatalogCategory(category.name)}
+              >
+                <span>{category.name}</span>
+                <ArrowRight className={`w-4 h-4 ${category.active ? 'text-white' : 'text-gray-400'}`} />
               </div>
             ))}
           </nav>
         </div>
+
+        {/* Second Sidebar - Subcategories (opens to the right of first sidebar) */}
+        {selectedCatalogCategory && (
+          <div className="fixed inset-y-0 left-80 w-96 bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200">
+            {/* Subcategories Header */}
+            <div className="p-4 border-b border-gray-200 bg-gray-50">
+              <h3 className="text-lg font-bold text-black">{selectedCatalogCategory}</h3>
+              <p className="text-sm text-gray-500 mt-1">Выберите категорию</p>
+            </div>
+
+            {/* Subcategories Grid */}
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-3">
+                {getCurrentCategories().map((subcat, subIndex) => (
+                  <Link
+                    key={subIndex}
+                    href={`/subcategory/${selectedCatalogCategory.toLowerCase()}/${subcat.name.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="block bg-gray-50 hover:bg-brand-50 rounded-lg p-4 transition-colors group"
+                    onClick={() => setShowCatalog(false)}
+                  >
+                    {/* Subcategory Image */}
+                    <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden">
+                      <img
+                        src={subcat.image || "/images/black-tshirt.jpg"}
+                        alt={subcat.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    
+                    {/* Subcategory Info */}
+                    <div>
+                      <h4 className="font-semibold text-sm text-black mb-1 group-hover:text-brand transition-colors">
+                        {subcat.name}
+                      </h4>
+                      <p className="text-xs text-gray-500">{subcat.count} товаров</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </>
     )
   }
