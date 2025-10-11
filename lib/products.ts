@@ -1,7 +1,7 @@
 // Product data and utilities
 
 export interface Product {
-  id: string
+  id: string | number
   name: string
   brand: string
   price: number
@@ -96,8 +96,8 @@ export const allProducts: Product[] = [
     name: "Часы наручные",
     brand: "TIME",
     price: 8999,
-    originalPrice: null,
-    discount: null,
+    originalPrice: undefined,
+    discount: undefined,
     image: "/images/black-tshirt.jpg",
     category: "Мужчинам",
     subcategory: "Аксессуары",

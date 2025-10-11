@@ -122,7 +122,7 @@ export default function CartPage() {
                         <Button variant="ghost" size="sm" className="p-1 h-auto bg-gray-100 rounded-full">
                           <Edit className="w-4 h-4 text-gray-500" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="p-1 h-auto bg-gray-100 rounded-full" onClick={() => removeFromCart(item.id)}>
+                        <Button variant="ghost" size="sm" className="p-1 h-auto bg-gray-100 rounded-full" onClick={() => removeFromCart(item.id, item.size, item.color)}>
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
                       </div>
@@ -135,7 +135,7 @@ export default function CartPage() {
                           variant="outline"
                           size="sm"
                           className="w-8 h-8 p-0 bg-gray-100 border-none"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.size, item.color)}
                         >
                           <Minus className="w-3 h-3" />
                         </Button>
@@ -144,7 +144,7 @@ export default function CartPage() {
                           variant="outline"
                           size="sm"
                           className="w-8 h-8 p-0 bg-gray-100 border-none"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.id, item.quantity + 1, item.size, item.color)}
                         >
                           <Plus className="w-3 h-3" />
                         </Button>

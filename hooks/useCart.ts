@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
+import { cartApi } from '@/lib/api'
 
 export interface CartItem {
-  id: string
+  id: string | number
   name: string
   price: number
   originalPrice?: number
@@ -10,20 +11,51 @@ export interface CartItem {
   quantity: number
   size?: string
   color?: string
+  sku_id?: number
 }
 
 export const useCart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [cartItemCount, setCartItemCount] = useState(0)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  // Load cart from localStorage
-  const loadCart = () => {
+  // Load cart from backend or localStorage
+  const loadCart = async () => {
     try {
+      const token = localStorage.getItem('authToken')
+      
+      if (token) {
+        // User is authenticated, fetch from backend
+        try {
+          const backendCart = await cartApi.get()
+          const items = backendCart.items.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            originalPrice: item.original_price,
+            brand: item.brand || 'MARQUE',
+            image: item.image || '/images/black-tshirt.jpg',
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            sku_id: item.sku_id
+          }))
+          setCartItems(items)
+          setCartItemCount(backendCart.total_items || items.reduce((total: number, item: CartItem) => total + item.quantity, 0))
+          setIsAuthenticated(true)
+          return
+        } catch (error) {
+          console.error('Failed to load cart from backend:', error)
+          // Fall back to localStorage
+        }
+      }
+      
+      // Load from localStorage if not authenticated or backend failed
       const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
       setCartItems(existingCart)
-      
       const totalCount = existingCart.reduce((total: number, item: CartItem) => total + item.quantity, 0)
       setCartItemCount(totalCount)
+      setIsAuthenticated(false)
     } catch (error) {
       console.error('Error loading cart:', error)
       setCartItems([])
@@ -43,7 +75,22 @@ export const useCart = () => {
   }
 
   // Add item to cart
-  const addToCart = (product: Omit<CartItem, 'quantity'>) => {
+  const addToCart = async (product: Omit<CartItem, 'quantity'>) => {
+    const token = localStorage.getItem('authToken')
+    
+    if (token && product.sku_id) {
+      // Add to backend cart
+      try {
+        await cartApi.add(product.sku_id, 1)
+        await loadCart() // Reload cart from backend
+        return
+      } catch (error) {
+        console.error('Failed to add to backend cart:', error)
+        // Fall back to localStorage
+      }
+    }
+    
+    // Add to localStorage cart
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => 
         item.id === product.id && 
@@ -70,7 +117,22 @@ export const useCart = () => {
   }
 
   // Remove item from cart
-  const removeFromCart = (productId: string, size?: string, color?: string) => {
+  const removeFromCart = async (productId: string | number, size?: string, color?: string) => {
+    const token = localStorage.getItem('authToken')
+    
+    if (token && isAuthenticated) {
+      // Remove from backend cart
+      try {
+        await cartApi.remove(Number(productId))
+        await loadCart() // Reload cart from backend
+        return
+      } catch (error) {
+        console.error('Failed to remove from backend cart:', error)
+        // Fall back to localStorage
+      }
+    }
+    
+    // Remove from localStorage cart
     setCartItems(prevItems => {
       const newItems = prevItems.filter(item => 
         !(item.id === productId && item.size === size && item.color === color)
@@ -81,12 +143,27 @@ export const useCart = () => {
   }
 
   // Update quantity
-  const updateQuantity = (productId: string, newQuantity: number, size?: string, color?: string) => {
+  const updateQuantity = async (productId: string | number, newQuantity: number, size?: string, color?: string) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId, size, color)
+      await removeFromCart(productId, size, color)
       return
     }
 
+    const token = localStorage.getItem('authToken')
+    
+    if (token && isAuthenticated) {
+      // Update backend cart
+      try {
+        await cartApi.updateQuantity(Number(productId), newQuantity)
+        await loadCart() // Reload cart from backend
+        return
+      } catch (error) {
+        console.error('Failed to update backend cart:', error)
+        // Fall back to localStorage
+      }
+    }
+
+    // Update localStorage cart
     setCartItems(prevItems => {
       const newItems = prevItems.map(item =>
         item.id === productId && item.size === size && item.color === color
@@ -99,7 +176,19 @@ export const useCart = () => {
   }
 
   // Clear cart
-  const clearCart = () => {
+  const clearCart = async () => {
+    const token = localStorage.getItem('authToken')
+    
+    if (token && isAuthenticated) {
+      // Clear backend cart
+      try {
+        await cartApi.clear()
+      } catch (error) {
+        console.error('Failed to clear backend cart:', error)
+      }
+    }
+    
+    // Clear local cart
     setCartItems([])
     setCartItemCount(0)
     localStorage.removeItem('cart')
@@ -139,3 +228,4 @@ export const useCart = () => {
     loadCart
   }
 }
+

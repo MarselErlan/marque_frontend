@@ -48,10 +48,14 @@ export async function apiRequest<T = any>(
   }
   
   // Set default headers
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    ...fetchOptions.headers,
+  }
+  
+  // Add any custom headers from options
+  if (fetchOptions.headers) {
+    Object.assign(headers, fetchOptions.headers)
   }
   
   // Add auth token if required

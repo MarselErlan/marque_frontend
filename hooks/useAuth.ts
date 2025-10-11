@@ -135,7 +135,8 @@ export const useAuth = () => {
       onSuccess?.()
     } else {
       if (onSuccess) {
-        setOnLoginSuccess(() => onSuccess)
+        // Store the callback function directly, not a function that returns it
+        setOnLoginSuccess(() => () => onSuccess())
       }
       setIsPhoneModalOpen(true)
     }

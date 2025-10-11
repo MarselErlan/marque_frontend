@@ -58,7 +58,7 @@ export default function WishlistPage() {
                 <div className="relative mb-3">
                     <div className="absolute top-2 right-2 z-10">
                       <button 
-                        onClick={() => removeFromWishlist(product.id)}
+                        onClick={() => removeFromWishlist(String(product.id))}
                         className="p-1.5 bg-gray-100/80 rounded-full hover:bg-red-100/80 transition-colors"
                       >
                         <Heart className="w-4 h-4 text-red-500 fill-current" />

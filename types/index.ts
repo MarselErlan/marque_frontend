@@ -9,7 +9,7 @@ export interface User {
 }
 
 export interface CartItem {
-  id: string
+  id: string | number
   name: string
   price: number
   originalPrice?: number
@@ -18,10 +18,11 @@ export interface CartItem {
   quantity: number
   size?: string
   color?: string
+  sku_id?: number
 }
 
 export interface Product {
-  id: string
+  id: string | number
   name: string
   brand: string
   price: number
