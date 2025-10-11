@@ -78,27 +78,26 @@ export default function MarquePage() {
       try {
         setIsLoadingInitial(true)
         
-        // Load banners and products in parallel
-        const [bannersData, productsData] = await Promise.all([
-          bannersApi.getAll().catch(err => {
-            console.error('Failed to load banners:', err)
-            return { hero_banners: [], promo_banners: [], category_banners: [] }
-          }),
-          productsApi.getBestSellers(25).catch(err => {
-            console.error('Failed to load products:', err)
-            return []
-          })
-        ])
-        
-        // Set banners
-        if (bannersData.hero_banners && bannersData.hero_banners.length > 0) {
-          setApiBanners(bannersData.hero_banners)
+        // Load products (banners are optional)
+        try {
+          const productsData = await productsApi.getBestSellers(25)
+          if (productsData && productsData.length > 0) {
+            setRandomProducts(productsData)
+            setHasMoreProducts(productsData.length === 25)
+          }
+        } catch (err) {
+          console.error('Failed to load products:', err)
         }
         
-        // Set products
-        if (productsData && productsData.length > 0) {
-          setRandomProducts(productsData)
-          setHasMoreProducts(productsData.length === 25) // If we got 25, there might be more
+        // Load banners separately (don't block on errors)
+        try {
+          const bannersData = await bannersApi.getAll()
+          if (bannersData?.hero_banners && bannersData.hero_banners.length > 0) {
+            setApiBanners(bannersData.hero_banners)
+          }
+        } catch (err) {
+          console.error('Failed to load banners (using fallback):', err)
+          // Fallback banners will be used automatically
         }
       } catch (error) {
         console.error('Failed to load initial data:', error)
@@ -216,122 +215,69 @@ export default function MarquePage() {
     }
   }
 
-  // Show catalog page if catalog is open
-  if (showCatalog) {
+  // Catalog Sidebar Overlay (slides in from left)
+  const CatalogSidebar = () => {
+    if (!showCatalog) return null
+    
     return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo */}
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-black tracking-wider">MARQUE</h1>
-              </div>
+      <>
+        {/* Backdrop overlay */}
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity animate-in fade-in duration-200"
+          onClick={() => setShowCatalog(false)}
+        />
+        
+        {/* Sidebar */}
+        <div className="fixed inset-y-0 left-0 w-80 bg-white shadow-xl z-50 overflow-y-auto animate-in slide-in-from-left duration-300">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-black">Каталог</h2>
+            <button 
+              onClick={() => setShowCatalog(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
 
-              {/* Navigation */}
-              <div className="flex items-center space-x-4">
-                <Button
-                  className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
-                  onClick={() => setShowCatalog(false)}
+          {/* Categories List */}
+          <nav className="p-4">
+            {catalogCategories.map((category, index) => (
+              <div key={index}>
+                <div
+                  className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 ${
+                    category.active
+                      ? "bg-brand text-white font-semibold"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setSelectedCatalogCategory(category.name)}
                 >
-                  <X className="w-4 h-4 mr-2" />
-                  Каталог
-                </Button>
-
-                {/* Search Bar */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    type="text"
-                    placeholder="Товар, бренд или артикул"
-                    className="pl-10 pr-4 py-2 w-80 bg-gray-100 border-0 rounded-lg"
-                  />
+                  {category.name}
                 </div>
-
-                {/* User Actions */}
-                <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-                    <Heart className="w-5 h-5 mb-1" />
-                    {isClient && wishlistItemCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                        {wishlistItemCount}
-                      </span>
-                    )}
-                    <span>Избранные</span>
-                  </Link>
-                  <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-                    <div className="relative">
-                    <ShoppingCart className="w-5 h-5 mb-1" />
-                      {isClient && cartItemCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                          {cartItemCount > 99 ? '99+' : cartItemCount}
-                        </span>
-                      )}
-                    </div>
-                    <span>Корзина</span>
-                  </Link>
-                  <button 
-                    onClick={handleHeaderLoginClick}
-                    className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
-                  >
-                    <User className="w-5 h-5 mb-1" />
-                    <span>{isClient && isLoggedIn ? "Профиль" : "Войти"}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Catalog Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex gap-8">
-            {/* Sidebar */}
-            <div className="w-64 bg-white rounded-lg p-6">
-              <nav className="space-y-2">
-                {catalogCategories.map((category, index) => (
-                  <div
-                    key={index}
-                    className={`px-4 py-3 rounded-lg cursor-pointer transition-colors ${
-                      category.active
-                        ? "bg-brand-50 text-brand border-l-4 border-brand"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                    onClick={() => setSelectedCatalogCategory(category.name)}
-                  >
-                    {category.name}
+                
+                {/* Show subcategories when this category is selected */}
+                {category.active && (
+                  <div className="ml-4 mt-2 mb-4 space-y-1">
+                    {getCurrentCategories().map((subcat, subIndex) => (
+                      <Link
+                        key={subIndex}
+                        href={`/subcategory/${selectedCatalogCategory.toLowerCase()}/${subcat.name.toLowerCase().replace(/\s+/g, "-")}`}
+                        className="block px-4 py-2 text-sm text-gray-600 hover:text-brand hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setShowCatalog(false)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>{subcat.name}</span>
+                          <span className="text-xs text-gray-400">{subcat.count}</span>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                ))}
-              </nav>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-black mb-8">{selectedCatalogCategory}</h1>
-              <div className="grid grid-cols-2 gap-6">
-                {getCurrentCategories().map((category, index) => (
-                  <Link
-                    key={index}
-                    href={`/subcategory/${selectedCatalogCategory.toLowerCase()}/${category.name.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="bg-white rounded-lg p-6 cursor-pointer hover:shadow-md transition-shadow flex items-center space-x-4"
-                  >
-                    <img
-                      src={category.image || "/placeholder.svg?height=60&width=60&query=clothing item"}
-                      alt={category.name}
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-black mb-1">{category.name}</h3>
-                      <span className="text-gray-500 text-sm">{category.count}</span>
-                    </div>
-                  </Link>
-                ))}
+                )}
               </div>
-            </div>
-          </div>
+            ))}
+          </nav>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -503,6 +449,10 @@ export default function MarquePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AuthModals {...auth} />
+      
+      {/* Catalog Sidebar - renders when showCatalog is true */}
+      <CatalogSidebar />
+      
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         {/* Desktop Header */}
