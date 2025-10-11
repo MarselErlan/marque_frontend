@@ -269,10 +269,10 @@ export default function MarquePage() {
 
         {/* Second Sidebar - Subcategories (opens to the right of first sidebar) */}
         {selectedCatalogCategory && (
-          <div className="fixed inset-y-0 left-80 w-[500px] bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200">
+          <div className="fixed inset-y-0 left-80 w-96 bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200">
             {/* Subcategories Header */}
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-black">{selectedCategoryName}</h3>
+            <div className="p-5 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-black">{selectedCategoryName}</h3>
             </div>
 
             {/* Subcategories List */}
