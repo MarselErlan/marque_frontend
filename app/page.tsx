@@ -261,42 +261,45 @@ export default function MarquePage() {
 
         {/* Second Sidebar - Subcategories (opens to the right of first sidebar) */}
         {selectedCatalogCategory && (
-          <div className="fixed inset-y-0 left-80 w-96 bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200">
+          <div className="fixed inset-y-0 left-80 w-[500px] bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200">
             {/* Subcategories Header */}
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <h3 className="text-lg font-bold text-black">{selectedCatalogCategory}</h3>
-              <p className="text-sm text-gray-500 mt-1">Выберите категорию</p>
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-2xl font-bold text-black">{selectedCatalogCategory}</h3>
             </div>
 
-            {/* Subcategories Grid */}
+            {/* Subcategories List */}
             <div className="p-4">
-              <div className="grid grid-cols-2 gap-3">
-                {getCurrentCategories().map((subcat, subIndex) => (
-                  <Link
-                    key={subIndex}
-                    href={`/subcategory/${selectedCatalogCategory.toLowerCase()}/${subcat.name.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="block bg-gray-50 hover:bg-brand-50 rounded-lg p-4 transition-colors group"
-                    onClick={() => setShowCatalog(false)}
-                  >
-                    {/* Subcategory Image */}
-                    <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden">
+              {getCurrentCategories().map((subcat, subIndex) => (
+                <Link
+                  key={subIndex}
+                  href={`/subcategory/${selectedCatalogCategory.toLowerCase()}/${subcat.name.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
+                  onClick={() => setShowCatalog(false)}
+                >
+                  {/* Left: Icon + Name */}
+                  <div className="flex items-center space-x-4 flex-1">
+                    {/* Subcategory Icon/Image */}
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       <img
                         src={subcat.image || "/images/black-tshirt.jpg"}
                         alt={subcat.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     
-                    {/* Subcategory Info */}
-                    <div>
-                      <h4 className="font-semibold text-sm text-black mb-1 group-hover:text-brand transition-colors">
-                        {subcat.name}
-                      </h4>
-                      <p className="text-xs text-gray-500">{subcat.count} товаров</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                    {/* Subcategory Name */}
+                    <span className="text-base font-normal text-black group-hover:text-brand transition-colors">
+                      {subcat.name}
+                    </span>
+                  </div>
+                  
+                  {/* Right: Count + Arrow */}
+                  <div className="flex items-center space-x-4 flex-shrink-0">
+                    <span className="text-sm text-gray-500 font-normal">{subcat.count}</span>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         )}
