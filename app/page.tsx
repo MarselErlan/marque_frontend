@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { API_CONFIG } from "@/lib/config"
-import { productsApi, bannersApi } from "@/lib/api"
+import { productsApi, bannersApi, categoriesApi } from "@/lib/api"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
@@ -25,8 +25,14 @@ export default function MarquePage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
-  const [selectedCatalogCategory, setSelectedCatalogCategory] = useState("Мужчинам")
+  const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<string | null>(null)
   const [cartItemCount, setCartItemCount] = useState(0)
+  
+  // API data states
+  const [apiCategories, setApiCategories] = useState<any[]>([])
+  const [apiSubcategories, setApiSubcategories] = useState<any[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false)
   
   // Authentication states
   const [countryCode, setCountryCode] = useState("+996")
@@ -118,6 +124,51 @@ export default function MarquePage() {
     }
   }, [searchParams])
 
+  // Load categories from API when catalog is opened
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (showCatalog && apiCategories.length === 0) {
+        try {
+          setLoadingCategories(true)
+          const response = await categoriesApi.getAll()
+          if (response?.categories && response.categories.length > 0) {
+            setApiCategories(response.categories)
+            // Set first category as selected by default
+            if (!selectedCatalogCategory && response.categories[0]?.slug) {
+              setSelectedCatalogCategory(response.categories[0].slug)
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load categories:', error)
+        } finally {
+          setLoadingCategories(false)
+        }
+      }
+    }
+    loadCategories()
+  }, [showCatalog])
+
+  // Load subcategories when a category is selected
+  useEffect(() => {
+    const loadSubcategories = async () => {
+      if (selectedCatalogCategory) {
+        try {
+          setLoadingSubcategories(true)
+          const response = await categoriesApi.getSubcategories(selectedCatalogCategory)
+          if (response?.subcategories) {
+            setApiSubcategories(response.subcategories)
+          }
+        } catch (error) {
+          console.error('Failed to load subcategories:', error)
+          setApiSubcategories([])
+        } finally {
+          setLoadingSubcategories(false)
+        }
+      }
+    }
+    loadSubcategories()
+  }, [selectedCatalogCategory])
+
   // New handler for header login button
   const handleHeaderLoginClick = () => {
     auth.requireAuth(() => {
@@ -169,64 +220,15 @@ export default function MarquePage() {
     console.log("Remove suggestion:", suggestion)
   }
 
-  const catalogCategories = [
-    { name: "Мужчинам", active: selectedCatalogCategory === "Мужчинам" },
-    { name: "Женщинам", active: selectedCatalogCategory === "Женщинам" },
-    { name: "Детям", active: selectedCatalogCategory === "Детям" },
-    { name: "Спорт", active: selectedCatalogCategory === "Спорт" },
-    { name: "Обувь", active: selectedCatalogCategory === "Обувь" },
-    { name: "Аксессуары", active: selectedCatalogCategory === "Аксессуары" },
-    { name: "Бренды", active: selectedCatalogCategory === "Бренды" },
-  ]
-
-  const menCategories = [
-    { name: "Футболки и поло", count: 2352, image: "/images/black-tshirt.jpg" },
-    { name: "Рубашки", count: 2375, image: "/images/black-tshirt.jpg" },
-    { name: "Свитшоты и худи", count: 8533, image: "/images/black-tshirt.jpg" },
-    { name: "Джинсы", count: 1254, image: "/images/black-tshirt.jpg" },
-    { name: "Брюки и шорты", count: 643, image: "/images/black-tshirt.jpg" },
-    { name: "Костюмы и пиджаки", count: 124, image: "/images/black-tshirt.jpg" },
-    { name: "Верхняя одежда", count: 74, image: "/images/black-tshirt.jpg" },
-    { name: "Спортивная одежда", count: 2362, image: "/images/black-tshirt.jpg" },
-    { name: "Нижнее белье", count: 7634, image: "/images/black-tshirt.jpg" },
-    { name: "Домашняя одежда", count: 23, image: "/images/black-tshirt.jpg" },
-  ]
-
-  const womenCategories = [
-    { name: "Платья", count: 1852, image: "/images/black-tshirt.jpg" },
-    { name: "Блузки и рубашки", count: 1275, image: "/images/black-tshirt.jpg" },
-    { name: "Футболки и топы", count: 2533, image: "/images/black-tshirt.jpg" },
-    { name: "Джинсы", count: 954, image: "/images/black-tshirt.jpg" },
-    { name: "Брюки и леггинсы", count: 743, image: "/images/black-tshirt.jpg" },
-    { name: "Юбки", count: 324, image: "/images/black-tshirt.jpg" },
-    { name: "Верхняя одежда", count: 174, image: "/images/black-tshirt.jpg" },
-    { name: "Спортивная одежда", count: 1362, image: "/images/black-tshirt.jpg" },
-    { name: "Нижнее белье", count: 2634, image: "/images/black-tshirt.jpg" },
-    { name: "Домашняя одежда", count: 123, image: "/images/black-tshirt.jpg" },
-  ]
-
-  const getCurrentCategories = () => {
-    switch (selectedCatalogCategory) {
-      case "Женщинам":
-        return womenCategories
-      case "Мужчинам":
-      default:
-        return menCategories
-    }
-  }
-
   // Catalog Sidebar Overlay (2-level navigation)
   const CatalogSidebar = () => {
     if (!showCatalog) return null
-    
+
+    // Get the selected category name for display
+    const selectedCategoryName = apiCategories.find(cat => cat.slug === selectedCatalogCategory)?.name || selectedCatalogCategory
+
     return (
       <>
-        {/* Backdrop overlay */}
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity animate-in fade-in duration-200"
-          onClick={() => setShowCatalog(false)}
-        />
-        
         {/* First Sidebar - Main Categories */}
         <div className="fixed inset-y-0 left-0 w-80 bg-white shadow-xl z-50 overflow-y-auto animate-in slide-in-from-left duration-300">
           {/* Sidebar Header */}
@@ -242,20 +244,26 @@ export default function MarquePage() {
 
           {/* Main Categories List */}
           <nav className="p-4">
-            {catalogCategories.map((category, index) => (
-              <div
-                key={index}
-                className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between ${
-                  category.active
-                    ? "bg-brand text-white font-semibold"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-                onClick={() => setSelectedCatalogCategory(category.name)}
-              >
-                <span>{category.name}</span>
-                <ArrowRight className={`w-4 h-4 ${category.active ? 'text-white' : 'text-gray-400'}`} />
-              </div>
-            ))}
+            {loadingCategories ? (
+              <div className="text-center py-8 text-gray-500">Загрузка...</div>
+            ) : apiCategories.length > 0 ? (
+              apiCategories.map((category) => (
+                <div
+                  key={category.id || category.slug}
+                  className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between ${
+                    selectedCatalogCategory === category.slug
+                      ? "bg-brand text-white font-semibold"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setSelectedCatalogCategory(category.slug)}
+                >
+                  <span>{category.name}</span>
+                  <ArrowRight className={`w-4 h-4 ${selectedCatalogCategory === category.slug ? 'text-white' : 'text-gray-400'}`} />
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">Нет категорий</div>
+            )}
           </nav>
         </div>
 
@@ -264,42 +272,48 @@ export default function MarquePage() {
           <div className="fixed inset-y-0 left-80 w-[500px] bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200">
             {/* Subcategories Header */}
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-2xl font-bold text-black">{selectedCatalogCategory}</h3>
+              <h3 className="text-2xl font-bold text-black">{selectedCategoryName}</h3>
             </div>
 
             {/* Subcategories List */}
             <div className="p-4">
-              {getCurrentCategories().map((subcat, subIndex) => (
-                <Link
-                  key={subIndex}
-                  href={`/subcategory/${selectedCatalogCategory.toLowerCase()}/${subcat.name.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
-                  onClick={() => setShowCatalog(false)}
-                >
-                  {/* Left: Icon + Name */}
-                  <div className="flex items-center space-x-4 flex-1">
-                    {/* Subcategory Icon/Image */}
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      <img
-                        src={subcat.image || "/images/black-tshirt.jpg"}
-                        alt={subcat.name}
-                        className="w-full h-full object-cover"
-                      />
+              {loadingSubcategories ? (
+                <div className="text-center py-8 text-gray-500">Загрузка...</div>
+              ) : apiSubcategories.length > 0 ? (
+                apiSubcategories.map((subcat) => (
+                  <Link
+                    key={subcat.id || subcat.slug}
+                    href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
+                    className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
+                    onClick={() => setShowCatalog(false)}
+                  >
+                    {/* Left: Icon + Name */}
+                    <div className="flex items-center space-x-4 flex-1">
+                      {/* Subcategory Icon/Image */}
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <img
+                          src={subcat.image_url || subcat.image || "/images/black-tshirt.jpg"}
+                          alt={subcat.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      {/* Subcategory Name */}
+                      <span className="text-base font-normal text-black group-hover:text-brand transition-colors">
+                        {subcat.name}
+                      </span>
                     </div>
                     
-                    {/* Subcategory Name */}
-                    <span className="text-base font-normal text-black group-hover:text-brand transition-colors">
-                      {subcat.name}
-                    </span>
-                  </div>
-                  
-                  {/* Right: Count + Arrow */}
-                  <div className="flex items-center space-x-4 flex-shrink-0">
-                    <span className="text-sm text-gray-500 font-normal">{subcat.count}</span>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-                  </div>
-                </Link>
-              ))}
+                    {/* Right: Count + Arrow */}
+                    <div className="flex items-center space-x-4 flex-shrink-0">
+                      <span className="text-sm text-gray-500 font-normal">{subcat.product_count || 0}</span>
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">Нет подкатегорий</div>
+              )}
             </div>
           </div>
         )}

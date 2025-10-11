@@ -223,6 +223,9 @@ export const categoriesApi = {
   getDetail: (slug: string) =>
     apiRequest(`${API_CONFIG.ENDPOINTS.CATEGORY_DETAIL}/${slug}`),
   
+  getSubcategories: (categorySlug: string) =>
+    apiRequest<{ subcategories: any[] }>(`${API_CONFIG.ENDPOINTS.CATEGORIES}/${categorySlug}/subcategories`),
+  
   getSubcategoryProducts: (
     categorySlug: string,
     subcategorySlug: string,
