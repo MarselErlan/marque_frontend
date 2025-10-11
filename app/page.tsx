@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { API_CONFIG } from "@/lib/config"
-import { getProductsBySales } from "@/lib/products"
+import { productsApi, bannersApi } from "@/lib/api"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
@@ -36,10 +36,13 @@ export default function MarquePage() {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false)
   const [randomProducts, setRandomProducts] = useState<any[]>([])
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true)
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [bannerRotationIndex, setBannerRotationIndex] = useState(0)
   const [isClient, setIsClient] = useState(false)
-  // This comment is added to force a Railway redeployment.
+  const [apiBanners, setApiBanners] = useState<any[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasMoreProducts, setHasMoreProducts] = useState(true)
 
   const searchSuggestions = [
     "футболка",
@@ -68,6 +71,44 @@ export default function MarquePage() {
       setCartItemCount(0)
     }
   }
+
+  // Load initial data from API
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setIsLoadingInitial(true)
+        
+        // Load banners and products in parallel
+        const [bannersData, productsData] = await Promise.all([
+          bannersApi.getAll().catch(err => {
+            console.error('Failed to load banners:', err)
+            return { hero_banners: [], promo_banners: [], category_banners: [] }
+          }),
+          productsApi.getBestSellers(25).catch(err => {
+            console.error('Failed to load products:', err)
+            return []
+          })
+        ])
+        
+        // Set banners
+        if (bannersData.hero_banners && bannersData.hero_banners.length > 0) {
+          setApiBanners(bannersData.hero_banners)
+        }
+        
+        // Set products
+        if (productsData && productsData.length > 0) {
+          setRandomProducts(productsData)
+          setHasMoreProducts(productsData.length === 25) // If we got 25, there might be more
+        }
+      } catch (error) {
+        console.error('Failed to load initial data:', error)
+      } finally {
+        setIsLoadingInitial(false)
+      }
+    }
+    
+    loadInitialData()
+  }, [])
 
   // Load cart count on component mount
   useEffect(() => {
@@ -327,135 +368,51 @@ export default function MarquePage() {
     },
   ]
 
-  // Hero banners for rotation (design dimensions)
-  const heroBanners = [
+  // Hero banners for rotation - use API data or fallback to hardcoded
+  const fallbackHeroBanners = [
     {
       id: 'collection',
-      type: 'collection',
-      width: '712px',
-      height: '400px',
-      gradient: 'from-orange-400 to-orange-600',
-      content: (
-        <></>
-      )
+      title: 'Новая коллекция',
+      image_url: '/b93dc4af6b33446ca2a5472bc63797bc73a9eae2.png',
+      banner_type: 'hero' as const,
+      display_order: 0
     },
     {
       id: 'discount',
-      type: 'discount',
-      width: '900px',
-      height: '506px',
-      gradient: 'from-purple-500 via-pink-500 to-orange-500',
-      content: (
-        <>
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-6 right-12 w-24 h-24 bg-white/10 rounded-full animate-bounce"></div>
-            <div className="absolute bottom-12 left-8 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
-            <div className="absolute top-1/2 left-6 w-16 h-16 bg-white/10 rounded-full animate-ping"></div>
-          </div>
-        </>
-      )
+      title: 'Скидки',
+      image_url: '/fcdeeb08e8c20a6a5cf5276b59b60923dfb8c706(1).png',
+      banner_type: 'hero' as const,
+      display_order: 1
     },
     {
       id: 'quality',
-      type: 'quality',
-      width: '712px',
-      height: '400px',
-      gradient: 'from-green-400 to-green-600',
-      content: (
-        <></>
-      )
+      title: 'Качество',
+      image_url: '/5891ae04bafdf76a4d441c78c7e1f8a0a3a1d631.png',
+      banner_type: 'hero' as const,
+      display_order: 2
     }
   ]
+
+  // Use API banners if available, otherwise use fallback
+  const heroBanners = apiBanners.length > 0 ? apiBanners : fallbackHeroBanners
 
   // Dynamic carousel images from database (can be any amount)
   const [carouselImages, setCarouselImages] = useState<any[]>([])
 
-  // Fetch carousel images from database (dynamic amount)
-  const fetchCarouselImagesFromDB = async () => {
-    // TODO: Replace with actual API call to your database
-    // Example: const response = await fetch('/api/carousel-images')
-    // Example: return await response.json()
-    
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      // SIMULATION: Get images from centralized product dataset
-      // Use shared lib products to avoid broken image paths
-      const availableImages = getProductsBySales().map(product => ({
-        id: product.id,
-        src: product.image,
-        alt: product.name,
-        category: product.category,
-        brand: product.brand,
-        // Add any other database fields like price, rating, etc.
-      }))
-      
-      // Shuffle and return ALL available images from database
-      // The carousel will cycle through ALL of them, regardless of count
-      const shuffledImages = [...availableImages].sort(() => Math.random() - 0.5)
-      
-      console.log(`✅ Loaded ${shuffledImages.length} images from database for carousel`)
-      return shuffledImages // Dynamic amount based on database content
-    } catch (error) {
-      console.error('❌ Error fetching carousel images:', error)
-      return []
-    }
-  }
-
-  // Complete product database sorted by sales (best-selling first)
-  const allProducts = [
-    // Best-selling products first
-    { id: 1, name: "Футболка спорт. из хлопка", brand: "MARQUE", price: 2999, originalPrice: 3999, discount: true, image: "/images/black-tshirt.jpg", category: "men", sizes: "25", salesCount: 1247 },
-    { id: 5, name: "Кроссовки беговые", brand: "SPORT", price: 8999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "men", sizes: "40-45", salesCount: 985 },
-    { id: 2, name: "Джинсы slim fit", brand: "DENIM", price: 5999, originalPrice: 7999, discount: true, image: "/images/black-tshirt.jpg", category: "men", sizes: "30-36", salesCount: 876 },
-    { id: 6, name: "Платье летнее", brand: "BLOOM", price: 4599, originalPrice: 6599, discount: true, image: "/images/black-tshirt.jpg", category: "women", sizes: "XS-L", salesCount: 743 },
-    { id: 22, name: "Часы наручные", brand: "TIME", price: 8999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 692 },
-    { id: 3, name: "Худи oversized", brand: "STREET", price: 4999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "men", sizes: "S-XL", salesCount: 634 },
-    { id: 16, name: "Леггинсы спортивные", brand: "FIT", price: 3599, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "sport", sizes: "XS-L", salesCount: 587 },
-    { id: 9, name: "Джинсы высокая посадка", brand: "DENIM", price: 5499, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "women", sizes: "26-32", salesCount: 521 },
-    { id: 21, name: "Рюкзак городской", brand: "URBAN", price: 4999, originalPrice: 6999, discount: true, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 478 },
-    { id: 7, name: "Блузка шифоновая", brand: "ELEGANT", price: 3299, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "women", sizes: "36-42", salesCount: 456 },
-    { id: 20, name: "Кроссовки для зала", brand: "GYM", price: 7999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "sport", sizes: "36-45", salesCount: 423 },
-    { id: 4, name: "Рубашка классическая", brand: "CLASSIC", price: 3499, originalPrice: 4499, discount: true, image: "/images/black-tshirt.jpg", category: "men", sizes: "38-44", salesCount: 389 },
-    { id: 10, name: "Кардиган вязаный", brand: "COZY", price: 4299, originalPrice: 5299, discount: true, image: "/images/black-tshirt.jpg", category: "women", sizes: "S-XL", salesCount: 342 },
-    { id: 17, name: "Топ для фитнеса", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/images/black-tshirt.jpg", category: "sport", sizes: "S-L", salesCount: 298 },
-    { id: 24, name: "Сумка женская", brand: "FASHION", price: 5599, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 267 },
-    { id: 11, name: "Футболка детская", brand: "KIDS", price: 1999, originalPrice: 2499, discount: true, image: "/images/black-tshirt.jpg", category: "kids", sizes: "4-12", salesCount: 234 },
-    { id: 19, name: "Толстовка спортивная", brand: "SPORT", price: 4599, originalPrice: 5599, discount: true, image: "/images/black-tshirt.jpg", category: "sport", sizes: "S-XXL", salesCount: 212 },
-    { id: 8, name: "Юбка мини", brand: "YOUNG", price: 2799, originalPrice: 3799, discount: true, image: "/images/black-tshirt.jpg", category: "women", sizes: "S-L", salesCount: 187 },
-    { id: 14, name: "Кроссовки детские", brand: "SPORT", price: 4999, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "kids", sizes: "28-35", salesCount: 156 },
-    { id: 23, name: "Кепка бейсболка", brand: "STREET", price: 1999, originalPrice: 2499, discount: true, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "One", salesCount: 143 },
-    { id: 18, name: "Шорты беговые", brand: "RUN", price: 2599, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "sport", sizes: "S-XL", salesCount: 132 },
-    { id: 12, name: "Платье для девочки", brand: "PRINCESS", price: 3299, originalPrice: null, discount: false, image: "/images/black-tshirt.jpg", category: "kids", sizes: "4-10", salesCount: 119 },
-    { id: 25, name: "Ремень кожаный", brand: "LEATHER", price: 3299, originalPrice: 4299, discount: true, image: "/images/black-tshirt.jpg", category: "accessories", sizes: "90-110", salesCount: 98 },
-    { id: 15, name: "Куртка демисезон", brand: "WARM", price: 6999, originalPrice: 8999, discount: true, image: "/images/black-tshirt.jpg", category: "kids", sizes: "4-12", salesCount: 87 },
-      { id: 13, name: "Шорты для мальчика", brand: "ACTIVE", price: 2299, originalPrice: 2999, discount: true, image: "/black-t-shirt.png", category: "kids", sizes: "4-12", salesCount: 76 },
-    ]
-
-  // Use the optimized function from lib/products
-  const getProductsBySalesLocal = (count: number = 25) => {
-    const products = getProductsBySales()
-    const result = []
-    for (let i = 0; i < count; i++) {
-      const product = products[i % products.length]
-      result.push({
-        ...product,
-        id: `${product.id}-${Date.now()}-${i}`, // Unique ID for each instance
-      })
-    }
-    return result
-  }
-
-  // Load carousel images from database on component mount
+  // Carousel images are now loaded from the API-loaded products
   useEffect(() => {
-    const loadCarouselImages = async () => {
-      const images = await fetchCarouselImagesFromDB()
-      setCarouselImages(images)
+    if (randomProducts.length > 0) {
+      // Use product images for carousel
+      const carouselData = randomProducts.slice(0, 10).map(product => ({
+        id: product.id,
+        src: product.image || '/images/black-tshirt.jpg',
+        alt: product.title || product.name || 'Product',
+        category: product.category || 'all',
+        brand: product.brand_name || product.brand || 'MARQUE'
+      }))
+      setCarouselImages(carouselData)
     }
-    
-    loadCarouselImages()
-  }, [])
+  }, [randomProducts])
 
   // Banner rotation effect - every 10 seconds
   useEffect(() => {
@@ -491,11 +448,8 @@ export default function MarquePage() {
 
   // Infinite scroll effect
   useEffect(() => {
-    // Initial load - products ordered by sales
-    setRandomProducts(getProductsBySalesLocal(25))
-
-    const handleScroll = () => {
-      if (isLoadingMore) return
+    const handleScroll = async () => {
+      if (isLoadingMore || !hasMoreProducts || isLoadingInitial) return
 
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop
       const windowHeight = window.innerHeight
@@ -505,17 +459,31 @@ export default function MarquePage() {
       if (scrollTop + windowHeight >= documentHeight * 0.8) {
         setIsLoadingMore(true)
         
-        // Simulate loading delay
-        setTimeout(() => {
-          setRandomProducts(prev => [...prev, ...getProductsBySalesLocal(15)])
+        try {
+          // Calculate offset based on current products
+          const nextBatch = await productsApi.getBestSellers(15)
+          
+          if (nextBatch && nextBatch.length > 0) {
+            setRandomProducts(prev => [...prev, ...nextBatch])
+            // If we got less than requested, there's no more
+            if (nextBatch.length < 15) {
+              setHasMoreProducts(false)
+            }
+          } else {
+            setHasMoreProducts(false)
+          }
+        } catch (error) {
+          console.error('Failed to load more products:', error)
+          setHasMoreProducts(false)
+        } finally {
           setIsLoadingMore(false)
-        }, 500)
+        }
       }
     }
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [isLoadingMore])
+  }, [isLoadingMore, hasMoreProducts, isLoadingInitial])
 
   // Get current 3 images for carousel display (from any amount available in DB)
   const getCurrentCarouselImages = () => {
@@ -705,68 +673,32 @@ export default function MarquePage() {
                            'translateX(0)'
                 }}
               >
-                {/* Pure image/content without text overlay for focus on pictures */}
-                <div className={`w-full h-full bg-gradient-to-br ${banner.gradient} rounded-[24px] relative overflow-hidden`}>
-                  {banner.type === 'collection' && (
-                    <div className="relative h-full overflow-hidden">
-                      {/* Background Image */}
-                      <img 
-                        src="/b93dc4af6b33446ca2a5472bc63797bc73a9eae2.png" 
-                        alt="Collection Banner" 
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onError={(e) => { 
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement?.classList.add('bg-gradient-to-br', 'from-orange-400', 'to-orange-600');
-                        }}
-                      />
-                      {/* Overlay for depth */}
-                      <div className="absolute inset-0 bg-black/10"></div>
+                {/* Banner image with overlay */}
+                <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-[24px] relative overflow-hidden">
+                  <div className="relative h-full overflow-hidden">
+                    <img 
+                      src={banner.image_url || '/placeholder.jpg'} 
+                      alt={banner.title || 'Banner'} 
+                      className="absolute inset-0 w-full h-full object-cover"
+                      onError={(e) => { 
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    {/* Subtle overlay for depth */}
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    
+                    {/* Display title if available */}
+                    {banner.title && (
+                      <div className="absolute bottom-8 left-8 text-white">
+                        <h2 className="text-3xl font-bold drop-shadow-lg">{banner.title}</h2>
+                        {banner.subtitle && (
+                          <p className="text-lg mt-2 drop-shadow-md">{banner.subtitle}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                  )}
-                  
-                  {banner.type === 'discount' && (
-                    <div className="relative h-full overflow-hidden">
-                      {/* Background Image */}
-                      <img 
-                        src="/fcdeeb08e8c20a6a5cf5276b59b60923dfb8c706(1).png" 
-                        alt="Sale Banner" 
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onError={(e) => { 
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement?.classList.add('bg-gradient-to-br', 'from-purple-500', 'via-pink-500', 'to-orange-500');
-                        }}
-                      />
-                      {/* Overlay for text readability */}
-                      <div className="absolute inset-0 bg-black/20"></div>
-                      {/* Content */}
-                      <div className="flex items-center justify-center h-full relative">
-                        <div className="absolute inset-0 overflow-hidden">
-                          <div className="absolute top-12 right-12 w-24 h-24 bg-white/10 rounded-full animate-bounce"></div>
-                          <div className="absolute bottom-12 left-12 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
-                          <div className="absolute top-1/2 left-12 w-16 h-16 bg-white/10 rounded-full animate-ping"></div>
-          </div>
-                </div>
-            </div>
-                  )}
-                  
-                  {banner.type === 'quality' && (
-                    <div className="relative h-full overflow-hidden">
-                      {/* Background Image */}
-                      <img 
-                        src="/5891ae04bafdf76a4d441c78c7e1f8a0a3a1d631.png" 
-                        alt="Quality Banner" 
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onError={(e) => { 
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement?.classList.add('bg-gradient-to-br', 'from-green-400', 'to-green-600');
-                        }}
-                      />
-                      {/* Overlay for depth */}
-                      <div className="absolute inset-0 bg-black/10"></div>
-          </div>
-                  )}
-                </div>
-            </div>
+              </div>
             ))}
             
             {/* Navigation indicators */}
@@ -803,29 +735,22 @@ export default function MarquePage() {
                     (index === 0 ? 'translateX(calc(-50% - 45vw)) scale(0.9)' : 'translateX(calc(-50% + 45vw)) scale(0.9)'),
                 }}
               >
-                <div className={`w-full h-full bg-gradient-to-br ${banner.gradient} rounded-xl relative overflow-hidden`}>
-                  {banner.type === 'collection' && (
-                    <div className="relative h-full overflow-hidden">
-                      <img src="/b93dc4af6b33446ca2a5472bc63797bc73a9eae2.png" alt="Collection Banner" className="absolute inset-0 w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/10"></div>
-                    </div>
-                  )}
-                  {banner.type === 'discount' && (
-                    <div className="relative h-full overflow-hidden">
-                      <img src="/fcdeeb08e8c20a6a5cf5276b59b60923dfb8c706(1).png" alt="Sale Banner" className="absolute inset-0 w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white p-4">
-                        <span className="text-sm font-bold bg-yellow-400 text-black px-2 py-0.5 rounded-md">до -80%</span>
-                        <h2 className="text-3xl font-black mt-2">СКИДКИ</h2>
-                        <p className="text-lg font-bold">ПОСПЕЛИ</p>
+                <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl relative overflow-hidden">
+                  <div className="relative h-full overflow-hidden">
+                    <img 
+                      src={banner.mobile_image_url || banner.image_url || '/placeholder.jpg'} 
+                      alt={banner.title || 'Banner'} 
+                      className="absolute inset-0 w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    {/* Display title on mobile if available */}
+                    {banner.title && (
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <h3 className="text-xl font-bold drop-shadow-lg">{banner.title}</h3>
                       </div>
-                    </div>
-                  )}
-                  {banner.type === 'quality' && (
-                    <div className="relative h-full overflow-hidden">
-                      <img src="/5891ae04bafdf76a4d441c78c7e1f8a0a3a1d631.png" alt="Quality Banner" className="absolute inset-0 w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/10"></div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -849,55 +774,70 @@ export default function MarquePage() {
         <div className="px-4 md:px-0" style={{maxWidth: '1680px', margin: '0 auto'}}>
           {/* Products Grid */}
           <section className="mb-12">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6" style={{minHeight: '1156px'}}>
-              {randomProducts.map((product, i) => (
-                <Link
-                  key={`${product.id}-${i}`}
-                  href={`/product/${product.id}`}
-                  className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
-                >
-                  {/* Discount Badge */}
-                  <div className="relative mb-3">
-                    {product.discount && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
-                        %
-                  </div>
-                    )}
-                    <div className="absolute top-2 right-2 z-10">
-                      <button onClick={(e) => handleWishlistClick(e, product)}>
-                        <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
-                      </button>
+            {isLoadingInitial ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
+                <span className="ml-4 text-gray-600">Загружаем товары...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6" style={{minHeight: '1156px'}}>
+                {randomProducts.map((product, i) => (
+                  <Link
+                    key={`${product.id}-${i}`}
+                    href={`/product/${product.slug || product.id}`}
+                    className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                  >
+                    {/* Discount Badge */}
+                    <div className="relative mb-3">
+                      {product.discount_percent && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
+                          -{product.discount_percent}%
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2 z-10">
+                        <button onClick={(e) => handleWishlistClick(e, product)}>
+                          <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
+                        </button>
+                      </div>
+                      <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                        <img
+                          src={product.image || '/images/black-tshirt.jpg'}
+                          alt={product.title || product.name || 'Product'}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
                     </div>
-                    <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
-                      <img
-                        src="/images/black-tshirt.jpg"
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Product Info */}
-                  <div className="space-y-1">
-                    <div className="text-xs text-gray-500 uppercase font-medium">{product.brand}</div>
-                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
-                      {product.name}
-                    </h3>
                     
-                    {/* Price */}
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-base font-bold text-brand">{product.price} сом</span>
-                      {product.originalPrice && (
-                        <span className="text-xs text-gray-400 line-through">{product.originalPrice} сом</span>
+                    {/* Product Info */}
+                    <div className="space-y-1">
+                      <div className="text-xs text-gray-500 uppercase font-medium">
+                        {product.brand_name || product.brand || 'MARQUE'}
+                      </div>
+                      <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
+                        {product.title || product.name}
+                      </h3>
+                      
+                      {/* Price */}
+                      <div className="flex items-baseline space-x-2">
+                        <span className="text-base font-bold text-brand">
+                          {product.price_min || product.price} сом
+                        </span>
+                        {product.original_price_min && (
+                          <span className="text-xs text-gray-400 line-through">
+                            {product.original_price_min} сом
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Sales Count */}
+                      {product.sold_count && (
+                        <div className="text-xs text-gray-500">Продано {product.sold_count}</div>
                       )}
                     </div>
-                    
-                    {/* Size Info */}
-                    <div className="text-xs text-gray-500">Размеры {product.sizes}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            )}
             
             {/* Loading Indicator */}
             {isLoadingMore && (

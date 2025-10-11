@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronRight, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -8,87 +8,95 @@ import { Header } from "@/components/Header"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
-import { allProducts, Product } from "@/lib/products" // Using allProducts for recommendations
-
-const categoryData = {
-  muzhchinam: {
-    title: "Мужчинам",
-    subcategories: [
-      { name: "Футболки и поло", count: 2352, image: "/images/black-tshirt.jpg", slug: "futbolki-i-polo" },
-      { name: "Рубашки", count: 2375, image: "/images/black-tshirt.jpg", slug: "rubashki" },
-      { name: "Свитшоты и худи", count: 8533, image: "/images/black-tshirt.jpg", slug: "svitshoty-i-khudi" },
-      { name: "Джинсы", count: 1254, image: "/images/black-tshirt.jpg", slug: "dzhinsy" },
-      { name: "Брюки и шорты", count: 643, image: "/images/black-tshirt.jpg", slug: "bryuki-i-shorty" },
-      { name: "Костюмы и пиджаки", count: 124, image: "/images/black-tshirt.jpg", slug: "kostyumy-i-pidzhaki" },
-      { name: "Верхняя одежда", count: 74, image: "/images/black-tshirt.jpg", slug: "verkhnyaya-odezhda" },
-      { name: "Спортивная одежда", count: 2362, image: "/images/black-tshirt.jpg", slug: "sportivnaya-odezhda" },
-      { name: "Нижнее белье", count: 7634, image: "/images/black-tshirt.jpg", slug: "nizhnee-bele" },
-      { name: "Домашняя одежда", count: 23, image: "/images/black-tshirt.jpg", slug: "domashnyaya-odezhda" },
-    ],
-  },
-  zhenshchinam: {
-    title: "Женщинам",
-    subcategories: [
-      { name: "Платья", count: 1254, image: "/images/black-tshirt.jpg", slug: "platya" },
-      { name: "Блузки и рубашки", count: 864, image: "/images/black-tshirt.jpg", slug: "bluzki-i-rubashki" },
-      { name: "Юбки", count: 532, image: "/images/black-tshirt.jpg", slug: "yubki" },
-      { name: "Брюки и джинсы", count: 743, image: "/images/black-tshirt.jpg", slug: "bryuki-i-dzhinsy" },
-      { name: "Кофты и свитера", count: 1124, image: "/images/black-tshirt.jpg", slug: "kofty-i-svitera" },
-      { name: "Верхняя одежда", count: 234, image: "/images/black-tshirt.jpg", slug: "verkhnyaya-odezhda" },
-      { name: "Нижнее белье", count: 2341, image: "/images/black-tshirt.jpg", slug: "nizhnee-bele" },
-      { name: "Купальники", count: 145, image: "/images/black-tshirt.jpg", slug: "kupalniki" },
-    ],
-  },
-  detyam: {
-    title: "Детям",
-    subcategories: [
-      { name: "Для мальчиков", count: 1245, image: "/images/black-tshirt.jpg", slug: "dlya-malchikov" },
-      { name: "Для девочек", count: 1356, image: "/images/black-tshirt.jpg", slug: "dlya-devochek" },
-      { name: "Для малышей", count: 567, image: "/images/black-tshirt.jpg", slug: "dlya-malyshej" },
-      { name: "Школьная форма", count: 234, image: "/images/black-tshirt.jpg", slug: "shkolnaya-forma" },
-    ],
-  },
-  obuv: {
-    title: "Обувь",
-    subcategories: [
-      { name: "Кроссовки", count: 2341, image: "/images/white-sneakers.jpg", slug: "krossovki" },
-      { name: "Ботинки", count: 654, image: "/images/white-sneakers.jpg", slug: "botinki" },
-      { name: "Туфли", count: 432, image: "/images/white-sneakers.jpg", slug: "tufli" },
-      { name: "Сандалии", count: 321, image: "/images/white-sneakers.jpg", slug: "sandalii" },
-      { name: "Домашняя обувь", count: 156, image: "/images/white-sneakers.jpg", slug: "domashnyaya-obuv" },
-    ],
-  },
-  sport: {
-    title: "Спорт",
-    subcategories: [
-      { name: "Спортивная одежда", count: 1234, image: "/images/male-model-hoodie.jpg", slug: "sportivnaya-odezhda" },
-      { name: "Обувь для спорта", count: 876, image: "/images/white-sneakers.jpg", slug: "obuv-dlya-sporta" },
-      { name: "Аксессуары", count: 543, image: "/images/black-tshirt.jpg", slug: "aksessuary" },
-      { name: "Фитнес", count: 321, image: "/images/black-tshirt.jpg", slug: "fitnes" },
-    ],
-  },
-}
+import { categoriesApi, productsApi } from "@/lib/api"
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const auth = useAuth()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
-  const category = categoryData[params.slug as keyof typeof categoryData]
-  const recommendedProducts = allProducts.slice(0, 8) // Use real product data
+  
+  const [category, setCategory] = useState<any>(null)
+  const [subcategories, setSubcategories] = useState<any[]>([])
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!category) {
-    return <div>Category not found</div>
-  }
+  // Load category data from API
+  useEffect(() => {
+    const loadCategory = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        const categoryData = await categoriesApi.getDetail(params.slug)
+        setCategory(categoryData.category)
+        setSubcategories(categoryData.subcategories || [])
+        
+        // Load recommended products (best sellers from any category)
+        const products = await productsApi.getBestSellers(8)
+        setRecommendedProducts(products)
+      } catch (err: any) {
+        console.error('Failed to load category:', err)
+        setError(err.message || 'Failed to load category')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    if (params.slug) {
+      loadCategory()
+    }
+  }, [params.slug])
 
-  const handleWishlistClick = (e: React.MouseEvent, product: Product) => {
+  const handleWishlistClick = (e: React.MouseEvent, product: any) => {
     e.preventDefault()
     e.stopPropagation()
     auth.requireAuth(() => {
-      if (isInWishlist(product.id)) {
-        removeFromWishlist(product.id)
+      const productId = product.id.toString()
+      if (isInWishlist(productId)) {
+        removeFromWishlist(productId)
       } else {
         addToWishlist(product)
       }
     })
+  }
+  
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AuthModals {...auth} />
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <Header />
+        </header>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="flex items-center justify-center flex-col">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
+            <p className="text-gray-600">Загружаем категорию...</p>
+          </div>
+        </main>
+      </div>
+    )
+  }
+  
+  // Error state
+  if (error || !category) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AuthModals {...auth} />
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <Header />
+        </header>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Категория не найдена</h1>
+          <p className="text-gray-600 mb-8">{error || 'Запрошенная категория не существует'}</p>
+          <Link href="/">
+            <Button className="bg-brand hover:bg-brand-hover text-white">
+              Вернуться на главную
+            </Button>
+          </Link>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -105,65 +113,87 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             Главная
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="font-medium text-black">{category.title}</span>
+          <span className="font-medium text-black">{category.name}</span>
         </div>
 
         {/* Subcategories Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
-          {category.subcategories.map((subcategory, index) => (
-            <Link
-              key={index}
-              href={`/subcategory/${params.slug}/${subcategory.slug}`}
-              className="bg-white rounded-lg p-4 hover:shadow-lg transition-shadow group flex items-center gap-4"
-            >
-              <img
-                src={subcategory.image || "/placeholder.svg"}
-                alt={subcategory.name}
-                className="w-16 h-16 object-cover rounded-lg"
-              />
-              <div className="flex-1">
-                <h3 className="font-medium text-black group-hover:text-brand">{subcategory.name}</h3>
-                <p className="text-gray-500 text-sm">{subcategory.count} товаров</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Recommended Products */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-black mb-6">Рекомендуем из этой категории</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {recommendedProducts.map((product) => (
-              <Link key={product.id} href={`/product/${product.id}`} className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group">
-                <div className="relative mb-3">
-                   <div className="absolute top-2 right-2 z-10">
-                    <button onClick={(e) => handleWishlistClick(e, product)} className="p-1.5 bg-gray-100/80 rounded-full">
-                      <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
-                    </button>
-                  </div>
-                  <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
-                    <img
-                      src={product.image || "/images/black-tshirt.jpg"}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs text-gray-500 uppercase font-medium">{product.brand}</div>
-                  <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">{product.name}</h3>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-base font-bold text-brand">{product.price} сом</span>
-                    {product.originalPrice && (
-                      <span className="text-xs text-gray-400 line-through">{product.originalPrice} сом</span>
-                    )}
-                  </div>
-                   <div className="text-xs text-gray-500">Продано {product.salesCount}</div>
+        {subcategories && subcategories.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
+            {subcategories.map((subcategory) => (
+              <Link
+                key={subcategory.id}
+                href={`/subcategory/${params.slug}/${subcategory.slug}`}
+                className="bg-white rounded-lg p-4 hover:shadow-lg transition-shadow group flex items-center gap-4"
+              >
+                <img
+                  src={subcategory.image_url || "/images/black-tshirt.jpg"}
+                  alt={subcategory.name}
+                  className="w-16 h-16 object-cover rounded-lg"
+                />
+                <div className="flex-1">
+                  <h3 className="font-medium text-black group-hover:text-brand">{subcategory.name}</h3>
+                  <p className="text-gray-500 text-sm">{subcategory.product_count} товаров</p>
                 </div>
               </Link>
             ))}
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Подкатегории не найдены</p>
+          </div>
+        )}
+
+        {/* Recommended Products */}
+        {recommendedProducts && recommendedProducts.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-black mb-6">Рекомендуем из этой категории</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {recommendedProducts.map((product) => (
+                <Link 
+                  key={product.id} 
+                  href={`/product/${product.slug || product.id}`} 
+                  className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                >
+                  <div className="relative mb-3">
+                    <div className="absolute top-2 right-2 z-10">
+                      <button onClick={(e) => handleWishlistClick(e, product)} className="p-1.5 bg-gray-100/80 rounded-full">
+                        <Heart className={`w-4 h-4 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
+                      </button>
+                    </div>
+                    <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                      <img
+                        src={product.image || "/images/black-tshirt.jpg"}
+                        alt={product.title || product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs text-gray-500 uppercase font-medium">
+                      {product.brand_name || product.brand || 'MARQUE'}
+                    </div>
+                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
+                      {product.title || product.name}
+                    </h3>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-base font-bold text-brand">
+                        {product.price_min || product.price} сом
+                      </span>
+                      {product.original_price_min && (
+                        <span className="text-xs text-gray-400 line-through">
+                          {product.original_price_min} сом
+                        </span>
+                      )}
+                    </div>
+                    {product.sold_count !== undefined && (
+                      <div className="text-xs text-gray-500">Продано {product.sold_count}</div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Footer */}

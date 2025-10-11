@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { Star, ArrowRight, Check, Heart, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { allProducts, getProductsBySales, Product as ProductType } from "@/lib/products"
+import { productsApi } from "@/lib/api"
 import { useParams, useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
@@ -17,8 +17,8 @@ export default function ProductDetailPage() {
   const auth = useAuth()
   const { isLoggedIn } = auth
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
-  const [selectedSize, setSelectedSize] = useState("M")
-  const [selectedColor, setSelectedColor] = useState("black")
+  const [selectedSize, setSelectedSize] = useState("")
+  const [selectedColor, setSelectedColor] = useState("")
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
@@ -28,115 +28,50 @@ export default function ProductDetailPage() {
   const [isClient, setIsClient] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
-
-  // Mock product data - in real app this would come from API
-  const product = {
-    id: params.id,
-    name: "Футболка спорт из хлопка",
-    price: "2999 сом",
-    rating: 4.4,
-    reviewCount: 20,
-    sold: 120,
-    images: [
-      "/images/black-tshirt.jpg",
-      "/images/black-tshirt.jpg",
-      "/images/black-tshirt.jpg",
-      "/images/black-tshirt.jpg",
-    ],
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: [
-      { name: "black", label: "Чёрный", color: "#000000" },
-      { name: "white", label: "Белый", color: "#FFFFFF" },
-    ],
-    description: `В нем сочетается, что мы ценим в спортивной одежде: быстро сохнущий, с легким охлаждающим эффектом, эластичный и дышащий. Эта футболка обеспечивает максимальный комфорт во время тренировок. Футболка обладает отличной посадкой, высоким качеством материалов, отличным качеством пошива и стильным дизайном.`,
-    specifications: {
-      Пол: "Мужской/Женский",
-      Цвет: "Чёрный",
-      Материал: "100% хлопок, 180г/м²",
-      Сезон: "Мужской",
-      Страна: "Турция",
-      Бренд: "Турция",
-    },
-  }
-
-  const reviews = [
-    {
-      id: 1,
-      author: "Aza De Artma",
-      rating: 5,
-      date: "11/09/2024",
-      text: "Я нет сомнений, что эта одежда спортивная одежда будет радовать меня с удобной посадкой и высоким качеством материалов. Рекомендую всем спортсменам! Товары хорошей качества характеристики товара соответствуют заявленным показателям, высокое качество пошива...",
-      images: [
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-      ],
-    },
-    {
-      id: 2,
-      author: "Aza De Artma",
-      rating: 5,
-      date: "11/09/2024",
-      text: "Я нет сомнений, что эта одежда спортивная одежда будет радовать меня с удобной посадкой и высоким качеством материалов. Рекомендую всем спортсменам! Товары хорошей качества характеристики товара соответствуют заявленным показателям, высокое качество пошива...",
-      images: [
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-      ],
-    },
-    {
-      id: 3,
-      author: "Aza De Artma",
-      rating: 5,
-      date: "11/09/2024",
-      text: "Я нет сомнений, что эта одежда спортивная одежда будет радовать меня с удобной посадкой и высоким качеством материалов. Рекомендую всем спортсменам! Товары хорошей качества характеристики товара соответствуют заявленным показателям, высокое качество пошива...",
-      images: [
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-        "/images/black-tshirt.jpg",
-      ],
-    },
-  ]
-
-  const similarProducts = [
-    {
-      id: 1,
-      name: "Футболка спорт из хлопка",
-      price: "2999 сом",
-      image: "/images/black-tshirt.jpg",
-      sold: 23,
-    },
-    {
-      id: 2,
-      name: "Футболка спорт из хлопка",
-      price: "2999 сом",
-      image: "/images/black-tshirt.jpg",
-      sold: 23,
-    },
-    {
-      id: 3,
-      name: "Футболка спорт из хлопка",
-      price: "2999 сом",
-      image: "/images/black-tshirt.jpg",
-      sold: 23,
-    },
-    {
-      id: 4,
-      name: "Футболка спорт из хлопка",
-      price: "2999 сом",
-      image: "/images/black-tshirt.jpg",
-      sold: 23,
-    },
-  ]
-
-  // Country codes for phone input
-  const countryCodes = [
-    { code: "+996", country: "KG", flag: "🇰🇬", placeholder: "505-23-12-55" },
-    { code: "+1", country: "US", flag: "🇺🇸", placeholder: "555-123-4567" }
-  ]
+  
+  // API state
+  const [product, setProduct] = useState<any>(null)
+  const [similarProducts, setSimilarProducts] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Load product data from API
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // Get product slug from params (could be slug or id)
+        const slug = params.id as string
+        
+        const productData = await productsApi.getDetail(slug)
+        setProduct(productData)
+        
+        // Set similar products
+        if (productData.similar_products) {
+          setSimilarProducts(productData.similar_products)
+        }
+        
+        // Set default size and color
+        if (productData.available_sizes && productData.available_sizes.length > 0) {
+          setSelectedSize(productData.available_sizes[0])
+        }
+        if (productData.available_colors && productData.available_colors.length > 0) {
+          setSelectedColor(productData.available_colors[0])
+        }
+      } catch (err: any) {
+        console.error('Failed to load product:', err)
+        setError(err.message || 'Failed to load product')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    if (params.id) {
+      loadProduct()
+    }
+  }, [params.id])
 
   // Load cart count from localStorage
   const loadCartCount = () => {
@@ -243,7 +178,46 @@ export default function ProductDetailPage() {
   }
 
   if (!isClient) {
-    return null // or a loading spinner
+    return null
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AuthModals {...auth} />
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <Header />
+        </header>
+        <main className="max-w-7xl mx-auto lg:px-8 py-20">
+          <div className="flex items-center justify-center flex-col">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
+            <p className="text-gray-600">Загружаем товар...</p>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AuthModals {...auth} />
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <Header />
+        </header>
+        <main className="max-w-7xl mx-auto lg:px-8 py-20 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Товар не найден</h1>
+          <p className="text-gray-600 mb-8">{error || 'Запрошенный товар не существует'}</p>
+          <Link href="/">
+            <Button className="bg-brand hover:bg-brand-hover text-white">
+              Вернуться на главную
+            </Button>
+          </Link>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -258,15 +232,19 @@ export default function ProductDetailPage() {
       <main className="max-w-7xl mx-auto lg:px-8 py-4 lg:py-8">
         {/* Breadcrumb - Hidden on Mobile */}
         <nav className="hidden lg:flex items-center space-x-2 text-sm text-gray-600 mb-8 px-4">
-          <Link href="/category/мужчинам" className="hover:text-brand">
-            Мужчинам
+          <Link href="/" className="hover:text-brand">
+            {product.breadcrumbs?.[0]?.name || 'Главная'}
           </Link>
+          {product.breadcrumbs && product.breadcrumbs.slice(1, -1).map((crumb: any, idx: number) => (
+            <>
+              <span key={`sep-${idx}`}>›</span>
+              <Link key={crumb.slug} href={`/category/${crumb.slug}`} className="hover:text-brand">
+                {crumb.name}
+              </Link>
+            </>
+          ))}
           <span>›</span>
-          <Link href="/subcategory/мужчинам/футболки-и-поло" className="hover:text-brand">
-            Футболки и поло
-          </Link>
-          <span>›</span>
-          <span className="text-gray-900">{product.name}</span>
+          <span className="text-gray-900">{product.title}</span>
         </nav>
 
         {/* Product Section */}
@@ -277,121 +255,150 @@ export default function ProductDetailPage() {
             <div className="lg:hidden relative">
               <div className="aspect-square bg-white overflow-hidden">
                 <img
-                  src={product.images[selectedImageIndex] || "/images/black-tshirt.jpg"}
-                  alt={product.name}
+                  src={product.images?.[selectedImageIndex]?.url || "/images/black-tshirt.jpg"}
+                  alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                {product.images.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`w-2 h-2 rounded-full ${selectedImageIndex === index ? 'bg-brand' : 'bg-gray-300'}`}
-                    onClick={() => setSelectedImageIndex(index)}
-                  />
-                ))}
-              </div>
+              {product.images && product.images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                  {product.images.map((_: any, index: number) => (
+                    <button
+                      key={index}
+                      className={`w-2 h-2 rounded-full ${selectedImageIndex === index ? 'bg-brand' : 'bg-gray-300'}`}
+                      onClick={() => setSelectedImageIndex(index)}
+                    />
+                  ))}
+                </div>
+              )}
               <button 
                 onClick={handleWishlist}
                 className="absolute top-4 right-4 p-2 bg-white/80 rounded-full"
               >
-                <Heart className={`w-6 h-6 ${isInWishlist(product.id as string) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
+                <Heart className={`w-6 h-6 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
               </button>
             </div>
             
             {/* Main Image - Desktop */}
             <div className="hidden lg:block aspect-square bg-white rounded-lg overflow-hidden">
               <img
-                src={product.images[selectedImageIndex] || "/images/black-tshirt.jpg"}
-                alt={product.name}
+                src={product.images?.[selectedImageIndex]?.url || "/images/black-tshirt.jpg"}
+                alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
                 className="w-full h-full object-cover"
               />
             </div>
 
             {/* Thumbnail Images - Desktop */}
-            <div className="hidden lg:flex space-x-2 px-4 lg:px-0">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                    selectedImageIndex === index ? "border-brand" : "border-gray-200"
-                  }`}
-                  onClick={() => setSelectedImageIndex(index)}
-                >
-                  <img
-                    src={image || "/images/black-tshirt.jpg"}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
+            {product.images && product.images.length > 1 && (
+              <div className="hidden lg:flex space-x-2 px-4 lg:px-0">
+                {product.images.map((image: any, index: number) => (
+                  <button
+                    key={image.id || index}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                      selectedImageIndex === index ? "border-brand" : "border-gray-200"
+                    }`}
+                    onClick={() => setSelectedImageIndex(index)}
+                  >
+                    <img
+                      src={image.url || "/images/black-tshirt.jpg"}
+                      alt={image.alt_text || `${product.title} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
           <div className="space-y-6 px-4 lg:px-0 mt-4 lg:mt-0">
             <div>
-              <p className="text-sm text-gray-500">H&M</p>
-              <h1 className="text-xl lg:text-3xl font-bold text-black mb-2">{product.name}</h1>
+              <p className="text-sm text-gray-500">{product.brand?.name || 'MARQUE'}</p>
+              <h1 className="text-xl lg:text-3xl font-bold text-black mb-2">{product.title}</h1>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
-                <span>Продано {product.sold}</span>
+                <span>Продано {product.sold_count || 0}</span>
                 <div className="flex items-center space-x-1">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
                         className={`w-4 h-4 ${
-                          i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                          i < Math.floor(product.rating_avg || 0) ? "text-yellow-400 fill-current" : "text-gray-300"
                         }`}
                       />
                     ))}
                   </div>
                   <span>
-                    {product.rating} ({product.reviewCount})
+                    {product.rating_avg?.toFixed(1) || '0.0'} ({product.rating_count || 0})
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Size Selection */}
-            <div>
-              <h3 className="text-base lg:text-lg font-semibold text-black mb-3">Размер</h3>
-              <div className="flex space-x-2">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    className={`px-4 py-2 border rounded-lg flex-1 justify-center ${
-                      selectedSize === size
-                        ? "border-brand bg-brand-50 text-brand font-semibold"
-                        : "border-gray-300 text-gray-700 hover:border-gray-400"
-                    }`}
-                    onClick={() => setSelectedSize(size)}
-                  >
-                    <span className="text-xs text-gray-400">RUS</span> {size}
-                  </button>
-                ))}
+            {product.available_sizes && product.available_sizes.length > 0 && (
+              <div>
+                <h3 className="text-base lg:text-lg font-semibold text-black mb-3">Размер</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.available_sizes.map((size: string) => (
+                    <button
+                      key={size}
+                      className={`px-4 py-2 border rounded-lg ${
+                        selectedSize === size
+                          ? "border-brand bg-brand-50 text-brand font-semibold"
+                          : "border-gray-300 text-gray-700 hover:border-gray-400"
+                      }`}
+                      onClick={() => setSelectedSize(size)}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Color Selection */}
-            <div>
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-base lg:text-lg font-semibold text-black">Цвет</h3>
-                <span className="text-sm text-gray-600">Чёрный</span>
+            {product.available_colors && product.available_colors.length > 0 && (
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-base lg:text-lg font-semibold text-black">Цвет</h3>
+                  <span className="text-sm text-gray-600 capitalize">{selectedColor || 'Выберите цвет'}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {product.available_colors.map((color: string) => (
+                    <button
+                      key={color}
+                      className={`px-4 py-2 border rounded-lg capitalize ${
+                        selectedColor === color
+                          ? "border-brand bg-brand-50 text-brand font-semibold"
+                          : "border-gray-300 text-gray-700 hover:border-gray-400"
+                      }`}
+                      onClick={() => setSelectedColor(color)}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex space-x-2">
-                {product.colors.map((color) => (
-                  <button
-                    key={color.name}
-                    className={`w-10 h-10 rounded-full border-2 ${
-                      selectedColor === color.name ? "border-brand" : "border-gray-300"
-                    }`}
-                    style={{ backgroundColor: color.color }}
-                    onClick={() => setSelectedColor(color.name)}
-                    title={color.label}
-                  />
-                ))}
+            )}
+            
+            {/* Price */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-bold text-brand">
+                  {product.price_min} сом
+                </span>
+                {product.skus?.some((sku: any) => sku.original_price) && (
+                  <span className="text-lg text-gray-400 line-through">
+                    {product.skus.find((sku: any) => sku.original_price)?.original_price} сом
+                  </span>
+                )}
               </div>
+              {product.price_min !== product.price_max && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Цена варьируется от {product.price_min} до {product.price_max} сом в зависимости от размера и цвета
+                </p>
+              )}
             </div>
 
             {/* Action Buttons - Desktop */}
@@ -438,132 +445,148 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Product Description */}
-        <section className="mb-12 px-4 lg:px-0">
-          <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">О товаре</h2>
-          <p className="text-gray-700 leading-relaxed mb-6 text-sm">{product.description}</p>
+        {product.description && (
+          <section className="mb-12 px-4 lg:px-0">
+            <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">О товаре</h2>
+            <p className="text-gray-700 leading-relaxed mb-6 text-sm">{product.description}</p>
 
-          {/* Specifications Table */}
-          <div className="bg-white rounded-lg p-4 lg:p-6">
-            <div className="space-y-3 text-sm">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="flex justify-between py-2 border-b border-gray-100 last:border-b-0">
-                  <span className="text-gray-600">{key}</span>
-                  <span className="text-black font-medium">{value}</span>
+            {/* Specifications Table */}
+            {product.attributes && Object.keys(product.attributes).length > 0 && (
+              <div className="bg-white rounded-lg p-4 lg:p-6">
+                <h3 className="font-semibold text-black mb-4">Характеристики</h3>
+                <div className="space-y-3 text-sm">
+                  {Object.entries(product.attributes).map(([key, value]) => (
+                    <div key={key} className="flex justify-between py-2 border-b border-gray-100 last:border-b-0">
+                      <span className="text-gray-600">{key}</span>
+                      <span className="text-black font-medium">{value as string}</span>
+                    </div>
+                  ))}
+                  {/* Add category and subcategory info */}
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600">Категория</span>
+                    <span className="text-black font-medium">{product.category?.name}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100 last:border-b-0">
+                    <span className="text-gray-600">Подкатегория</span>
+                    <span className="text-black font-medium">{product.subcategory?.name}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Reviews Section */}
+        {product.reviews && product.reviews.length > 0 && (
+          <section className="mb-12 px-4 lg:px-0">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl lg:text-2xl font-bold text-black">
+                Отзывы ({product.rating_count || product.reviews.length})
+              </h2>
+            </div>
+
+            <div className="flex space-x-4 overflow-x-auto pb-4 -mx-4 px-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:mx-0 lg:px-0">
+              {product.reviews.slice(0, 3).map((review: any) => (
+                <div key={review.id} className="bg-white rounded-lg p-4 flex-shrink-0 w-80 lg:w-auto">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 bg-brand-light rounded-full flex items-center justify-center">
+                      <span className="text-brand font-bold">★</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-black">Покупатель</h4>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3 h-3 ${
+                                i < review.rating ? "text-yellow-400 fill-current" : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {new Date(review.created_at).toLocaleDateString('ru-RU')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {review.text && (
+                    <p className="text-gray-700 text-sm line-clamp-4">{review.text}</p>
+                  )}
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* Reviews Section */}
-        <section className="mb-12 px-4 lg:px-0">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl lg:text-2xl font-bold text-black">Отзывы</h2>
-            <Button variant="ghost" className="text-brand hover:text-purple-700 text-sm">
-              ВСЕ ОТЗЫВЫ
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-
-          <div className="flex space-x-4 overflow-x-auto pb-4 -mx-4 px-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:mx-0 lg:px-0">
-            {reviews.map((review) => (
-              <div key={review.id} className="bg-white rounded-lg p-4 flex-shrink-0 w-80 lg:w-auto">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-brand-light rounded-full flex items-center justify-center">
-                    <img src={review.images[0]} alt="author" className="w-full h-full object-cover rounded-full" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-black">{review.author}</h4>
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${
-                              i < review.rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-gray-500">{review.date}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-gray-700 text-sm mb-4 line-clamp-4">{review.text}</p>
-
-                <div className="flex space-x-2">
-                  {review.images.slice(0, 4).map((image, index) => (
-                    <img
-                      key={index}
-                      src={image || "/images/black-tshirt.jpg"}
-                      alt={`Review ${index + 1}`}
-                      className="w-12 h-12 object-cover rounded"
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Similar Products */}
-        <section className="mb-12 px-4 lg:px-0">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl lg:text-2xl font-bold text-black">Похожие товары</h2>
-            <Button variant="ghost" className="text-brand hover:text-purple-700 text-sm">
-              ВСЕ ТОВАРЫ
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
+        {similarProducts && similarProducts.length > 0 && (
+          <section className="mb-12 px-4 lg:px-0">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl lg:text-2xl font-bold text-black">Похожие товары</h2>
+              {product.subcategory?.slug && (
+                <Link href={`/subcategory/${product.category?.slug}/${product.subcategory.slug}`}>
+                  <Button variant="ghost" className="text-brand hover:text-purple-700 text-sm">
+                    ВСЕ ТОВАРЫ
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
+              )}
+            </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-            {similarProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/product/${product.id}`}
-                className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
-              >
-                <div className="relative mb-3">
-                  <div className="absolute top-2 right-2 z-10">
-                    <button 
-                      className="p-1.5 bg-gray-100/80 rounded-full"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        auth.requireAuth(() => {
-                          const productId = product.id.toString()
-                          if (isInWishlist(productId)) {
-                            removeFromWishlist(productId)
-                          } else {
-                            addToWishlist(product as any)
-                          }
-                        })
-                      }}
-                    >
-                      <Heart className={`w-4 h-4 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
-                    </button>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+              {similarProducts.map((similarProduct) => (
+                <Link
+                  key={similarProduct.id}
+                  href={`/product/${similarProduct.slug}`}
+                  className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                >
+                  <div className="relative mb-3">
+                    <div className="absolute top-2 right-2 z-10">
+                      <button 
+                        className="p-1.5 bg-gray-100/80 rounded-full"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          auth.requireAuth(() => {
+                            const productId = similarProduct.id.toString()
+                            if (isInWishlist(productId)) {
+                              removeFromWishlist(productId)
+                            } else {
+                              addToWishlist(similarProduct)
+                            }
+                          })
+                        }}
+                      >
+                        <Heart className={`w-4 h-4 ${isInWishlist(similarProduct.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
+                      </button>
+                    </div>
+                    <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                      <img
+                        src={similarProduct.image || "/images/black-tshirt.jpg"}
+                        alt={similarProduct.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
                   </div>
-                  <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
-                    <img
-                      src={product.image || "/images/black-tshirt.jpg"}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">{similarProduct.title}</h3>
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-base font-bold text-brand">{similarProduct.price_min} сом</span>
+                    </div>
+                    {similarProduct.rating_avg > 0 && (
+                      <div className="text-xs text-gray-500">
+                        ★ {similarProduct.rating_avg.toFixed(1)}
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs text-gray-500 uppercase font-medium">H&M</div>
-                  <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">{product.name}</h3>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-base font-bold text-brand">{product.price}</span>
-                  </div>
-                  <div className="text-xs text-gray-500">Продано {product.sold}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       {/* Sticky Footer for Mobile */}

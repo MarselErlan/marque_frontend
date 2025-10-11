@@ -2,13 +2,39 @@
 export const API_CONFIG = {
   BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marquebackend-production.up.railway.app/api/v1',
   ENDPOINTS: {
+    // Authentication
     SEND_VERIFICATION: '/auth/send-verification',
     VERIFY_CODE: '/auth/verify-code',
     LOGOUT: '/auth/logout',
-    USER_PROFILE: '/users/profile',
+    USER_PROFILE: '/auth/profile',
     USER_SESSIONS: '/auth/sessions',
+    
+    // Products
     PRODUCTS: '/products',
+    PRODUCTS_SEARCH: '/products/search',
+    PRODUCTS_BEST_SELLERS: '/products/best-sellers',
+    PRODUCT_DETAIL: '/products',
+    
+    // Categories
     CATEGORIES: '/categories',
+    CATEGORY_DETAIL: '/categories',
+    SUBCATEGORY_PRODUCTS: '/categories',
+    
+    // Cart
+    CART: '/cart',
+    CART_ITEMS: '/cart/items',
+    
+    // Wishlist
+    WISHLIST: '/wishlist',
+    WISHLIST_ITEMS: '/wishlist/items',
+    
+    // Banners
+    BANNERS: '/banners',
+    BANNERS_HERO: '/banners/hero',
+    BANNERS_PROMO: '/banners/promo',
+    
+    // Upload
+    UPLOAD_IMAGE: '/upload/image',
   }
 } as const
 

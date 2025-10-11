@@ -37,7 +37,6 @@ export const Header = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchQuery(value)
-    // You might want to add logic here to fetch real search suggestions
   }
 
   const handleSearchFocus = () => {
@@ -47,6 +46,20 @@ export const Header = () => {
   const handleSearchBlur = () => {
     // Delay hiding suggestions to allow click events to register
     setTimeout(() => setShowSearchSuggestions(false), 200)
+  }
+  
+  const handleSearchSubmit = (e?: React.FormEvent | React.KeyboardEvent) => {
+    e?.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setShowSearchSuggestions(false)
+    }
+  }
+  
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit(e)
+    }
   }
 
   return (
@@ -79,6 +92,7 @@ export const Header = () => {
                 onChange={handleSearchChange}
                 onFocus={handleSearchFocus}
                 onBlur={handleSearchBlur}
+                onKeyDown={handleSearchKeyDown}
               />
               {/* You can add a suggestions dropdown here if needed */}
             </div>
@@ -160,6 +174,7 @@ export const Header = () => {
               onChange={handleSearchChange}
               onFocus={handleSearchFocus}
               onBlur={handleSearchBlur}
+              onKeyDown={handleSearchKeyDown}
             />
           </div>
         </div>

@@ -1,17 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronRight, ChevronDown, Heart, ChevronLeft } from "lucide-react"
+import { ChevronRight, ChevronDown, Heart, ChevronLeft, Search as SearchIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Header } from "@/components/Header"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
-import { API_CONFIG } from "@/lib/config"
+import { useSearchParams, useRouter } from "next/navigation"
+import { productsApi } from "@/lib/api"
 
 const sortOptions = [
+  { value: "relevance", label: "По релевантности" },
   { value: "popular", label: "Популярное" },
   { value: "newest", label: "Новинки" },
   { value: "price_asc", label: "Сначала дешёвые" },
@@ -19,20 +22,17 @@ const sortOptions = [
   { value: "rating", label: "По рейтингу" },
 ]
 
-export default function SubcategoryPage({
-  params,
-}: {
-  params: { category: string; subcategory: string }
-}) {
+export default function SearchPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const auth = useAuth()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   
+  const query = searchParams.get('q') || ''
+  
   // API State
-  const [category, setCategory] = useState<any>(null)
-  const [subcategory, setSubcategory] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
-  const [filters, setFilters] = useState<any>({})
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   // Filter & Sort State
@@ -42,73 +42,63 @@ export default function SubcategoryPage({
     brands: [],
   })
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({})
-  const [sortBy, setSortBy] = useState("popular")
+  const [sortBy, setSortBy] = useState("relevance")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
   const [showSortDropdown, setShowSortDropdown] = useState(false)
   
   const itemsPerPage = 20
 
-  // Load subcategory products from API
+  // Search products
   useEffect(() => {
-    const loadProducts = async () => {
+    if (!query) return
+    
+    const searchProducts = async () => {
       try {
         setIsLoading(true)
         setError(null)
         
-        // Build API URL
-        const url = new URL(
-          `${API_CONFIG.BASE_URL}/categories/${params.category}/subcategories/${params.subcategory}/products`
-        )
+        const filters: any = {
+          page: currentPage,
+          limit: itemsPerPage,
+          sort_by: sortBy,
+        }
         
-        // Add query parameters
-        url.searchParams.append('page', currentPage.toString())
-        url.searchParams.append('limit', itemsPerPage.toString())
-        url.searchParams.append('sort_by', sortBy)
-        
-        // Add filters
+        // Add selected filters
         if (selectedFilters.sizes.length > 0) {
-          url.searchParams.append('sizes', selectedFilters.sizes.join(','))
+          filters.sizes = selectedFilters.sizes
         }
         if (selectedFilters.colors.length > 0) {
-          url.searchParams.append('colors', selectedFilters.colors.join(','))
+          filters.colors = selectedFilters.colors
         }
         if (selectedFilters.brands.length > 0) {
-          url.searchParams.append('brands', selectedFilters.brands.join(','))
+          filters.brands = selectedFilters.brands
         }
         if (priceRange.min) {
-          url.searchParams.append('price_min', priceRange.min.toString())
+          filters.price_min = priceRange.min
         }
         if (priceRange.max) {
-          url.searchParams.append('price_max', priceRange.max.toString())
+          filters.price_max = priceRange.max
         }
         
-        const response = await fetch(url.toString())
-        if (!response.ok) {
-          throw new Error('Failed to load products')
-        }
+        const data = await productsApi.search(query, filters)
         
-        const data = await response.json()
-        
-        setCategory(data.category)
-        setSubcategory(data.subcategory)
         setProducts(data.products || [])
-        setFilters(data.filters || {})
         setTotal(data.total || 0)
         setTotalPages(data.total_pages || 1)
+        setHasMore(data.has_more || false)
       } catch (err: any) {
-        console.error('Failed to load subcategory products:', err)
-        setError(err.message || 'Failed to load products')
+        console.error('Search failed:', err)
+        setError(err.message || 'Search failed')
       } finally {
         setIsLoading(false)
       }
     }
     
-    if (params.category && params.subcategory) {
-      loadProducts()
-    }
-  }, [params.category, params.subcategory, currentPage, sortBy, selectedFilters, priceRange])
+    searchProducts()
+  }, [query, currentPage, sortBy, selectedFilters, priceRange])
 
   const handleWishlistClick = (e: React.MouseEvent, product: any) => {
     e.preventDefault()
@@ -133,26 +123,7 @@ export default function SubcategoryPage({
     setCurrentPage(1) // Reset to first page when filters change
   }
   
-  // Loading state
-  if (isLoading && !products.length) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <AuthModals {...auth} />
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <Header />
-        </header>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="flex items-center justify-center flex-col">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
-            <p className="text-gray-600">Загружаем товары...</p>
-          </div>
-        </main>
-      </div>
-    )
-  }
-  
-  // Error state
-  if (error && !products.length) {
+  if (!query) {
     return (
       <div className="min-h-screen bg-gray-50">
         <AuthModals {...auth} />
@@ -160,8 +131,9 @@ export default function SubcategoryPage({
           <Header />
         </header>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Категория не найдена</h1>
-          <p className="text-gray-600 mb-8">{error}</p>
+          <SearchIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Введите поисковый запрос</h1>
+          <p className="text-gray-600 mb-8">Используйте поисковую строку выше для поиска товаров</p>
           <Link href="/">
             <Button className="bg-brand hover:bg-brand-hover text-white">
               Вернуться на главную
@@ -186,11 +158,7 @@ export default function SubcategoryPage({
             Главная
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <Link href={`/category/${category?.slug || params.category}`} className="text-gray-600 hover:text-brand">
-            {category?.name || params.category}
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="font-medium text-black">{subcategory?.name || params.subcategory}</span>
+          <span className="font-medium text-black">Поиск: "{query}"</span>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -199,92 +167,34 @@ export default function SubcategoryPage({
             <h3 className="font-bold text-lg mb-6">Фильтры</h3>
 
             {/* Price Range Filter */}
-            {filters.price_range && (
-              <div className="mb-6">
-                <h4 className="font-medium mb-3">Цена</h4>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder={`От ${Math.floor(filters.price_range.min)}`}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) }))}
-                  />
-                  <input
-                    type="number"
-                    placeholder={`До ${Math.ceil(filters.price_range.max)}`}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) }))}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  от {Math.floor(filters.price_range.min)} до {Math.ceil(filters.price_range.max)} сом
-                </p>
+            <div className="mb-6">
+              <h4 className="font-medium mb-3">Цена</h4>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="От"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  value={priceRange.min || ''}
+                  onChange={(e) => {
+                    setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))
+                    setCurrentPage(1)
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="До"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  value={priceRange.max || ''}
+                  onChange={(e) => {
+                    setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))
+                    setCurrentPage(1)
+                  }}
+                />
               </div>
-            )}
-
-            {/* Size Filter */}
-            {filters.available_sizes && filters.available_sizes.length > 0 && (
-              <div className="mb-6">
-                <h4 className="font-medium mb-3">Размер</h4>
-                <div className="flex flex-wrap gap-2">
-                  {filters.available_sizes.map((size: string) => (
-                    <button
-                      key={size}
-                      onClick={() => {
-                        const checked = !selectedFilters.sizes?.includes(size)
-                        handleFilterChange("sizes", size, checked)
-                      }}
-                      className={`px-3 py-1 border rounded text-sm ${
-                        selectedFilters.sizes?.includes(size)
-                          ? 'border-brand bg-brand-50 text-brand'
-                          : 'border-gray-300 hover:border-brand'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Color Filter */}
-            {filters.available_colors && filters.available_colors.length > 0 && (
-              <div className="mb-6">
-                <h4 className="font-medium mb-3">Цвет</h4>
-                <div className="space-y-2">
-                  {filters.available_colors.map((color: string) => (
-                    <label key={color} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox 
-                        checked={selectedFilters.colors?.includes(color)}
-                        onCheckedChange={(checked) => handleFilterChange("colors", color, checked as boolean)} 
-                      />
-                      <span className="text-sm capitalize">{color}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Brand Filter */}
-            {filters.available_brands && filters.available_brands.length > 0 && (
-              <div className="mb-6">
-                <h4 className="font-medium mb-3">Бренд</h4>
-                <div className="space-y-2">
-                  {filters.available_brands.map((brand: any) => (
-                    <label key={brand.slug} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox 
-                        checked={selectedFilters.brands?.includes(brand.slug)}
-                        onCheckedChange={(checked) => handleFilterChange("brands", brand.slug, checked as boolean)} 
-                      />
-                      <span className="text-sm">{brand.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
             
             {/* Clear Filters */}
-            {(selectedFilters.sizes?.length > 0 || selectedFilters.colors?.length > 0 || selectedFilters.brands?.length > 0) && (
+            {(selectedFilters.sizes?.length > 0 || selectedFilters.colors?.length > 0 || selectedFilters.brands?.length > 0 || priceRange.min || priceRange.max) && (
               <Button 
                 variant="outline" 
                 className="w-full mt-4"
@@ -304,8 +214,10 @@ export default function SubcategoryPage({
             {/* Sort and Title */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-black">{subcategory?.name || 'Товары'}</h1>
-                <p className="text-sm text-gray-500 mt-1">{total} товаров</p>
+                <h1 className="text-2xl font-bold text-black">Результаты поиска</h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  {isLoading ? 'Поиск...' : `Найдено ${total} товаров по запросу "${query}"`}
+                </p>
               </div>
               <div className="relative w-full sm:w-auto">
                 <button
@@ -317,7 +229,7 @@ export default function SubcategoryPage({
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {showSortDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-full sm:min-w-48">
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-full sm:min-w-56">
                     {sortOptions.map((option) => (
                       <button
                         key={option.value}
@@ -340,7 +252,12 @@ export default function SubcategoryPage({
             {isLoading && currentPage === 1 ? (
               <div className="flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mr-3"></div>
-                <p className="text-gray-600">Загружаем товары...</p>
+                <p className="text-gray-600">Поиск товаров...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-20">
+                <p className="text-red-500 mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()}>Попробовать снова</Button>
               </div>
             ) : products.length > 0 ? (
               <>
@@ -364,7 +281,7 @@ export default function SubcategoryPage({
                         </div>
                         <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                           <img
-                            src={product.main_image || "/images/black-tshirt.jpg"}
+                            src={product.main_image || product.image || "/images/black-tshirt.jpg"}
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
@@ -456,17 +373,26 @@ export default function SubcategoryPage({
               </>
             ) : (
               <div className="text-center py-20">
-                <p className="text-gray-500 mb-4">Товары не найдены</p>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedFilters({ sizes: [], colors: [], brands: [] })
-                    setPriceRange({})
-                    setCurrentPage(1)
-                  }}
-                >
-                  Сбросить фильтры
-                </Button>
+                <SearchIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Ничего не найдено</h2>
+                <p className="text-gray-600 mb-6">По запросу "{query}" ничего не найдено</p>
+                <div className="flex gap-4 justify-center">
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedFilters({ sizes: [], colors: [], brands: [] })
+                      setPriceRange({})
+                      setCurrentPage(1)
+                    }}
+                  >
+                    Сбросить фильтры
+                  </Button>
+                  <Link href="/">
+                    <Button className="bg-brand hover:bg-brand-hover text-white">
+                      Вернуться на главную
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -512,3 +438,4 @@ export default function SubcategoryPage({
     </div>
   )
 }
+
