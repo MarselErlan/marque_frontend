@@ -49,6 +49,10 @@ export const useAuth = () => {
       userData: null,
       isLoading: false,
     })
+    
+    // Dispatch event for cart/wishlist to sync
+    window.dispatchEvent(new CustomEvent('auth:logout'))
+    
     console.log('User logged out successfully')
   }, [])
 
@@ -119,6 +123,9 @@ export const useAuth = () => {
       })
 
       console.log('User logged in successfully')
+      
+      // Dispatch event for cart/wishlist to sync
+      window.dispatchEvent(new CustomEvent('auth:login'))
 
       // Execute and clear the success callback
       if (onLoginSuccess) {

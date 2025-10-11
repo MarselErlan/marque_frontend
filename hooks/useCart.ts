@@ -201,6 +201,53 @@ export const useCart = () => {
     localStorage.removeItem('cart')
   }
 
+  // Sync local cart with backend when user logs in
+  const syncCartWithBackend = async () => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) return
+      
+      // Get local cart items
+      const localCart = JSON.parse(localStorage.getItem('cart') || '[]') as CartItem[]
+      
+      if (localCart.length === 0) {
+        // No local items, just load from backend
+        await loadCart()
+        return
+      }
+      
+      // Get backend cart
+      let backendCart: any
+      try {
+        backendCart = await cartApi.get()
+      } catch (error) {
+        console.error('Failed to get backend cart:', error)
+        return
+      }
+      
+      // Merge: Add local items to backend
+      for (const localItem of localCart) {
+        if (localItem.sku_id) {
+          try {
+            await cartApi.add(localItem.sku_id, localItem.quantity)
+          } catch (error) {
+            console.error('Failed to sync cart item:', error)
+          }
+        }
+      }
+      
+      // Clear local cart after sync
+      localStorage.removeItem('cart')
+      
+      // Reload cart from backend
+      await loadCart()
+      
+      toast.success('Корзина синхронизирована!')
+    } catch (error) {
+      console.error('Failed to sync cart:', error)
+    }
+  }
+
   // Calculate totals
   const calculateTotals = () => {
     const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
@@ -224,6 +271,28 @@ export const useCart = () => {
     loadCart()
   }, [])
 
+  // Watch for authentication changes and sync
+  useEffect(() => {
+    const handleLogin = async () => {
+      console.log('Cart: Detected login, syncing with backend...')
+      await syncCartWithBackend()
+    }
+    
+    const handleLogout = async () => {
+      console.log('Cart: Detected logout, loading from localStorage...')
+      await loadCart()
+    }
+    
+    // Listen for auth events
+    window.addEventListener('auth:login', handleLogin)
+    window.addEventListener('auth:logout', handleLogout)
+    
+    return () => {
+      window.removeEventListener('auth:login', handleLogin)
+      window.removeEventListener('auth:logout', handleLogout)
+    }
+  }, [])
+
   return {
     cartItems,
     cartItemCount,
@@ -232,7 +301,8 @@ export const useCart = () => {
     updateQuantity,
     clearCart,
     calculateTotals,
-    loadCart
+    loadCart,
+    syncCartWithBackend
   }
 }
 

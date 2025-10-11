@@ -130,11 +130,71 @@ export const useWishlist = () => {
     return wishlistItems.some((item) => item.id === productId)
   }, [wishlistItems])
 
+  // Sync local wishlist with backend when user logs in
+  const syncWishlistWithBackend = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) return
+      
+      // Get local wishlist items
+      const localWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]') as Product[]
+      
+      if (localWishlist.length === 0) {
+        // No local items, just load from backend
+        await loadWishlist()
+        return
+      }
+      
+      // Merge: Add local items to backend
+      for (const localItem of localWishlist) {
+        try {
+          const productId = typeof localItem.id === 'string' ? parseInt(localItem.id) : localItem.id
+          await wishlistApi.add(productId)
+        } catch (error) {
+          console.error('Failed to sync wishlist item:', error)
+        }
+      }
+      
+      // Clear local wishlist after sync
+      localStorage.removeItem('wishlist')
+      
+      // Reload wishlist from backend
+      await loadWishlist()
+      
+      toast.success('Избранное синхронизировано!')
+    } catch (error) {
+      console.error('Failed to sync wishlist:', error)
+    }
+  }, [])
+
+  // Watch for authentication changes and sync
+  useEffect(() => {
+    const handleLogin = async () => {
+      console.log('Wishlist: Detected login, syncing with backend...')
+      await syncWishlistWithBackend()
+    }
+    
+    const handleLogout = async () => {
+      console.log('Wishlist: Detected logout, loading from localStorage...')
+      await loadWishlist()
+    }
+    
+    // Listen for auth events
+    window.addEventListener('auth:login', handleLogin)
+    window.addEventListener('auth:logout', handleLogout)
+    
+    return () => {
+      window.removeEventListener('auth:login', handleLogin)
+      window.removeEventListener('auth:logout', handleLogout)
+    }
+  }, [syncWishlistWithBackend])
+
   return {
     wishlistItems,
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
     wishlistItemCount: wishlistItems.length,
+    syncWishlistWithBackend
   }
 }
