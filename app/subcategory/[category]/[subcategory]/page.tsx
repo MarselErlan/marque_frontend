@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { API_CONFIG } from "@/lib/config"
+import { useCatalog } from "@/contexts/CatalogContext"
 
 const sortOptions = [
   { value: "popular", label: "Популярное" },
@@ -28,6 +29,7 @@ export default function SubcategoryPage({
   const auth = useAuth()
   const router = useRouter()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+  const { openCatalog } = useCatalog()
   
   // API State
   const [category, setCategory] = useState<any>(null)
@@ -239,9 +241,12 @@ export default function SubcategoryPage({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-4 text-sm">
-          <Link href={`/category/${category?.slug || params.category}`} className="text-gray-600 hover:text-brand">
+          <button 
+            onClick={openCatalog}
+            className="text-gray-600 hover:text-brand cursor-pointer"
+          >
             {category?.name || params.category}
-          </Link>
+          </button>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <span className="font-medium text-black">{subcategory?.name || params.subcategory}</span>
         </div>
