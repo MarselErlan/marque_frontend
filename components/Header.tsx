@@ -127,7 +127,9 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             </Link>
             <button
               onClick={handleHeaderLoginClick}
-              className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
+              className="flex flex-col items-center cursor-pointer hover:text-brand transition-colors relative"
+              style={{ background: 'transparent', border: 'none', padding: '8px' }}
+              type="button"
             >
               <User className="w-5 h-5 mb-1" />
               <span>{auth.isLoggedIn ? "Профиль" : "Войти"}</span>
@@ -158,7 +160,12 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
                 </span>
               )}
             </Link>
-            <button onClick={handleHeaderLoginClick} className="p-2">
+            <button 
+              onClick={handleHeaderLoginClick} 
+              className="p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-colors"
+              type="button"
+              style={{ background: 'transparent', border: 'none' }}
+            >
               <User className="w-6 h-6 text-gray-600" />
             </button>
           </div>
