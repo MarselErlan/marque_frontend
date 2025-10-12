@@ -6,14 +6,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCatalog } from '@/contexts/CatalogContext'
 
-export const Header = () => {
+interface HeaderProps {
+  authInstance?: UseAuthReturn
+}
+
+export const Header = ({ authInstance }: HeaderProps = {}) => {
   const router = useRouter()
-  const auth = useAuth()
+  const defaultAuth = useAuth()
+  const auth = authInstance || defaultAuth
   const { cartItemCount } = useCart()
   const { wishlistItemCount } = useWishlist()
   const { openCatalog } = useCatalog()

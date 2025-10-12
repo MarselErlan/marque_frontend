@@ -249,3 +249,6 @@ export const useAuth = () => {
     handleSmsVerification,
   }
 }
+
+// Export the return type for use in components
+export type UseAuthReturn = ReturnType<typeof useAuth>
