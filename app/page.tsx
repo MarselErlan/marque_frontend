@@ -569,30 +569,30 @@ export default function MarquePage() {
               <div className="flex items-center space-x-6 text-sm text-gray-600">
               <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                   <Heart className="w-5 h-5 mb-1" />
-                  {isClient && wishlistItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {wishlistItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" suppressHydrationWarning>
                       {wishlistItemCount}
                     </span>
                   )}
                   <span>Избранные</span>
-                </Link>
+              </Link>
               <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                 <div className="relative">
                   <ShoppingCart className="w-5 h-5 mb-1" />
-                  {isClient && cartItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" suppressHydrationWarning>
                       {cartItemCount > 99 ? '99+' : cartItemCount}
                     </span>
                   )}
                 </div>
-                  <span>Корзина</span>
-                </Link>
+                <span>Корзина</span>
+              </Link>
               <button 
                 onClick={handleHeaderLoginClick}
                 className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
               >
                   <User className="w-5 h-5 mb-1" />
-                <span>{isClient && isLoggedIn ? "Профиль" : "Войти"}</span>
+                <span suppressHydrationWarning>{isLoggedIn ? "Профиль" : "Войти"}</span>
               </button>
             </div>
           </div>
@@ -607,16 +607,16 @@ export default function MarquePage() {
             <div className="flex items-center space-x-4">
               <Link href="/wishlist" className="p-2 relative">
                 <Heart className="w-6 h-6 text-gray-600" />
-                {isClient && wishlistItemCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                {wishlistItemCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold" suppressHydrationWarning>
                     {wishlistItemCount}
                   </span>
                 )}
               </Link>
               <Link href="/cart" className="p-2 relative">
                 <ShoppingCart className="w-6 h-6 text-gray-600" />
-                {isClient && cartItemCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                {cartItemCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold" suppressHydrationWarning>
                     {cartItemCount}
                   </span>
                 )}
@@ -780,7 +780,7 @@ export default function MarquePage() {
             {isLoadingInitial ? (
               <ProductCardSkeletonGrid count={12} />
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6" style={{minHeight: '1156px'}}>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4" style={{minHeight: '1156px'}}>
                 {randomProducts.map((product, i) => (
                   <Link
                     key={`${product.id}-${i}`}
