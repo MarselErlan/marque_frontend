@@ -50,6 +50,7 @@ export default function SubcategoryPage({
   const [showSizeDropdown, setShowSizeDropdown] = useState(false)
   const [showPriceDropdown, setShowPriceDropdown] = useState(false)
   const [showColorDropdown, setShowColorDropdown] = useState(false)
+  const [showAllFiltersModal, setShowAllFiltersModal] = useState(false)
   
   const itemsPerPage = 20
 
@@ -230,7 +231,13 @@ export default function SubcategoryPage({
           </div>
 
           {/* All Filters Button */}
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm font-medium">
+          <button 
+            onClick={() => setShowAllFiltersModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
             Все фильтры
           </button>
 
@@ -508,6 +515,196 @@ export default function SubcategoryPage({
           </div>
         )}
       </main>
+
+      {/* All Filters Modal */}
+      {showAllFiltersModal && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setShowAllFiltersModal(false)}
+          />
+          
+          {/* Modal/Drawer */}
+          <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white z-50 overflow-y-auto shadow-xl">
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold">Все фильтры</h2>
+              <button 
+                onClick={() => setShowAllFiltersModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Filters Content */}
+            <div className="p-6 space-y-6">
+              {/* Category Filter */}
+              <div>
+                <h3 className="font-medium mb-3">Категория</h3>
+                <div className="space-y-2">
+                  <Link 
+                    href="/category/men"
+                    className={`block px-4 py-2 rounded-lg ${category?.slug === 'men' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    Мужчинам
+                  </Link>
+                  <Link 
+                    href="/category/women"
+                    className={`block px-4 py-2 rounded-lg ${category?.slug === 'women' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    Женщинам
+                  </Link>
+                  <Link 
+                    href="/category/kids"
+                    className={`block px-4 py-2 rounded-lg ${category?.slug === 'kids' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    Детям
+                  </Link>
+                </div>
+              </div>
+
+              {/* Subcategory Filter */}
+              {category && (
+                <div>
+                  <h3 className="font-medium mb-3">Подкатегория</h3>
+                  <div className="space-y-2">
+                    <Link 
+                      href={`/subcategory/${category.slug}/t-shirts`}
+                      className={`block px-4 py-2 rounded-lg ${subcategory?.slug === 't-shirts' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                    >
+                      Футболки
+                    </Link>
+                    <Link 
+                      href={`/subcategory/${category.slug}/shirts`}
+                      className={`block px-4 py-2 rounded-lg ${subcategory?.slug === 'shirts' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                    >
+                      Рубашки
+                    </Link>
+                    <Link 
+                      href={`/subcategory/${category.slug}/jeans`}
+                      className={`block px-4 py-2 rounded-lg ${subcategory?.slug === 'jeans' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                    >
+                      Джинсы
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Brand Filter */}
+              {filters.available_brands && filters.available_brands.length > 0 && (
+                <div>
+                  <h3 className="font-medium mb-3">Бренд</h3>
+                  <div className="space-y-2">
+                    {filters.available_brands.map((brand: any) => (
+                      <label key={brand.slug} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <Checkbox 
+                          checked={selectedFilters.brands?.includes(brand.slug)}
+                          onCheckedChange={(checked) => handleFilterChange("brands", brand.slug, checked as boolean)} 
+                        />
+                        <span className="text-sm">{brand.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Price Range */}
+              {filters.price_range && (
+                <div>
+                  <h3 className="font-medium mb-3">Цена (сом)</h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="от"
+                      value={priceRange.min || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
+                    />
+                    <input
+                      type="number"
+                      placeholder="до"
+                      value={priceRange.max || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    от {Math.floor(filters.price_range.min)} до {Math.ceil(filters.price_range.max)} сом
+                  </p>
+                </div>
+              )}
+
+              {/* Size Filter */}
+              {filters.available_sizes && filters.available_sizes.length > 0 && (
+                <div>
+                  <h3 className="font-medium mb-3">Размер</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {filters.available_sizes.map((size: string) => (
+                      <button
+                        key={size}
+                        onClick={() => {
+                          const checked = !selectedFilters.sizes?.includes(size)
+                          handleFilterChange("sizes", size, checked)
+                        }}
+                        className={`px-3 py-1.5 border rounded text-sm ${
+                          selectedFilters.sizes?.includes(size)
+                            ? 'border-brand bg-brand text-white'
+                            : 'border-gray-300 hover:border-brand'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Color Filter */}
+              {filters.available_colors && filters.available_colors.length > 0 && (
+                <div>
+                  <h3 className="font-medium mb-3">Цвет</h3>
+                  <div className="space-y-2">
+                    {filters.available_colors.map((color: string) => (
+                      <label key={color} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                        <Checkbox 
+                          checked={selectedFilters.colors?.includes(color)}
+                          onCheckedChange={(checked) => handleFilterChange("colors", color, checked as boolean)} 
+                        />
+                        <span className="text-sm capitalize">{color}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setSelectedFilters({ sizes: [], colors: [], brands: [] })
+                  setPriceRange({})
+                  setCurrentPage(1)
+                }}
+              >
+                Сбросить
+              </Button>
+              <Button
+                className="flex-1 bg-brand hover:bg-brand-hover text-white"
+                onClick={() => setShowAllFiltersModal(false)}
+              >
+                Применить
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 mt-12">
