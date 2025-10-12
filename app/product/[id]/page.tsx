@@ -219,16 +219,29 @@ export default function ProductDetailPage() {
         {/* Breadcrumb - Hidden on Mobile */}
         <nav className="hidden lg:flex items-center space-x-2 text-sm text-gray-600 mb-8 px-4">
           <Link href="/" className="hover:text-brand">
-            {product.breadcrumbs?.[0]?.name || 'Главная'}
+            Главная
           </Link>
-          {product.breadcrumbs && product.breadcrumbs.slice(1, -1).map((crumb: any, idx: number) => (
+          {/* Category Link */}
+          {product.category && (
             <>
-              <span key={`sep-${idx}`}>›</span>
-              <Link key={crumb.slug} href={`/category/${crumb.slug}`} className="hover:text-brand">
-                {crumb.name}
+              <span>›</span>
+              <Link href={`/category/${product.category.slug}`} className="hover:text-brand">
+                {product.category.name}
               </Link>
             </>
-          ))}
+          )}
+          {/* Subcategory Link - Goes to Product Listing */}
+          {product.subcategory && (
+            <>
+              <span>›</span>
+              <Link 
+                href={`/subcategory/${product.category?.slug || 'men'}/${product.subcategory.slug}`} 
+                className="hover:text-brand"
+              >
+                {product.subcategory.name}
+              </Link>
+            </>
+          )}
           <span>›</span>
           <span className="text-gray-900">{product.title}</span>
         </nav>
