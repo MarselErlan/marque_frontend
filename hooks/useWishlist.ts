@@ -103,7 +103,7 @@ export const useWishlist = () => {
     })
   }, [])
 
-  const removeFromWishlist = useCallback(async (productId: string) => {
+  const removeFromWishlist = useCallback(async (productId: string | number) => {
     const token = localStorage.getItem('authToken')
     
     if (token && isAuthenticated) {
@@ -121,13 +121,16 @@ export const useWishlist = () => {
       }
     }
     
-    // Remove from localStorage wishlist
-    setWishlistItems((prevItems) => prevItems.filter((item) => item.id !== productId))
+    // Remove from localStorage wishlist - handle both string and number IDs
+    const idToRemove = String(productId)
+    setWishlistItems((prevItems) => prevItems.filter((item) => String(item.id) !== idToRemove))
     toast.success('Товар удален из избранного')
   }, [isAuthenticated])
 
-  const isInWishlist = useCallback((productId: string) => {
-    return wishlistItems.some((item) => item.id === productId)
+  const isInWishlist = useCallback((productId: string | number) => {
+    // Convert both to strings for comparison to handle type inconsistencies
+    const idToCheck = String(productId)
+    return wishlistItems.some((item) => String(item.id) === idToCheck)
   }, [wishlistItems])
 
   // Sync local wishlist with backend when user logs in

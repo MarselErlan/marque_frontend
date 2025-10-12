@@ -192,13 +192,16 @@ export default function MarquePage() {
   const handleWishlistClick = (e: React.MouseEvent, product: any) => {
     e.preventDefault()
     e.stopPropagation()
-    auth.requireAuth(() => {
-      if (isInWishlist(product.id)) {
-        removeFromWishlist(product.id)
-      } else {
+    
+    if (isInWishlist(product.id)) {
+      // Remove from wishlist (no auth required for this action)
+      removeFromWishlist(product.id)
+    } else {
+      // Add to wishlist (requires auth)
+      auth.requireAuth(() => {
         addToWishlist(product)
-      }
-    })
+      })
+    }
   }
 
   const handleCatalogClick = () => {
