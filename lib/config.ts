@@ -28,7 +28,7 @@ export const API_CONFIG = {
     WISHLIST: '/wishlist',
     WISHLIST_ITEMS: '/wishlist/items',
     
-    // Banners
+    // Banners (no trailing slash to avoid redirects)
     BANNERS: '/banners',
     BANNERS_SALE: '/banners/sale',
     BANNERS_MODEL: '/banners/model',

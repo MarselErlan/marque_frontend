@@ -98,17 +98,24 @@ export default function MarquePage() {
         
         // Load banners separately (don't block on errors)
         try {
+          console.log('🔄 Attempting to load banners from backend...')
           const bannersData = await bannersApi.getAll()
+          console.log('📊 Banner API response:', bannersData)
+          
           if (bannersData?.banners && bannersData.banners.length > 0) {
             // Filter for hero/active banners if needed
             const heroBanners = bannersData.banners.filter(
               (banner: any) => banner.is_active !== false
             )
             setApiBanners(heroBanners)
-            console.log('✅ Loaded', heroBanners.length, 'banners from backend')
+            console.log('✅ SUCCESS! Loaded', heroBanners.length, 'banners from backend')
+            console.log('📋 Banners:', heroBanners)
+          } else {
+            console.warn('⚠️ No banners in response, using fallback')
           }
-        } catch (err) {
-          console.error('Failed to load banners (using fallback):', err)
+        } catch (err: any) {
+          console.error('❌ Failed to load banners (using fallback):', err)
+          console.error('Error details:', err.message, err.status)
           // Fallback banners will be used automatically
         }
       } catch (error) {
