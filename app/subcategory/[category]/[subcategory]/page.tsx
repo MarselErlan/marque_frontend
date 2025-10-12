@@ -516,17 +516,17 @@ export default function SubcategoryPage({
         )}
       </main>
 
-      {/* All Filters Modal */}
+      {/* All Filters Sidebar */}
       {showAllFiltersModal && (
         <>
-          {/* Backdrop */}
+          {/* Light backdrop - click to close */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-transparent z-30"
             onClick={() => setShowAllFiltersModal(false)}
           />
           
-          {/* Modal/Drawer */}
-          <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white z-50 overflow-y-auto shadow-xl">
+          {/* Left Sidebar */}
+          <div className="fixed inset-y-0 left-0 w-80 bg-white z-40 overflow-y-auto shadow-2xl border-r border-gray-200">
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <h2 className="text-xl font-bold">Все фильтры</h2>
