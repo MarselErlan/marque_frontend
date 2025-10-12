@@ -9,12 +9,14 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
+import { useCatalog } from '@/contexts/CatalogContext'
 
 export const Header = () => {
   const router = useRouter()
   const auth = useAuth()
   const { cartItemCount } = useCart()
   const { wishlistItemCount } = useWishlist()
+  const { openCatalog } = useCatalog()
   
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
@@ -30,8 +32,7 @@ export const Header = () => {
   }
 
   const handleCatalogClick = () => {
-    // Navigate to main page with a query param to open the catalog
-    router.push('/?catalog=true');
+    openCatalog()
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
+import { CatalogProvider } from "@/contexts/CatalogContext"
+import { GlobalCatalogWrapper } from "@/components/GlobalCatalogWrapper"
 import "./globals.css"
 
 const inter = Inter({
@@ -93,10 +95,13 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={`font-sans antialiased min-h-screen bg-background text-foreground`}>
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
-        <Toaster richColors position="top-right" />
+        <CatalogProvider>
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+          <GlobalCatalogWrapper />
+          <Toaster richColors position="top-right" />
+        </CatalogProvider>
       </body>
     </html>
   )
