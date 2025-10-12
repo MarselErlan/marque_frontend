@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { ProductCardSkeletonGrid } from "@/components/ProductCardSkeleton"
+import { Header } from "@/components/Header"
 
 export default function MarquePage() {
   const router = useRouter()
@@ -512,147 +513,9 @@ export default function MarquePage() {
       {/* Catalog Sidebar - renders when showCatalog is true */}
       <CatalogSidebar />
       
-      {/* Header */}
+      {/* Header - Using same Header component as cart/wishlist pages */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        {/* Desktop Header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden md:block">
-          <div className="flex items-center justify-between h-16">
-            {/* Left Section - Logo and Catalog */}
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <h1 className="text-2xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
-              </Link>
-              <Button
-                className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
-                onClick={handleCatalogClick}
-              >
-                <span className="mr-2">⋮⋮⋮</span>
-                Каталог
-              </Button>
-            </div>
-
-            {/* Center Section - Search Bar */}
-            <div className="flex-1 flex justify-center px-8">
-              <div className="relative max-w-2xl w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  type="text"
-                  placeholder="Товар, бренд или артикул"
-                  className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={handleSearchFocus}
-                  onBlur={handleSearchBlur}
-                />
-                {showSearchSuggestions && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50">
-                    {searchSuggestions
-                      .filter((suggestion) => suggestion.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((suggestion, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                          onClick={() => handleSuggestionClick(suggestion)}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Search className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-700">{suggestion}</span>
-                          </div>
-                          <button
-                            className="p-1 hover:bg-gray-200 rounded"
-                            onClick={(e) => removeSuggestion(suggestion, e)}
-                          >
-                            <X className="w-3 h-3 text-gray-400" />
-                          </button>
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-              </div>
-
-            {/* Right Section - User Actions */}
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-                  <Heart className="w-5 h-5 mb-1" />
-                  {wishlistItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" suppressHydrationWarning>
-                      {wishlistItemCount}
-                    </span>
-                  )}
-                  <span>Избранные</span>
-              </Link>
-              <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-                <div className="relative">
-                  <ShoppingCart className="w-5 h-5 mb-1" />
-                  {cartItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" suppressHydrationWarning>
-                      {cartItemCount > 99 ? '99+' : cartItemCount}
-                    </span>
-                  )}
-                </div>
-                <span>Корзина</span>
-              </Link>
-              <button 
-                onClick={handleHeaderLoginClick}
-                className="flex flex-col items-center cursor-pointer hover:text-brand bg-transparent border-none p-0"
-              >
-                  <User className="w-5 h-5 mb-1" />
-                <span suppressHydrationWarning>{isLoggedIn ? "Профиль" : "Войти"}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Header */}
-        <div className="md:hidden px-4 pt-2 pb-3">
-          <div className="flex items-center justify-between">
-            <Link href="/">
-              <h1 className="text-xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/wishlist" className="p-2 relative">
-                <Heart className="w-6 h-6 text-gray-600" />
-                {wishlistItemCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold" suppressHydrationWarning>
-                    {wishlistItemCount}
-                  </span>
-                )}
-              </Link>
-              <Link href="/cart" className="p-2 relative">
-                <ShoppingCart className="w-6 h-6 text-gray-600" />
-                {cartItemCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold" suppressHydrationWarning>
-                    {cartItemCount}
-                  </span>
-                )}
-              </Link>
-              <button onClick={handleHeaderLoginClick} className="p-2">
-                <User className="w-6 h-6 text-gray-600" />
-              </button>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center space-x-2">
-            <Button
-              className="bg-brand hover:bg-brand-hover text-white p-2 rounded-lg"
-              onClick={handleCatalogClick}
-            >
-              <span className="text-xl">⋮⋮⋮</span>
-            </Button>
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="Товар, бренд или артикул"
-                className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onFocus={handleSearchFocus}
-                onBlur={handleSearchBlur}
-              />
-            </div>
-          </div>
-        </div>
+        <Header authInstance={auth} />
       </header>
 
       {/* Main Content */}
