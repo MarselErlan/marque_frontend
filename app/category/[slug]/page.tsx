@@ -27,9 +27,39 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         setIsLoading(true)
         setError(null)
         
-        const categoryData = await categoriesApi.getDetail(params.slug)
-        setCategory(categoryData.category)
-        setSubcategories(categoryData.subcategories || [])
+        // Try to load category details, but fallback gracefully if it fails
+        try {
+          const categoryData = await categoriesApi.getDetail(params.slug)
+          setCategory(categoryData.category)
+          setSubcategories(categoryData.subcategories || [])
+        } catch (categoryErr) {
+          console.error('Failed to load category details:', categoryErr)
+          // Fallback: create a basic category object
+          setCategory({
+            id: params.slug,
+            name: params.slug === 'men' ? 'Мужчинам' : params.slug,
+            slug: params.slug
+          })
+          // Fallback: load subcategories from categories API
+          try {
+            const categoriesData = await categoriesApi.getAll()
+            const matchingCategory = categoriesData.categories?.find((cat: any) => cat.slug === params.slug)
+            if (matchingCategory) {
+              setCategory(matchingCategory)
+              // Try to get subcategories
+              const subcatsData = await categoriesApi.getSubcategories(params.slug)
+              setSubcategories(subcatsData.subcategories || [])
+            }
+          } catch (fallbackErr) {
+            console.error('Fallback also failed:', fallbackErr)
+            // Set basic info so page doesn't crash
+            setCategory({
+              id: params.slug,
+              name: params.slug === 'men' ? 'Мужчинам' : params.slug,
+              slug: params.slug
+            })
+          }
+        }
         
         // Load recommended products (best sellers from any category)
         const products = await productsApi.getBestSellers(8)
