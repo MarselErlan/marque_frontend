@@ -315,18 +315,67 @@ export const wishlistApi = {
 
 // Banners API
 export const bannersApi = {
+  // Get active banners (public endpoint)
   getAll: () =>
     apiRequest<{
-      hero_banners: any[]
-      promo_banners: any[]
-      category_banners: any[]
+      banners: any[]
     }>(API_CONFIG.ENDPOINTS.BANNERS),
   
-  getHero: () =>
-    apiRequest<any[]>(API_CONFIG.ENDPOINTS.BANNERS_HERO),
+  // Get sale banners
+  getSale: () =>
+    apiRequest<{ banners: any[] }>(API_CONFIG.ENDPOINTS.BANNERS_SALE),
   
-  getPromo: () =>
-    apiRequest<any[]>(API_CONFIG.ENDPOINTS.BANNERS_PROMO),
+  // Get model banners
+  getModel: () =>
+    apiRequest<{ banners: any[] }>(API_CONFIG.ENDPOINTS.BANNERS_MODEL),
+  
+  // Admin endpoints (requires authentication)
+  admin: {
+    getAll: () =>
+      apiRequest<{ banners: any[] }>(API_CONFIG.ENDPOINTS.BANNERS_ADMIN_ALL, {
+        requiresAuth: true,
+      }),
+    
+    create: (data: {
+      title: string
+      image_url: string
+      banner_type: 'hero' | 'sale' | 'model'
+      is_active?: boolean
+      link_url?: string
+      subtitle?: string
+      button_text?: string
+      sort_order?: number
+    }) =>
+      apiRequest(`${API_CONFIG.ENDPOINTS.BANNERS}/admin/create`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        requiresAuth: true,
+      }),
+    
+    getById: (bannerId: number) =>
+      apiRequest(`${API_CONFIG.ENDPOINTS.BANNERS}/admin/${bannerId}`, {
+        requiresAuth: true,
+      }),
+    
+    update: (bannerId: number, data: any) =>
+      apiRequest(`${API_CONFIG.ENDPOINTS.BANNERS}/admin/${bannerId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        requiresAuth: true,
+      }),
+    
+    delete: (bannerId: number) =>
+      apiRequest(`${API_CONFIG.ENDPOINTS.BANNERS}/admin/${bannerId}`, {
+        method: 'DELETE',
+        requiresAuth: true,
+      }),
+    
+    toggle: (bannerId: number) =>
+      apiRequest(`${API_CONFIG.ENDPOINTS.BANNERS}/admin/${bannerId}/toggle`, {
+        method: 'PATCH',
+        requiresAuth: true,
+      }),
+  }
 }
 
 // Export for convenience

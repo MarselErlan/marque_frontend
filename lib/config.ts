@@ -30,8 +30,9 @@ export const API_CONFIG = {
     
     // Banners
     BANNERS: '/banners',
-    BANNERS_HERO: '/banners/hero',
-    BANNERS_PROMO: '/banners/promo',
+    BANNERS_SALE: '/banners/sale',
+    BANNERS_MODEL: '/banners/model',
+    BANNERS_ADMIN_ALL: '/banners/admin/all',
     
     // Upload
     UPLOAD_IMAGE: '/upload/image',
