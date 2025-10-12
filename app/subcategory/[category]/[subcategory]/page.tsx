@@ -51,8 +51,43 @@ export default function SubcategoryPage({
   const [showPriceDropdown, setShowPriceDropdown] = useState(false)
   const [showColorDropdown, setShowColorDropdown] = useState(false)
   const [showAllFiltersModal, setShowAllFiltersModal] = useState(false)
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [showSubcategoryDropdown, setShowSubcategoryDropdown] = useState(false)
+  const [allCategories, setAllCategories] = useState<any[]>([])
+  const [allSubcategories, setAllSubcategories] = useState<any[]>([])
   
   const itemsPerPage = 20
+
+  // Load all categories for category dropdown
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        // Use fallback categories since API might be broken
+        const fallbackCategories = [
+          { id: 11, slug: 'men', name: 'Мужчинам', is_active: true },
+          { id: 12, slug: 'women', name: 'Женщинам', is_active: true },
+          { id: 13, slug: 'kids', name: 'Детям', is_active: true }
+        ]
+        setAllCategories(fallbackCategories)
+        
+        // Load subcategories for current category
+        if (category?.slug) {
+          try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/categories/${category.slug}/subcategories`)
+            if (response.ok) {
+              const data = await response.json()
+              setAllSubcategories(data.subcategories || [])
+            }
+          } catch (error) {
+            console.error('Failed to load subcategories:', error)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error)
+      }
+    }
+    loadCategories()
+  }, [category?.slug])
 
   // Load subcategory products from API
   useEffect(() => {
@@ -241,15 +276,66 @@ export default function SubcategoryPage({
             Все фильтры
           </button>
 
-          {/* Category Filter (placeholder) */}
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm">
-            {category?.name || 'Мужчинам'}
-          </button>
+          {/* Category Dropdown */}
+          {allCategories.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span>{category?.name || 'Мужчинам'}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showCategoryDropdown && (
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[200px]">
+                  {allCategories.map((cat) => (
+                    <Link
+                      key={cat.slug}
+                      href={`/category/${cat.slug}`}
+                      onClick={() => setShowCategoryDropdown(false)}
+                      className={`block px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm ${
+                        category?.slug === cat.slug ? 'bg-gray-50 text-brand font-medium' : ''
+                      }`}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* Subcategory Filter (placeholder) */}
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm">
-            {subcategory?.name || 'Футболки и поло'}
-          </button>
+          {/* Subcategory Dropdown */}
+          {allSubcategories.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowSubcategoryDropdown(!showSubcategoryDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
+              >
+                <span>{subcategory?.name || 'Футболки и поло'}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showSubcategoryDropdown && (
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[220px]">
+                  {allSubcategories.map((subcat: any) => (
+                    <Link
+                      key={subcat.slug}
+                      href={`/subcategory/${category?.slug || params.category}/${subcat.slug}`}
+                      onClick={() => setShowSubcategoryDropdown(false)}
+                      className={`block px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm ${
+                        subcategory?.slug === subcat.slug ? 'bg-gray-50 text-brand font-medium' : ''
+                      }`}
+                    >
+                      {subcat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Size Filter Dropdown */}
           {filters.available_sizes && filters.available_sizes.length > 0 && (
