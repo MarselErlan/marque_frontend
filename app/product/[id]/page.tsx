@@ -221,21 +221,19 @@ export default function ProductDetailPage() {
           <Link href="/" className="hover:text-brand">
             Главная
           </Link>
-          {/* Category Link */}
-          {product.category && (
-            <>
-              <span>›</span>
-              <Link href={`/category/${product.category.slug}`} className="hover:text-brand">
-                {product.category.name}
-              </Link>
-            </>
-          )}
-          {/* Subcategory Link - Goes to Product Listing */}
-          {product.subcategory && (
+          {/* Category & Subcategory Link - Both Go to Product Listing */}
+          {product.category && product.subcategory && (
             <>
               <span>›</span>
               <Link 
-                href={`/subcategory/${product.category?.slug || 'men'}/${product.subcategory.slug}`} 
+                href={`/subcategory/${product.category.slug}/${product.subcategory.slug}`} 
+                className="hover:text-brand"
+              >
+                {product.category.name}
+              </Link>
+              <span>›</span>
+              <Link 
+                href={`/subcategory/${product.category.slug}/${product.subcategory.slug}`} 
                 className="hover:text-brand"
               >
                 {product.subcategory.name}
