@@ -11,6 +11,7 @@ import { useWishlist } from "@/hooks/useWishlist"
 import { useCart } from "@/hooks/useCart"
 import { Header } from "@/components/Header"
 import { toast } from "@/lib/toast"
+import { useCatalog } from "@/contexts/CatalogContext"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -19,6 +20,7 @@ export default function ProductDetailPage() {
   const { isLoggedIn } = auth
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
   const { addToCart, cartItemCount } = useCart()
+  const { openCatalog } = useCatalog()
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -221,16 +223,16 @@ export default function ProductDetailPage() {
           <Link href="/" className="hover:text-brand">
             Главная
           </Link>
-          {/* Category Link - Goes to Catalog (Category Landing Page) */}
+          {/* Category Link - Opens Catalog Sidebar */}
           {product.category && (
             <>
               <span>›</span>
-              <Link 
-                href={`/category/${product.category.slug}`} 
-                className="hover:text-brand"
+              <button 
+                onClick={openCatalog}
+                className="hover:text-brand cursor-pointer"
               >
                 {product.category.name}
-              </Link>
+              </button>
             </>
           )}
           {/* Subcategory Link - Goes to Product Listing */}
