@@ -57,9 +57,9 @@ export default function SubcategoryPage({
         setIsLoading(true)
         setError(null)
         
-        // Build API URL
+        // Build API URL - using simpler subcategory endpoint
         const url = new URL(
-          `${API_CONFIG.BASE_URL}/categories/${params.category}/subcategories/${params.subcategory}/products`
+          `${API_CONFIG.BASE_URL}/subcategories/${params.subcategory}/products`
         )
         
         // Add query parameters
