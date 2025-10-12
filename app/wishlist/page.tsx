@@ -53,18 +53,24 @@ export default function WishlistPage() {
             {wishlistItems.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                className="bg-white rounded-xl p-3 hover:shadow-lg transition-shadow block group"
               >
                 <div className="relative mb-3">
-                    <div className="absolute top-2 right-2 z-10">
+                    <div className="absolute top-2 right-2 z-20">
                       <button 
-                        onClick={() => removeFromWishlist(String(product.id))}
-                        className="p-1.5 bg-gray-100/80 rounded-full hover:bg-red-100/80 transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          removeFromWishlist(String(product.id))
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-red-50 transition-colors shadow-md cursor-pointer"
+                        type="button"
+                        style={{ position: 'relative', zIndex: 20 }}
                       >
                         <Heart className="w-4 h-4 text-red-500 fill-current" />
                       </button>
                     </div>
-                    <Link href={`/product/${product.id}`}>
+                    <Link href={`/product/${product.id}`} className="block">
                       <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                         <img
                           src={product.image || "/images/black-tshirt.jpg"}
@@ -75,7 +81,7 @@ export default function WishlistPage() {
                     </Link>
                 </div>
                 
-                <Link href={`/product/${product.id}`} className="space-y-1">
+                <Link href={`/product/${product.id}`} className="space-y-1 block">
                   <div className="text-xs text-gray-500 uppercase font-medium">H&M</div>
                   <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
                     {product.name}
