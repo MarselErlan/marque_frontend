@@ -5,6 +5,7 @@ import { ChevronRight, ChevronDown, Heart, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/Header"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
@@ -25,6 +26,7 @@ export default function SubcategoryPage({
   params: { category: string; subcategory: string }
 }) {
   const auth = useAuth()
+  const router = useRouter()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   
   // API State
@@ -58,36 +60,52 @@ export default function SubcategoryPage({
   
   const itemsPerPage = 20
 
-  // Load all categories for category dropdown
+  // Load all categories and subcategories from API
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadCategoriesAndSubcategories = async () => {
       try {
-        // Use fallback categories since API might be broken
-        const fallbackCategories = [
-          { id: 11, slug: 'men', name: 'Мужчинам', is_active: true },
-          { id: 12, slug: 'women', name: 'Женщинам', is_active: true },
-          { id: 13, slug: 'kids', name: 'Детям', is_active: true }
-        ]
-        setAllCategories(fallbackCategories)
-        
-        // Load subcategories for current category
-        if (category?.slug) {
-          try {
-            const response = await fetch(`${API_CONFIG.BASE_URL}/categories/${category.slug}/subcategories`)
-            if (response.ok) {
-              const data = await response.json()
-              setAllSubcategories(data.subcategories || [])
+        // Try to load categories from API first
+        try {
+          const categoriesResponse = await fetch(`${API_CONFIG.BASE_URL}/categories`)
+          if (categoriesResponse.ok) {
+            const categoriesData = await categoriesResponse.json()
+            if (categoriesData.categories && categoriesData.categories.length > 0) {
+              setAllCategories(categoriesData.categories)
             }
-          } catch (error) {
-            console.error('Failed to load subcategories:', error)
+          }
+        } catch (catError) {
+          console.log('Categories API not available, will use data from product API')
+        }
+        
+        // Try to load subcategories from API
+        const categorySlug = category?.slug || params.category
+        if (categorySlug) {
+          try {
+            const subcategoriesResponse = await fetch(`${API_CONFIG.BASE_URL}/categories/${categorySlug}/subcategories`)
+            if (subcategoriesResponse.ok) {
+              const subcategoriesData = await subcategoriesResponse.json()
+              if (subcategoriesData.subcategories && subcategoriesData.subcategories.length > 0) {
+                setAllSubcategories(subcategoriesData.subcategories)
+              }
+            }
+          } catch (subError) {
+            console.log('Subcategories API not available, will use data from product API')
           }
         }
       } catch (error) {
-        console.error('Failed to load categories:', error)
+        console.error('Failed to load categories/subcategories:', error)
       }
     }
-    loadCategories()
-  }, [category?.slug])
+    loadCategoriesAndSubcategories()
+  }, [category?.slug, params.category])
+  
+  // When product data loads, use it to populate categories/subcategories if not already loaded
+  useEffect(() => {
+    if (category && allCategories.length === 0) {
+      // Add current category to list
+      setAllCategories([category])
+    }
+  }, [category, allCategories.length])
 
   // Load subcategory products from API
   useEffect(() => {
@@ -229,9 +247,9 @@ export default function SubcategoryPage({
         </div>
 
         {/* Title and Count */}
-        <div className="mb-6">
+              <div className="mb-6">
           <h1 className="text-2xl font-bold text-black">{subcategory?.name || 'Товары'} <span className="text-gray-500 font-normal text-lg">{total} товаров</span></h1>
-        </div>
+                </div>
 
         {/* Horizontal Filter Bar */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -292,16 +310,19 @@ export default function SubcategoryPage({
               {showCategoryDropdown && (
                 <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[200px]">
                   {allCategories.map((cat) => (
-                    <Link
+                    <button
                       key={cat.slug}
-                      href={`/category/${cat.slug}`}
-                      onClick={() => setShowCategoryDropdown(false)}
-                      className={`block px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm ${
+                      onClick={() => {
+                        // Stay on same page, navigate to same subcategory under different category
+                        router.push(`/subcategory/${cat.slug}/${params.subcategory}`)
+                        setShowCategoryDropdown(false)
+                      }}
+                      className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm ${
                         category?.slug === cat.slug ? 'bg-gray-50 text-brand font-medium' : ''
                       }`}
                     >
                       {cat.name}
-                    </Link>
+                    </button>
                   ))}
                 </div>
               )}
@@ -334,11 +355,11 @@ export default function SubcategoryPage({
                   ))}
                 </div>
               )}
-            </div>
-          )}
+              </div>
+            )}
 
           {/* Size Filter Dropdown */}
-          {filters.available_sizes && filters.available_sizes.length > 0 && (
+            {filters.available_sizes && filters.available_sizes.length > 0 && (
             <div className="relative">
               <button
                 onClick={() => setShowSizeDropdown(!showSizeDropdown)}
@@ -354,24 +375,24 @@ export default function SubcategoryPage({
               </button>
               {showSizeDropdown && (
                 <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[250px]">
-                  <div className="flex flex-wrap gap-2">
-                    {filters.available_sizes.map((size: string) => (
-                      <button
-                        key={size}
-                        onClick={() => {
-                          const checked = !selectedFilters.sizes?.includes(size)
-                          handleFilterChange("sizes", size, checked)
-                        }}
+                <div className="flex flex-wrap gap-2">
+                  {filters.available_sizes.map((size: string) => (
+                    <button
+                      key={size}
+                      onClick={() => {
+                        const checked = !selectedFilters.sizes?.includes(size)
+                        handleFilterChange("sizes", size, checked)
+                      }}
                         className={`px-3 py-1.5 border rounded text-sm ${
-                          selectedFilters.sizes?.includes(size)
+                        selectedFilters.sizes?.includes(size)
                             ? 'border-brand bg-brand text-white'
-                            : 'border-gray-300 hover:border-brand'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
+                          : 'border-gray-300 hover:border-brand'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
                 </div>
               )}
             </div>
@@ -416,11 +437,11 @@ export default function SubcategoryPage({
                   </p>
                 </div>
               )}
-            </div>
-          )}
+              </div>
+            )}
 
           {/* Color Filter Dropdown */}
-          {filters.available_colors && filters.available_colors.length > 0 && (
+            {filters.available_colors && filters.available_colors.length > 0 && (
             <div className="relative">
               <button
                 onClick={() => setShowColorDropdown(!showColorDropdown)}
@@ -436,170 +457,170 @@ export default function SubcategoryPage({
               </button>
               {showColorDropdown && (
                 <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[220px]">
-                  <div className="space-y-2">
-                    {filters.available_colors.map((color: string) => (
+                <div className="space-y-2">
+                  {filters.available_colors.map((color: string) => (
                       <label key={color} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                        <Checkbox 
-                          checked={selectedFilters.colors?.includes(color)}
-                          onCheckedChange={(checked) => handleFilterChange("colors", color, checked as boolean)} 
-                        />
-                        <span className="text-sm capitalize">{color}</span>
-                      </label>
-                    ))}
-                  </div>
+                      <Checkbox 
+                        checked={selectedFilters.colors?.includes(color)}
+                        onCheckedChange={(checked) => handleFilterChange("colors", color, checked as boolean)} 
+                      />
+                      <span className="text-sm capitalize">{color}</span>
+                    </label>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
-
+              </div>
+            )}
+              </div>
+            )}
+            
           {/* Clear Filters Button */}
           {(selectedFilters.sizes?.length > 0 || selectedFilters.colors?.length > 0 || selectedFilters.brands?.length > 0 || priceRange.min || priceRange.max) && (
             <button
-              onClick={() => {
-                setSelectedFilters({ sizes: [], colors: [], brands: [] })
-                setPriceRange({})
-                setCurrentPage(1)
-              }}
+                onClick={() => {
+                  setSelectedFilters({ sizes: [], colors: [], brands: [] })
+                  setPriceRange({})
+                  setCurrentPage(1)
+                }}
               className="px-4 py-2 text-brand hover:text-brand-hover text-sm font-medium"
             >
               Сбросить
-            </button>
-          )}
-        </div>
+                      </button>
+                )}
+            </div>
 
         {/* Products Grid (Full Width) */}
-        {isLoading && currentPage === 1 ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mr-3"></div>
-            <p className="text-gray-600">Загружаем товары...</p>
-          </div>
-        ) : products.length > 0 ? (
-          <>
+            {isLoading && currentPage === 1 ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mr-3"></div>
+                <p className="text-gray-600">Загружаем товары...</p>
+              </div>
+            ) : products.length > 0 ? (
+              <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 mb-8">
-              {products.map((product) => (
-                <Link 
-                  key={product.id} 
-                  href={`/product/${product.slug || product.id}`} 
-                  className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
-                >
-                  <div className="relative mb-3">
+                  {products.map((product) => (
+                    <Link 
+                      key={product.id} 
+                      href={`/product/${product.slug || product.id}`} 
+                      className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                    >
+                      <div className="relative mb-3">
                     {(product.discount_percentage || product.discount_percent) && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
+                          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
                         -{product.discount_percentage || product.discount_percent}%
-                      </div>
-                    )}
-                    <div className="absolute top-2 right-2 z-10">
-                      <button onClick={(e) => handleWishlistClick(e, product)} className="p-1.5 bg-gray-100/80 rounded-full">
-                        <Heart className={`w-4 h-4 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
-                      </button>
-                    </div>
-                    <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
-                      <img
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 z-10">
+                          <button onClick={(e) => handleWishlistClick(e, product)} className="p-1.5 bg-gray-100/80 rounded-full">
+                            <Heart className={`w-4 h-4 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
+                          </button>
+                        </div>
+                        <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                          <img
                         src={product.main_image || product.image || "/images/black-tshirt.jpg"}
-                        alt={product.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-gray-500 uppercase font-medium">
-                      {product.brand_name || 'MARQUE'}
-                    </div>
-                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
-                      {product.title}
-                    </h3>
-                    <div className="flex items-baseline space-x-2">
+                            alt={product.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-xs text-gray-500 uppercase font-medium">
+                          {product.brand_name || 'MARQUE'}
+                        </div>
+                        <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
+                          {product.title}
+                        </h3>
+                        <div className="flex items-baseline space-x-2">
                       <span className="text-base font-bold text-brand">{product.price || product.price_min} сом</span>
                       {(product.original_price || product.original_price_min) && (
                         <span className="text-xs text-gray-400 line-through">{product.original_price || product.original_price_min} сом</span>
-                      )}
-                    </div>
-                    {product.sold_count > 0 && (
-                      <div className="text-xs text-gray-500">Продано {product.sold_count}</div>
-                    )}
+                          )}
+                        </div>
+                        {product.sold_count > 0 && (
+                          <div className="text-xs text-gray-500">Продано {product.sold_count}</div>
+                        )}
                     {product.in_stock === false && (
-                      <div className="text-xs text-red-500">Нет в наличии</div>
+                          <div className="text-xs text-red-500">Нет в наличии</div>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg border border-gray-300 hover:border-brand disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number
+                      if (totalPages <= 5) {
+                        pageNum = i + 1
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i
+                      } else {
+                        pageNum = currentPage - 2 + i
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-3 py-2 rounded-lg text-sm ${
+                            currentPage === pageNum
+                              ? "bg-brand text-white"
+                              : "border border-gray-300 hover:border-brand"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    })}
+
+                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                      <>
+                        <span className="px-2">...</span>
+                        <button
+                          onClick={() => setCurrentPage(totalPages)}
+                          className="px-3 py-2 rounded-lg border border-gray-300 hover:border-brand text-sm"
+                        >
+                          {totalPages}
+                        </button>
+                      </>
                     )}
+
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg border border-gray-300 hover:border-brand disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-gray-300 hover:border-brand disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum: number
-                  if (totalPages <= 5) {
-                    pageNum = i + 1
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i
-                  } else {
-                    pageNum = currentPage - 2 + i
-                  }
-                  
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-2 rounded-lg text-sm ${
-                        currentPage === pageNum
-                          ? "bg-brand text-white"
-                          : "border border-gray-300 hover:border-brand"
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  )
-                })}
-
-                {totalPages > 5 && currentPage < totalPages - 2 && (
-                  <>
-                    <span className="px-2">...</span>
-                    <button
-                      onClick={() => setCurrentPage(totalPages)}
-                      className="px-3 py-2 rounded-lg border border-gray-300 hover:border-brand text-sm"
-                    >
-                      {totalPages}
-                    </button>
-                  </>
                 )}
-
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border border-gray-300 hover:border-brand disabled:opacity-50 disabled:cursor-not-allowed"
+              </>
+            ) : (
+              <div className="text-center py-20">
+                <p className="text-gray-500 mb-4">Товары не найдены</p>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedFilters({ sizes: [], colors: [], brands: [] })
+                    setPriceRange({})
+                    setCurrentPage(1)
+                  }}
                 >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                  Сбросить фильтры
+                </Button>
               </div>
             )}
-          </>
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-gray-500 mb-4">Товары не найдены</p>
-            <Button 
-              variant="outline"
-              onClick={() => {
-                setSelectedFilters({ sizes: [], colors: [], brands: [] })
-                setPriceRange({})
-                setCurrentPage(1)
-              }}
-            >
-              Сбросить фильтры
-            </Button>
-          </div>
-        )}
       </main>
 
       {/* All Filters Sidebar */}
