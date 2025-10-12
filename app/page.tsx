@@ -102,14 +102,17 @@ export default function MarquePage() {
           const bannersData = await bannersApi.getAll()
           console.log('📊 Banner API response:', bannersData)
           
-          if (bannersData?.banners && bannersData.banners.length > 0) {
-            // Filter for hero/active banners if needed
-            const heroBanners = bannersData.banners.filter(
-              (banner: any) => banner.is_active !== false
-            )
-            setApiBanners(heroBanners)
-            console.log('✅ SUCCESS! Loaded', heroBanners.length, 'banners from backend')
-            console.log('📋 Banners:', heroBanners)
+          // Backend returns { hero_banners, promo_banners, category_banners, total }
+          if (bannersData && (bannersData.hero_banners?.length > 0 || bannersData.promo_banners?.length > 0)) {
+            // Combine all banner types for the hero carousel (prioritize hero banners)
+            const allBanners = [
+              ...(bannersData.hero_banners || []),
+              ...(bannersData.promo_banners || []),
+              ...(bannersData.category_banners || [])
+            ]
+            setApiBanners(allBanners)
+            console.log('✅ SUCCESS! Loaded', allBanners.length, 'banners from backend')
+            console.log('📋 Hero:', bannersData.hero_banners?.length, 'Promo:', bannersData.promo_banners?.length, 'Category:', bannersData.category_banners?.length)
           } else {
             console.warn('⚠️ No banners in response, using fallback')
           }

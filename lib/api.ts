@@ -315,19 +315,26 @@ export const wishlistApi = {
 
 // Banners API
 export const bannersApi = {
-  // Get active banners (public endpoint)
+  // Get active banners (public endpoint) - Backend returns hero_banners, promo_banners, category_banners
   getAll: () =>
     apiRequest<{
-      banners: any[]
+      hero_banners: any[]
+      promo_banners: any[]
+      category_banners: any[]
+      total: number
     }>(API_CONFIG.ENDPOINTS.BANNERS),
   
-  // Get sale banners
-  getSale: () =>
-    apiRequest<{ banners: any[] }>(API_CONFIG.ENDPOINTS.BANNERS_SALE),
+  // Get hero banners specifically
+  getHero: () =>
+    apiRequest<any[]>(API_CONFIG.ENDPOINTS.BANNERS + '/hero'),
   
-  // Get model banners
-  getModel: () =>
-    apiRequest<{ banners: any[] }>(API_CONFIG.ENDPOINTS.BANNERS_MODEL),
+  // Get promo banners
+  getPromo: () =>
+    apiRequest<any[]>(API_CONFIG.ENDPOINTS.BANNERS + '/promo'),
+  
+  // Get category banners
+  getCategory: () =>
+    apiRequest<any[]>(API_CONFIG.ENDPOINTS.BANNERS + '/category'),
   
   // Admin endpoints (requires authentication)
   admin: {
