@@ -269,9 +269,9 @@ export default function SearchPage() {
                       className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
                     >
                       <div className="relative mb-3">
-                        {product.discount_percentage && (
+                        {(product.discount_percentage || product.discount_percent) && (
                           <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
-                            -{product.discount_percentage}%
+                            -{product.discount_percentage || product.discount_percent}%
                           </div>
                         )}
                         <div className="absolute top-2 right-2 z-10">
@@ -295,15 +295,15 @@ export default function SearchPage() {
                           {product.title}
                         </h3>
                         <div className="flex items-baseline space-x-2">
-                          <span className="text-base font-bold text-brand">{product.price} сом</span>
-                          {product.original_price && (
-                            <span className="text-xs text-gray-400 line-through">{product.original_price} сом</span>
+                          <span className="text-base font-bold text-brand">{product.price || product.price_min} сом</span>
+                          {(product.original_price || product.original_price_min) && (
+                            <span className="text-xs text-gray-400 line-through">{product.original_price || product.original_price_min} сом</span>
                           )}
                         </div>
                         {product.sold_count > 0 && (
                           <div className="text-xs text-gray-500">Продано {product.sold_count}</div>
                         )}
-                        {!product.in_stock && (
+                        {product.in_stock === false && (
                           <div className="text-xs text-red-500">Нет в наличии</div>
                         )}
                       </div>
