@@ -36,38 +36,13 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
   const loadCategories = async () => {
     try {
       setLoadingCategories(true)
-      
-      // Try to load from API first
-      try {
-        const response = await categoriesApi.getAll()
-        if (response?.categories && response.categories.length > 0) {
-          setApiCategories(response.categories)
-          setLoadingCategories(false)
-          return
-        }
-      } catch (apiError) {
-        console.error('Failed to load categories from API:', apiError)
+      const response = await categoriesApi.getAll()
+      if (response?.categories) {
+        setApiCategories(response.categories)
       }
-      
-      // Fallback: Use hardcoded categories since API is broken
-      const fallbackCategories = [
-        {
-          id: 11,
-          slug: 'men',
-          name: 'Мужчинам',
-          product_count: 6,
-          is_active: true
-        }
-        // Add more categories as needed
-      ]
-      
-      setApiCategories(fallbackCategories)
     } catch (error) {
       console.error('Failed to load categories:', error)
-      // Even if everything fails, set fallback
-      setApiCategories([
-        { id: 11, slug: 'men', name: 'Мужчинам', product_count: 6, is_active: true }
-      ])
+      setApiCategories([]) // Clear on error
     } finally {
       setLoadingCategories(false)
     }
@@ -76,45 +51,13 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
   const loadSubcategories = async (categorySlug: string) => {
     try {
       setLoadingSubcategories(true)
-      
-      // Try to load from API
-      try {
-        const response = await categoriesApi.getSubcategories(categorySlug)
-        if (response?.subcategories && response.subcategories.length > 0) {
-          setApiSubcategories(response.subcategories)
-          setLoadingSubcategories(false)
-          return
-        }
-      } catch (apiError) {
-        console.error('Failed to load subcategories from API:', apiError)
+      const response = await categoriesApi.getSubcategories(categorySlug)
+      if (response?.subcategories) {
+        setApiSubcategories(response.subcategories)
       }
-      
-      // Fallback: Use hardcoded subcategories
-      const fallbackSubcategories: Record<string, any[]> = {
-        'men': [
-          {
-            id: 16,
-            slug: 't-shirts',
-            name: 'Футболки',
-            category_id: 11,
-            product_count: 5,
-            is_active: true
-          }
-        ]
-        // Add more subcategories as needed
-      }
-      
-      setApiSubcategories(fallbackSubcategories[categorySlug] || [])
     } catch (error) {
       console.error('Failed to load subcategories:', error)
-      // Fallback for 'men' category
-      if (categorySlug === 'men') {
-        setApiSubcategories([
-          { id: 16, slug: 't-shirts', name: 'Футболки', category_id: 11, product_count: 5, is_active: true }
-        ])
-      } else {
-        setApiSubcategories([])
-      }
+      setApiSubcategories([]) // Clear on error
     } finally {
       setLoadingSubcategories(false)
     }
@@ -202,7 +145,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                     {/* Subcategory Icon/Image */}
                     <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       <img
-                        src={subcat.image_url || subcat.image || "/images/black-tshirt.jpg"}
+                        src={subcat.image_url || '/images/placeholder.png'}
                         alt={subcat.name}
                         className="w-full h-full object-cover"
                       />
