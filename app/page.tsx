@@ -17,6 +17,7 @@ import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { ProductCardSkeletonGrid } from "@/components/ProductCardSkeleton"
 import { Header } from "@/components/Header"
+import { getImageUrl } from "@/lib/utils"
 
 export default function MarquePage() {
   const router = useRouter()
@@ -608,7 +609,7 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-[24px] relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={banner.image_url || '/placeholder.jpg'} 
+                      src={getImageUrl(banner.image_url)} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
                       onError={(e) => { 
@@ -669,7 +670,7 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={banner.mobile_image_url || banner.image_url || '/placeholder.jpg'} 
+                      src={getImageUrl(banner.mobile_image_url || banner.image_url)} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -729,7 +730,7 @@ export default function MarquePage() {
                       </div>
                       <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                         <img
-                          src={product.image || '/images/black-tshirt.jpg'}
+                          src={getImageUrl(product.image) || '/images/black-tshirt.jpg'}
                           alt={product.title || product.name || 'Product'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
