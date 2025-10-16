@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { productsApi } from "@/lib/api"
 import { useParams, useRouter } from "next/navigation"
+import { API_CONFIG } from "@/lib/config"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
@@ -259,7 +260,11 @@ export default function ProductDetailPage() {
             <div className="lg:hidden relative">
               <div className="aspect-square bg-white overflow-hidden">
                 <img
-                  src={product.images?.[selectedImageIndex]?.url || "/images/black-tshirt.jpg"}
+                  src={
+                    product.images?.[selectedImageIndex]?.url 
+                      ? `https://marquebackend-production.up.railway.app${product.images[selectedImageIndex].url}`
+                      : "/images/black-tshirt.jpg"
+                  }
                   alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
                   className="w-full h-full object-cover"
                 />
@@ -286,7 +291,11 @@ export default function ProductDetailPage() {
             {/* Main Image - Desktop */}
             <div className="hidden lg:block aspect-square bg-white rounded-lg overflow-hidden">
               <img
-                src={product.images?.[selectedImageIndex]?.url || "/images/black-tshirt.jpg"}
+                src={
+                  product.images?.[selectedImageIndex]?.url 
+                    ? `https://marquebackend-production.up.railway.app${product.images[selectedImageIndex].url}`
+                    : "/images/black-tshirt.jpg"
+                }
                 alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
                 className="w-full h-full object-cover"
               />
@@ -304,7 +313,11 @@ export default function ProductDetailPage() {
                     onClick={() => setSelectedImageIndex(index)}
                   >
                     <img
-                      src={image.url || "/images/black-tshirt.jpg"}
+                      src={
+                        image.url 
+                          ? `https://marquebackend-production.up.railway.app${image.url}`
+                          : "/images/black-tshirt.jpg"
+                      }
                       alt={image.alt_text || `${product.title} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -569,7 +582,11 @@ export default function ProductDetailPage() {
                     </div>
                     <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                       <img
-                        src={similarProduct.image || "/images/black-tshirt.jpg"}
+                        src={
+                          similarProduct.image 
+                            ? `https://marquebackend-production.up.railway.app${similarProduct.image}`
+                            : "/images/black-tshirt.jpg"
+                        }
                         alt={similarProduct.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
