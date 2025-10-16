@@ -88,7 +88,7 @@ export default function WishlistPage() {
                   </h3>
                   
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-base font-bold text-brand">{product.price || product.price_min} сом</span>
+                    <span className="text-base font-bold text-brand">{product.price} сом</span>
                   </div>
                   
                   <div className="text-xs text-gray-500">Продано {product.salesCount || 23}</div>

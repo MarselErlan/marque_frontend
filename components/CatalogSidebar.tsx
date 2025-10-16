@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { X, ArrowRight } from 'lucide-react'
 import { categoriesApi } from '@/lib/api'
+import { API_CONFIG } from '@/lib/config'
 
 interface CatalogSidebarProps {
   isOpen: boolean
@@ -145,9 +146,17 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                     {/* Subcategory Icon/Image */}
                     <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       <img
-                        src={subcat.image_url || '/images/placeholder.png'}
+                        src={
+                          subcat.image_url 
+                            ? `https://marquebackend-production.up.railway.app${subcat.image_url}`
+                            : '/images/placeholder.png'
+                        }
                         alt={subcat.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to placeholder if image fails to load
+                          e.currentTarget.src = '/images/placeholder.png'
+                        }}
                       />
                     </div>
 
