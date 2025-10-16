@@ -715,7 +715,7 @@ export default function MarquePage() {
                   <Link
                     key={`${product.id}-${i}`}
                     href={`/product/${product.slug || product.id}`}
-                    className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                    className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group border border-gray-200"
                   >
                     {/* Discount Badge */}
                     <div className="relative mb-3">
@@ -731,7 +731,11 @@ export default function MarquePage() {
                       </div>
                       <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                         <img
-                          src={getImageUrl(product.image) || '/images/black-tshirt.jpg'}
+                          src={
+                            product.image && product.image.trim() !== ''
+                              ? `https://marquebackend-production.up.railway.app${product.image}`
+                              : '/images/black-tshirt.jpg'
+                          }
                           alt={product.title || product.name || 'Product'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
