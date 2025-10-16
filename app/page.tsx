@@ -749,7 +749,10 @@ export default function MarquePage() {
                       {/* Price */}
                       <div className="flex items-baseline space-x-2">
                         <span className="text-base font-bold text-brand">
-                          {product.price_min || product.price} сом
+                          {(product.price_min || product.price) > 0 
+                            ? `${product.price_min || product.price} сом`
+                            : 'Цена по запросу'
+                          }
                         </span>
                         {product.original_price_min && (
                           <span className="text-xs text-gray-400 line-through">
