@@ -732,7 +732,9 @@ export default function MarquePage() {
                       <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                         <img
                           src={
-                            product.image && product.image.trim() !== ''
+                            product.images && product.images.length > 0 && product.images[0].url
+                              ? `https://marquebackend-production.up.railway.app${product.images[0].url}`
+                              : product.image && product.image.trim() !== ''
                               ? `https://marquebackend-production.up.railway.app${product.image}`
                               : '/images/black-tshirt.jpg'
                           }
