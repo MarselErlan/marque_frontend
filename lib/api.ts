@@ -177,6 +177,11 @@ export const authApi = {
 
 // Products API
 export const productsApi = {
+  getAll: (limit?: number) =>
+    apiRequest<any[]>(API_CONFIG.ENDPOINTS.PRODUCTS, {
+      params: limit ? { limit } : undefined,
+    }),
+  
   getBestSellers: (limit?: number) =>
     apiRequest<any[]>(API_CONFIG.ENDPOINTS.PRODUCTS_BEST_SELLERS, {
       params: limit ? { limit } : undefined,

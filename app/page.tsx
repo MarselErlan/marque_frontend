@@ -89,13 +89,14 @@ export default function MarquePage() {
         
         // Load products (banners are optional)
         try {
-          const productsData = await productsApi.getBestSellers(25)
+          // Use regular products API instead of best-sellers to show all products
+          const productsData = await productsApi.getAll(25)
           if (productsData && productsData.length > 0) {
             setRandomProducts(productsData)
             setHasMoreProducts(productsData.length === 25)
           }
         } catch (err) {
-          console.error('Failed to load products:', err)
+            console.error('Failed to load products:', err)
         }
         
         // Load banners separately (don't block on errors)
@@ -257,15 +258,15 @@ export default function MarquePage() {
     e.preventDefault()
     e.stopPropagation()
     
-    if (isInWishlist(product.id)) {
+      if (isInWishlist(product.id)) {
       // Remove from wishlist (no auth required for this action)
-      removeFromWishlist(product.id)
-    } else {
+        removeFromWishlist(product.id)
+      } else {
       // Add to wishlist (requires auth)
       auth.requireAuth(() => {
         addToWishlist(product)
       })
-    }
+      }
   }
 
   const handleCatalogClick = () => {
@@ -320,7 +321,7 @@ export default function MarquePage() {
             >
               <X className="w-5 h-5 text-gray-600" />
             </button>
-          </div>
+              </div>
 
           {/* Main Categories List */}
           <nav className="p-4">
@@ -345,7 +346,7 @@ export default function MarquePage() {
               <div className="text-center py-8 text-gray-500">Нет категорий</div>
             )}
           </nav>
-        </div>
+          </div>
 
         {/* Second Sidebar - Subcategories (opens to the right of first sidebar) */}
         {selectedCatalogCategory && (
@@ -527,7 +528,7 @@ export default function MarquePage() {
         
         try {
           // Calculate offset based on current products
-          const nextBatch = await productsApi.getBestSellers(15)
+          const nextBatch = await productsApi.getAll(15)
           
           if (nextBatch && nextBatch.length > 0) {
             setRandomProducts(prev => [...prev, ...nextBatch])
