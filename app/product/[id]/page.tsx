@@ -13,6 +13,7 @@ import { useCart } from "@/hooks/useCart"
 import { Header } from "@/components/Header"
 import { toast } from "@/lib/toast"
 import { useCatalog } from "@/contexts/CatalogContext"
+import { getImageUrl } from "@/lib/utils"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -262,7 +263,7 @@ export default function ProductDetailPage() {
                 <img
                   src={
                     product.images?.[selectedImageIndex]?.url 
-                      ? `https://marquebackend-production.up.railway.app${product.images[selectedImageIndex].url}`
+                      ? getImageUrl(product.images[selectedImageIndex].url)
                       : "/images/black-tshirt.jpg"
                   }
                   alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
@@ -293,7 +294,7 @@ export default function ProductDetailPage() {
               <img
                 src={
                   product.images?.[selectedImageIndex]?.url 
-                    ? `https://marquebackend-production.up.railway.app${product.images[selectedImageIndex].url}`
+                    ? getImageUrl(product.images[selectedImageIndex].url)
                     : "/images/black-tshirt.jpg"
                 }
                 alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
@@ -315,7 +316,7 @@ export default function ProductDetailPage() {
                     <img
                       src={
                         image.url 
-                          ? `https://marquebackend-production.up.railway.app${image.url}`
+                          ? getImageUrl(image.url)
                           : "/images/black-tshirt.jpg"
                       }
                       alt={image.alt_text || `${product.title} ${index + 1}`}
@@ -584,7 +585,7 @@ export default function ProductDetailPage() {
                       <img
                         src={
                           similarProduct.image 
-                            ? `https://marquebackend-production.up.railway.app${similarProduct.image}`
+                            ? getImageUrl(similarProduct.image)
                             : "/images/black-tshirt.jpg"
                         }
                         alt={similarProduct.title}

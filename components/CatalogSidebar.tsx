@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { X, ArrowRight } from 'lucide-react'
 import { categoriesApi } from '@/lib/api'
 import { API_CONFIG } from '@/lib/config'
+import { getImageUrl } from '@/lib/utils'
 
 interface CatalogSidebarProps {
   isOpen: boolean
@@ -148,7 +149,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                       <img
                         src={
                           subcat.image_url 
-                            ? `https://marquebackend-production.up.railway.app${subcat.image_url}`
+                            ? getImageUrl(subcat.image_url)
                             : '/images/placeholder.png'
                         }
                         alt={subcat.name}

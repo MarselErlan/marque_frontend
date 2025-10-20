@@ -733,9 +733,9 @@ export default function MarquePage() {
                         <img
                           src={
                             product.images && product.images.length > 0 && product.images[0].url
-                              ? `https://marquebackend-production.up.railway.app${product.images[0].url}`
+                              ? getImageUrl(product.images[0].url)
                               : product.image && product.image.trim() !== ''
-                              ? `https://marquebackend-production.up.railway.app${product.image}`
+                              ? getImageUrl(product.image)
                               : '/images/black-tshirt.jpg'
                           }
                           alt={product.title || product.name || 'Product'}
