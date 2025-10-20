@@ -14,6 +14,7 @@ import { useSearchParams } from "next/navigation"
 import { productsApi } from "@/lib/api"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
+import { API_CONFIG } from "@/lib/config"
 
 const sortOptions = [
   { value: "relevance", label: "По релевантности" },
@@ -55,8 +56,52 @@ export default function SearchPage() {
   const [showPriceDropdown, setShowPriceDropdown] = useState(false)
   const [showColorDropdown, setShowColorDropdown] = useState(false)
   const [showAllFiltersModal, setShowAllFiltersModal] = useState(false)
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [showSubcategoryDropdown, setShowSubcategoryDropdown] = useState(false)
+  const [allCategories, setAllCategories] = useState<any[]>([])
+  const [allSubcategories, setAllSubcategories] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('')
   
   const itemsPerPage = 20
+
+  // Load categories from API
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/categories`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.categories && data.categories.length > 0) {
+            setAllCategories(data.categories)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error)
+      }
+    }
+    loadCategories()
+  }, [])
+
+  // Load subcategories when category is selected
+  useEffect(() => {
+    if (!selectedCategory) return
+    
+    const loadSubcategories = async () => {
+      try {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/categories/${selectedCategory}/subcategories`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.subcategories && data.subcategories.length > 0) {
+            setAllSubcategories(data.subcategories)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load subcategories:', error)
+      }
+    }
+    loadSubcategories()
+  }, [selectedCategory])
 
   // Search products from API
   useEffect(() => {
@@ -88,6 +133,12 @@ export default function SearchPage() {
         }
         if (priceRange.max) {
           searchFilters.price_max = priceRange.max
+        }
+        if (selectedCategory) {
+          searchFilters.category = selectedCategory
+        }
+        if (selectedSubcategory) {
+          searchFilters.subcategory = selectedSubcategory
         }
         
         const data = await productsApi.search(query, searchFilters)
@@ -141,7 +192,7 @@ export default function SearchPage() {
     }
     
     searchProducts()
-  }, [query, currentPage, sortBy, selectedFilters, priceRange])
+  }, [query, currentPage, sortBy, selectedFilters, priceRange, selectedCategory, selectedSubcategory])
 
   const handleWishlistClick = (e: React.MouseEvent, product: any) => {
     e.preventDefault()
@@ -270,6 +321,99 @@ export default function SearchPage() {
             Все фильтры
           </button>
 
+          {/* Category Dropdown */}
+          {allCategories.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span>{selectedCategory ? allCategories.find(c => c.slug === selectedCategory)?.name || 'Категория' : 'Категория'}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showCategoryDropdown && (
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[200px]">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory('')
+                      setSelectedSubcategory('')
+                      setShowCategoryDropdown(false)
+                      setCurrentPage(1)
+                    }}
+                    className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg text-sm ${
+                      !selectedCategory ? 'bg-gray-50 text-brand font-medium' : ''
+                    }`}
+                  >
+                    Все категории
+                  </button>
+                  {allCategories.map((cat) => (
+                    <button
+                      key={cat.slug}
+                      onClick={() => {
+                        setSelectedCategory(cat.slug)
+                        setSelectedSubcategory('')
+                        setShowCategoryDropdown(false)
+                        setCurrentPage(1)
+                      }}
+                      className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 last:rounded-b-lg text-sm ${
+                        selectedCategory === cat.slug ? 'bg-gray-50 text-brand font-medium' : ''
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Subcategory Dropdown */}
+          {selectedCategory && allSubcategories.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowSubcategoryDropdown(!showSubcategoryDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
+              >
+                <span>{selectedSubcategory ? allSubcategories.find(s => s.slug === selectedSubcategory)?.name || 'Подкатегория' : 'Подкатегория'}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showSubcategoryDropdown && (
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[220px]">
+                  <button
+                    onClick={() => {
+                      setSelectedSubcategory('')
+                      setShowSubcategoryDropdown(false)
+                      setCurrentPage(1)
+                    }}
+                    className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg text-sm ${
+                      !selectedSubcategory ? 'bg-gray-50 text-brand font-medium' : ''
+                    }`}
+                  >
+                    Все подкатегории
+                  </button>
+                  {allSubcategories.map((subcat: any) => (
+                    <button
+                      key={subcat.slug}
+                      onClick={() => {
+                        setSelectedSubcategory(subcat.slug)
+                        setShowSubcategoryDropdown(false)
+                        setCurrentPage(1)
+                      }}
+                      className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 last:rounded-b-lg text-sm ${
+                        selectedSubcategory === subcat.slug ? 'bg-gray-50 text-brand font-medium' : ''
+                      }`}
+                    >
+                      {subcat.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Size Filter Dropdown */}
           {filters.available_sizes && filters.available_sizes.length > 0 && (
             <div className="relative">
@@ -386,11 +530,13 @@ export default function SearchPage() {
           )}
           
           {/* Clear Filters Button */}
-          {(selectedFilters.sizes?.length > 0 || selectedFilters.colors?.length > 0 || selectedFilters.brands?.length > 0 || priceRange.min || priceRange.max) && (
+          {(selectedFilters.sizes?.length > 0 || selectedFilters.colors?.length > 0 || selectedFilters.brands?.length > 0 || priceRange.min || priceRange.max || selectedCategory || selectedSubcategory) && (
             <button
               onClick={() => {
                 setSelectedFilters({ sizes: [], colors: [], brands: [] })
                 setPriceRange({})
+                setSelectedCategory('')
+                setSelectedSubcategory('')
                 setCurrentPage(1)
               }}
               className="px-4 py-2 text-brand hover:text-brand-hover text-sm font-medium"
@@ -526,6 +672,8 @@ export default function SearchPage() {
               onClick={() => {
                 setSelectedFilters({ sizes: [], colors: [], brands: [] })
                 setPriceRange({})
+                setSelectedCategory('')
+                setSelectedSubcategory('')
                 setCurrentPage(1)
               }}
             >
@@ -657,6 +805,8 @@ export default function SearchPage() {
                 onClick={() => {
                   setSelectedFilters({ sizes: [], colors: [], brands: [] })
                   setPriceRange({})
+                  setSelectedCategory('')
+                  setSelectedSubcategory('')
                   setCurrentPage(1)
                 }}
               >
