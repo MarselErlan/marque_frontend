@@ -704,13 +704,13 @@ export default function MarquePage() {
         </section>
 
         {/* Content Container */}
-        <div className="px-4 md:px-8" style={{maxWidth: '1440px', margin: '0 auto'}}>
+        <div className="w-full px-4" style={{maxWidth: '1680px', margin: '0 auto'}}>
           {/* Products Grid */}
           <section className="mb-12">
             {isLoadingInitial ? (
               <ProductCardSkeletonGrid count={12} />
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" style={{minHeight: '1156px'}}>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4" style={{minHeight: '1156px'}}>
                 {randomProducts.map((product, i) => (
                   <Link
                     key={`${product.id}-${i}`}
