@@ -507,7 +507,7 @@ export default function SubcategoryPage({
                     <Link 
                       key={product.id} 
                       href={`/product/${product.slug || product.id}`} 
-                      className="bg-white rounded-lg p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
+                      className="bg-white rounded-md p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                     >
                       <div className="relative mb-2">
                     {(product.discount_percentage || product.discount_percent) && (
