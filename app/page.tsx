@@ -715,10 +715,10 @@ export default function MarquePage() {
                   <Link
                     key={`${product.id}-${i}`}
                     href={`/product/${product.slug || product.id}`}
-                    className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group border border-gray-200"
+                    className="bg-white rounded-lg p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                   >
                     {/* Discount Badge */}
-                    <div className="relative mb-3">
+                    <div className="relative mb-2">
                       {product.discount_percent && (
                         <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
                           -{product.discount_percent}%
@@ -729,7 +729,7 @@ export default function MarquePage() {
                           <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
                         </button>
                       </div>
-                      <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                      <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                         <img
                           src={
                             product.images && product.images.length > 0 && product.images[0].url
@@ -745,11 +745,11 @@ export default function MarquePage() {
                     </div>
                     
                     {/* Product Info */}
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       <div className="text-xs text-gray-500 uppercase font-medium">
                         {product.brand_name || product.brand || 'MARQUE'}
                       </div>
-                      <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
+                      <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight mb-1">
                         {product.title || product.name}
                       </h3>
                       

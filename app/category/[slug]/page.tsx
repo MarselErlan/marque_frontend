@@ -182,15 +182,15 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 <Link 
                   key={product.id} 
                   href={`/product/${product.slug || product.id}`} 
-                  className="bg-white rounded-xl p-3 cursor-pointer hover:shadow-lg transition-shadow block group"
+                  className="bg-white rounded-lg p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                 >
-                  <div className="relative mb-3">
+                  <div className="relative mb-2">
                     <div className="absolute top-2 right-2 z-10">
-                      <button onClick={(e) => handleWishlistClick(e, product)} className="p-1.5 bg-gray-100/80 rounded-full">
-                        <Heart className={`w-4 h-4 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
+                      <button onClick={(e) => handleWishlistClick(e, product)}>
+                        <Heart className={`w-5 h-5 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
                       </button>
                     </div>
-                    <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+                    <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                       <img
                         src={product.image || "/images/black-tshirt.jpg"}
                         alt={product.title || product.name}
@@ -198,11 +198,11 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                       />
                     </div>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-xs text-gray-500 uppercase font-medium">
                       {product.brand_name || product.brand || 'MARQUE'}
                     </div>
-                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
+                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight mb-1">
                       {product.title || product.name}
                     </h3>
                     <div className="flex items-baseline space-x-2">
