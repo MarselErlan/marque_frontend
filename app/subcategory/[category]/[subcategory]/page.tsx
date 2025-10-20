@@ -12,6 +12,7 @@ import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { API_CONFIG } from "@/lib/config"
 import { useCatalog } from "@/contexts/CatalogContext"
+import { getImageUrl } from "@/lib/utils"
 
 const sortOptions = [
   { value: "popular", label: "Популярное" },
@@ -521,7 +522,7 @@ export default function SubcategoryPage({
                         </div>
                         <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                           <img
-                        src={product.main_image || product.image || "/images/black-tshirt.jpg"}
+                            src={getImageUrl(product.main_image || product.image) || "/images/black-tshirt.jpg"}
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />

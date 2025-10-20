@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { categoriesApi, productsApi } from "@/lib/api"
+import { getImageUrl } from "@/lib/utils"
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const auth = useAuth()
@@ -156,7 +157,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 className="bg-white rounded-lg p-4 hover:shadow-lg transition-shadow group flex items-center gap-4"
               >
                 <img
-                  src={subcategory.image_url || "/images/black-tshirt.jpg"}
+                  src={getImageUrl(subcategory.image_url) || "/images/black-tshirt.jpg"}
                   alt={subcategory.name}
                   className="w-16 h-16 object-cover rounded-lg"
                 />
@@ -192,7 +193,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                     </div>
                     <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                       <img
-                        src={product.image || "/images/black-tshirt.jpg"}
+                        src={getImageUrl(product.image) || "/images/black-tshirt.jpg"}
                         alt={product.title || product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />

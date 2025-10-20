@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { useWishlist } from "@/hooks/useWishlist"
 import { AuthModals } from "@/components/AuthModals"
 import { Header } from "@/components/Header"
+import { getImageUrl } from "@/lib/utils"
 
 export default function WishlistPage() {
   const router = useRouter()
@@ -73,7 +74,7 @@ export default function WishlistPage() {
                     <Link href={`/product/${product.id}`} className="block">
                       <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                         <img
-                          src={product.image || "/images/black-tshirt.jpg"}
+                          src={getImageUrl(product.image) || "/images/black-tshirt.jpg"}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

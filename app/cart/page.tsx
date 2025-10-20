@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { Header } from "@/components/Header"
 import { useCart } from "@/hooks/useCart"
+import { getImageUrl } from "@/lib/utils"
 
 export default function CartPage() {
   const router = useRouter()
@@ -102,7 +103,7 @@ export default function CartPage() {
                 <div key={item.id} className="bg-white rounded-lg p-4 flex space-x-4">
                   {/* Product Image */}
                   <img
-                    src={item.image || "/images/black-tshirt.jpg"}
+                    src={getImageUrl(item.image) || "/images/black-tshirt.jpg"}
                     alt={item.name}
                     className="w-20 h-24 object-cover rounded-lg"
                   />
