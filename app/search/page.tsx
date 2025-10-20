@@ -294,7 +294,7 @@ export default function SearchPage() {
         <Header />
       </header>
 
-      <main className="w-full px-4" style={{maxWidth: '1680px', margin: '0 auto', paddingTop: '24px', paddingBottom: '24px'}}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-4 text-sm">
           <Link href="/" className="text-gray-600 hover:text-brand">
@@ -306,10 +306,7 @@ export default function SearchPage() {
 
         {/* Title and Count */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-1">
-            Результаты поиска
-            <span className="text-gray-500 font-normal text-lg ml-2">{total} товаров</span>
-          </h1>
+          <h1 className="text-2xl font-bold text-black">Поиск: "{query}" <span className="text-gray-500 font-normal text-lg">{total} товаров</span></h1>
         </div>
             
         {/* Horizontal Filter Bar */}
@@ -642,7 +639,7 @@ export default function SearchPage() {
               </div>
             ) : products.length > 0 ? (
               <>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 mb-8">
                   {products.map((product) => (
                     <Link 
                       key={product.id} 
