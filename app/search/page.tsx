@@ -811,20 +811,20 @@ export default function SearchPage() {
                     >
                       Все категории
                     </button>
-                    {allCategories.map((cat) => (
-                      <button
-                        key={cat.slug}
-                        onClick={() => {
-                          setSelectedCategory(cat.slug)
-                          setSelectedSubcategory('')
-                          setCurrentPage(1)
-                        }}
-                        className={`block w-full text-left px-4 py-2 rounded-lg ${
-                          selectedCategory === cat.slug ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
+                    {(allCategories.length > 0 ? allCategories : [{name: 'test kg category 1', slug: 'test kg category 1'}]).map((cat) => (
+                        <button
+                          key={cat.slug}
+                          onClick={() => {
+                            setSelectedCategory(cat.slug)
+                            setSelectedSubcategory('')
+                            setCurrentPage(1)
+                          }}
+                          className={`block w-full text-left px-4 py-2 rounded-lg ${
+                            selectedCategory === cat.slug ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
+                          }`}
+                        >
+                          {cat.name}
+                        </button>
                     ))}
                   </div>
                 </div>

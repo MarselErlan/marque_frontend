@@ -655,54 +655,50 @@ export default function SubcategoryPage({
 
             {/* Filters Content */}
             <div className="p-6 space-y-6">
-              {/* Category Filter */}
-              <div>
-                <h3 className="font-medium mb-3">Категория</h3>
-                <div className="space-y-2">
-                  <Link 
-                    href="/category/men"
-                    className={`block px-4 py-2 rounded-lg ${category?.slug === 'men' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
-                  >
-                    Мужчинам
-                  </Link>
-                  <Link 
-                    href="/category/women"
-                    className={`block px-4 py-2 rounded-lg ${category?.slug === 'women' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
-                  >
-                    Женщинам
-                  </Link>
-                  <Link 
-                    href="/category/kids"
-                    className={`block px-4 py-2 rounded-lg ${category?.slug === 'kids' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
-                  >
-                    Детям
-                  </Link>
+              {/* Category Filter - Dynamic from API */}
+              {allCategories.length > 0 && (
+                <div>
+                  <h3 className="font-medium mb-3">Категория</h3>
+                  <div className="space-y-2">
+                    <Link 
+                      href="/"
+                      className="block px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100"
+                    >
+                      Все категории
+                    </Link>
+                    {allCategories.map((cat) => (
+                      <Link 
+                        key={cat.slug}
+                        href={`/subcategory/${cat.slug}/${params.subcategory}`}
+                        className={`block px-4 py-2 rounded-lg ${category?.slug === cat.slug ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Subcategory Filter */}
-              {category && (
+              {/* Subcategory Filter - Dynamic from API */}
+              {allSubcategories.length > 0 && (
                 <div>
                   <h3 className="font-medium mb-3">Подкатегория</h3>
                   <div className="space-y-2">
                     <Link 
-                      href={`/subcategory/${category.slug}/t-shirts`}
-                      className={`block px-4 py-2 rounded-lg ${subcategory?.slug === 't-shirts' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                      href={`/subcategory/${category?.slug || params.category}`}
+                      className="block px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100"
                     >
-                      Футболки
+                      Все подкатегории
                     </Link>
-                    <Link 
-                      href={`/subcategory/${category.slug}/shirts`}
-                      className={`block px-4 py-2 rounded-lg ${subcategory?.slug === 'shirts' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
-                    >
-                      Рубашки
-                    </Link>
-                    <Link 
-                      href={`/subcategory/${category.slug}/jeans`}
-                      className={`block px-4 py-2 rounded-lg ${subcategory?.slug === 'jeans' ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
-                    >
-                      Джинсы
-                    </Link>
+                    {allSubcategories.map((subcat: any) => (
+                      <Link 
+                        key={subcat.slug}
+                        href={`/subcategory/${category?.slug || params.category}/${subcat.slug}`}
+                        className={`block px-4 py-2 rounded-lg ${subcategory?.slug === subcat.slug ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
+                      >
+                        {subcat.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
