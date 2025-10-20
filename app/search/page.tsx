@@ -305,9 +305,9 @@ export default function SearchPage() {
         </div>
 
         {/* Title and Count */}
-        <div className="mb-6">
+            <div className="mb-6">
           <h1 className="text-2xl font-bold text-black">Поиск: "{query}" <span className="text-gray-500 font-normal text-lg">{total} товаров</span></h1>
-        </div>
+            </div>
             
         {/* Horizontal Filter Bar */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -794,7 +794,7 @@ export default function SearchPage() {
 
             {/* Filters Content */}
             <div className="p-6 space-y-6">
-              {/* Category Filter */}
+              {/* Category Filter - Dynamic from API */}
               {allCategories.length > 0 && (
                 <div>
                   <h3 className="font-medium mb-3">Категория</h3>
@@ -830,7 +830,7 @@ export default function SearchPage() {
                 </div>
               )}
 
-              {/* Subcategory Filter */}
+              {/* Subcategory Filter - Dynamic from API */}
               {selectedCategory && allSubcategories.length > 0 && (
                 <div>
                   <h3 className="font-medium mb-3">Подкатегория</h3>
