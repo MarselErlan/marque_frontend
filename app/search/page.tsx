@@ -500,6 +500,7 @@ export default function SearchPage() {
                         onClick={() => {
                           const checked = !selectedFilters.sizes?.includes(size)
                           handleFilterChange("sizes", size, checked)
+                          setTimeout(() => setShowSizeDropdown(false), 200)
                         }}
                         className={`px-3 py-1.5 border rounded text-sm ${
                           selectedFilters.sizes?.includes(size)
@@ -548,6 +549,7 @@ export default function SearchPage() {
                       value={priceRange.min || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
+                      onKeyDown={(e) => e.key === 'Enter' && setShowPriceDropdown(false)}
                     />
                     <input
                       type="number"
@@ -555,6 +557,7 @@ export default function SearchPage() {
                       value={priceRange.max || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
+                      onKeyDown={(e) => e.key === 'Enter' && setShowPriceDropdown(false)}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
@@ -591,7 +594,13 @@ export default function SearchPage() {
                 <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[220px]">
                   <div className="space-y-2">
                     {filters.available_colors.map((color: string) => (
-                      <label key={color} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                      <label 
+                        key={color} 
+                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                        onClick={() => {
+                          setTimeout(() => setShowColorDropdown(false), 200)
+                        }}
+                      >
                         <Checkbox 
                           checked={selectedFilters.colors?.includes(color)}
                           onCheckedChange={(checked) => handleFilterChange("colors", color, checked as boolean)} 
