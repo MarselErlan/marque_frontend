@@ -373,7 +373,7 @@ export default function MarquePage() {
                       {/* Subcategory Icon/Image */}
                       <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={subcat.image_url || subcat.image || "/images/black-tshirt.jpg"}
+                          src={getImageUrl(subcat.image_url || subcat.image) || "/images/black-tshirt.jpg"}
                           alt={subcat.name}
                           className="w-full h-full object-cover"
                         />
