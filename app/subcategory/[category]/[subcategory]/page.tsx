@@ -157,6 +157,19 @@ export default function SubcategoryPage({
         setFilters(data.filters || {})
         setTotal(data.total || 0)
         setTotalPages(data.total_pages || 1)
+        
+        // Debug: Log product data
+        if (data.products && data.products.length > 0) {
+          console.log('Products loaded:', data.products)
+          data.products.forEach((product: any, index: number) => {
+            console.log(`Product ${index}:`, {
+              title: product.title,
+              main_image: product.main_image,
+              image: product.image,
+              finalImageUrl: getImageUrl(product.main_image || product.image)
+            })
+          })
+        }
       } catch (err: any) {
         console.error('Failed to load subcategory products:', err)
         setError(err.message || 'Failed to load products')
@@ -525,6 +538,13 @@ export default function SubcategoryPage({
                             src={getImageUrl(product.main_image || product.image) || "/images/black-tshirt.jpg"}
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              console.error('Image failed to load:', e.currentTarget.src)
+                              e.currentTarget.src = '/images/black-tshirt.jpg'
+                            }}
+                            onLoad={() => {
+                              console.log('Image loaded successfully:', product.main_image || product.image)
+                            }}
                           />
                         </div>
                       </div>
