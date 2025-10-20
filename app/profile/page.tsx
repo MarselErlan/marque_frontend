@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { useWishlist } from "@/hooks/useWishlist"
 import { AuthModals } from "@/components/AuthModals"
+import { getImageUrl } from "@/lib/utils"
 
 interface OrderItem {
   id: number
@@ -850,7 +851,7 @@ export default function ProfilePage() {
                         {order.items.slice(0, 8).map((item, itemIndex) => (
                           <img
                             key={`${item.id}-${itemIndex}`}
-                            src={item.image || "/placeholder.svg"}
+                            src={getImageUrl(item.image) || "/placeholder.svg"}
                             alt={item.name}
                             className="w-12 h-12 object-cover rounded"
                           />
@@ -908,7 +909,7 @@ export default function ProfilePage() {
                   {selectedOrder.items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
                       <img
-                        src={item.image || "/placeholder.svg"}
+                        src={getImageUrl(item.image) || "/placeholder.svg"}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded"
                       />
@@ -1006,7 +1007,7 @@ export default function ProfilePage() {
                       {reviewPhotos.map((photo) => (
                         <div key={photo.id} className="relative">
                           <img
-                            src={photo.url || "/placeholder.svg"}
+                            src={getImageUrl(photo.url) || "/placeholder.svg"}
                             alt="Review photo"
                             className="w-full h-16 object-cover rounded"
                           />
@@ -1037,7 +1038,7 @@ export default function ProfilePage() {
                     {selectedOrder.items.map((item) => (
                       <img
                         key={item.id}
-                        src={item.image || "/placeholder.svg"}
+                        src={getImageUrl(item.image) || "/placeholder.svg"}
                         alt={item.name}
                         className="w-full h-16 object-cover rounded"
                       />
@@ -1439,7 +1440,7 @@ export default function ProfilePage() {
                                 {notification.products.slice(0, 2).map((product, index) => (
                                   <img
                                     key={index}
-                                    src={product.image || "/placeholder.svg"}
+                                    src={getImageUrl(product.image) || "/placeholder.svg"}
                                     alt=""
                                     className="w-10 h-10 rounded-lg border-2 border-white object-cover"
                                   />

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { getImageUrl } from "@/lib/utils"
 
 export default function AdminDashboard() {
   const [currentView, setCurrentView] = useState<
@@ -511,7 +512,7 @@ export default function AdminDashboard() {
                   {order.items.slice(0, 8).map((item, index) => (
                     <img
                       key={index}
-                      src={item.image || "/placeholder.svg?height=32&width=32&query=clothing item"}
+                      src={getImageUrl(item.image) || "/placeholder.svg?height=32&width=32&query=clothing item"}
                       alt={item.name}
                       className="w-8 h-8 object-cover rounded"
                     />
@@ -647,7 +648,7 @@ export default function AdminDashboard() {
                   {order.items.slice(0, 8).map((item, index) => (
                     <img
                       key={index}
-                      src={item.image || "/placeholder.svg?height=32&width=32&query=clothing item"}
+                      src={getImageUrl(item.image) || "/placeholder.svg?height=32&width=32&query=clothing item"}
                       alt={item.name}
                       className="w-8 h-8 object-cover rounded"
                     />
@@ -729,7 +730,7 @@ export default function AdminDashboard() {
               {selectedOrder.items.map((item: any, index: number) => (
                 <div key={index} className="flex items-start space-x-3">
                   <img
-                    src={item.image || "/placeholder.svg?height=60&width=60&query=clothing item"}
+                    src={getImageUrl(item.image) || "/placeholder.svg?height=60&width=60&query=clothing item"}
                     alt={item.name}
                     className="w-15 h-15 object-cover rounded"
                   />
@@ -1081,7 +1082,7 @@ export default function AdminDashboard() {
                 {order.items.slice(0, 8).map((item, index) => (
                   <img
                     key={index}
-                    src={item.image || "/placeholder.svg?height=32&width=32&query=clothing item"}
+                    src={getImageUrl(item.image) || "/placeholder.svg?height=32&width=32&query=clothing item"}
                     alt={item.name}
                     className="w-8 h-8 object-cover rounded"
                   />
