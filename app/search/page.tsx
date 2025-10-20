@@ -256,7 +256,7 @@ export default function SearchPage() {
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <Header />
         </header>
-        <main className="w-full px-4 mx-auto py-20" style={{maxWidth: '1680px'}}>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="flex items-center justify-center flex-col">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
             <p className="text-gray-600">Поиск товаров...</p>
@@ -274,7 +274,7 @@ export default function SearchPage() {
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <Header />
         </header>
-        <main className="w-full px-4 mx-auto py-20 text-center" style={{maxWidth: '1680px'}}>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Введите поисковый запрос</h1>
           <p className="text-gray-600 mb-8">Используйте поисковую строку для поиска товаров</p>
           <Link href="/">
@@ -294,7 +294,7 @@ export default function SearchPage() {
         <Header />
       </header>
 
-      <main className="w-full px-4 mx-auto py-6" style={{maxWidth: '1680px'}}>
+      <main className="w-full px-4" style={{maxWidth: '1680px', margin: '0 auto', paddingTop: '24px', paddingBottom: '24px'}}>
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-4 text-sm">
           <Link href="/" className="text-gray-600 hover:text-brand">
@@ -305,9 +305,12 @@ export default function SearchPage() {
         </div>
 
         {/* Title and Count */}
-            <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">Результаты поиска <span className="text-gray-500 font-normal text-lg">{total} товаров</span></h1>
-            </div>
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-1">
+            Результаты поиска
+            <span className="text-gray-500 font-normal text-lg ml-2">{total} товаров</span>
+          </h1>
+        </div>
             
         {/* Horizontal Filter Bar */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
