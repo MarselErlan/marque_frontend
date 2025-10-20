@@ -794,6 +794,76 @@ export default function SearchPage() {
 
             {/* Filters Content */}
             <div className="p-6 space-y-6">
+              {/* Category Filter */}
+              {allCategories.length > 0 && (
+                <div>
+                  <h3 className="font-medium mb-3">Категория</h3>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setSelectedCategory('')
+                        setSelectedSubcategory('')
+                        setCurrentPage(1)
+                      }}
+                      className={`block w-full text-left px-4 py-2 rounded-lg ${
+                        !selectedCategory ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
+                      }`}
+                    >
+                      Все категории
+                    </button>
+                    {allCategories.map((cat) => (
+                      <button
+                        key={cat.slug}
+                        onClick={() => {
+                          setSelectedCategory(cat.slug)
+                          setSelectedSubcategory('')
+                          setCurrentPage(1)
+                        }}
+                        className={`block w-full text-left px-4 py-2 rounded-lg ${
+                          selectedCategory === cat.slug ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Subcategory Filter */}
+              {selectedCategory && allSubcategories.length > 0 && (
+                <div>
+                  <h3 className="font-medium mb-3">Подкатегория</h3>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setSelectedSubcategory('')
+                        setCurrentPage(1)
+                      }}
+                      className={`block w-full text-left px-4 py-2 rounded-lg ${
+                        !selectedSubcategory ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
+                      }`}
+                    >
+                      Все подкатегории
+                    </button>
+                    {allSubcategories.map((subcat: any) => (
+                      <button
+                        key={subcat.slug}
+                        onClick={() => {
+                          setSelectedSubcategory(subcat.slug)
+                          setCurrentPage(1)
+                        }}
+                        className={`block w-full text-left px-4 py-2 rounded-lg ${
+                          selectedSubcategory === subcat.slug ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}
+                      >
+                        {subcat.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Brand Filter */}
               {filters.available_brands && filters.available_brands.length > 0 && (
                 <div>
