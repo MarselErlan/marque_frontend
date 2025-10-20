@@ -106,6 +106,9 @@ export default function CartPage() {
                     src={getImageUrl(item.image) || "/images/black-tshirt.jpg"}
                     alt={item.name}
                     className="w-20 h-24 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/black-tshirt.jpg'
+                    }}
                   />
 
                   {/* Product Details */}
