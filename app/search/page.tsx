@@ -315,8 +315,12 @@ export default function SearchPage() {
           <div className="relative">
                 <button
                   onClick={() => {
-                    closeAllDropdowns()
-                    setShowSortDropdown(!showSortDropdown)
+                    if (showSortDropdown) {
+                      setShowSortDropdown(false)
+                    } else {
+                      closeAllDropdowns()
+                      setShowSortDropdown(true)
+                    }
                   }}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
                 >
@@ -363,8 +367,12 @@ export default function SearchPage() {
             <div className="relative">
               <button
                 onClick={() => {
-                  closeAllDropdowns()
-                  setShowCategoryDropdown(!showCategoryDropdown)
+                  if (showCategoryDropdown) {
+                    setShowCategoryDropdown(false)
+                  } else {
+                    closeAllDropdowns()
+                    setShowCategoryDropdown(true)
+                  }
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
@@ -415,8 +423,12 @@ export default function SearchPage() {
             <div className="relative">
               <button
                 onClick={() => {
-                  closeAllDropdowns()
-                  setShowSubcategoryDropdown(!showSubcategoryDropdown)
+                  if (showSubcategoryDropdown) {
+                    setShowSubcategoryDropdown(false)
+                  } else {
+                    closeAllDropdowns()
+                    setShowSubcategoryDropdown(true)
+                  }
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
@@ -462,8 +474,12 @@ export default function SearchPage() {
             <div className="relative">
               <button
                 onClick={() => {
-                  closeAllDropdowns()
-                  setShowSizeDropdown(!showSizeDropdown)
+                  if (showSizeDropdown) {
+                    setShowSizeDropdown(false)
+                  } else {
+                    closeAllDropdowns()
+                    setShowSizeDropdown(true)
+                  }
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
@@ -505,8 +521,12 @@ export default function SearchPage() {
             <div className="relative">
               <button
                 onClick={() => {
-                  closeAllDropdowns()
-                  setShowPriceDropdown(!showPriceDropdown)
+                  if (showPriceDropdown) {
+                    setShowPriceDropdown(false)
+                  } else {
+                    closeAllDropdowns()
+                    setShowPriceDropdown(true)
+                  }
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
@@ -550,8 +570,12 @@ export default function SearchPage() {
             <div className="relative">
               <button
                 onClick={() => {
-                  closeAllDropdowns()
-                  setShowColorDropdown(!showColorDropdown)
+                  if (showColorDropdown) {
+                    setShowColorDropdown(false)
+                  } else {
+                    closeAllDropdowns()
+                    setShowColorDropdown(true)
+                  }
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
