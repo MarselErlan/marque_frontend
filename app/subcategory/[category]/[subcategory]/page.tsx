@@ -535,7 +535,16 @@ export default function SubcategoryPage({
                         </div>
                         <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                           <img
-                            src={getImageUrl(product.main_image || product.image) || "/images/black-tshirt.jpg"}
+                            src={(() => {
+                              const imagePath = product.main_image || product.image
+                              const finalUrl = getImageUrl(imagePath)
+                              console.log('Image URL construction:', {
+                                originalPath: imagePath,
+                                finalUrl: finalUrl,
+                                API_BASE_URL: API_CONFIG.BASE_URL
+                              })
+                              return finalUrl || "/images/black-tshirt.jpg"
+                            })()}
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {

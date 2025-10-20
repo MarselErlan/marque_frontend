@@ -24,7 +24,14 @@ export function getImageUrl(imagePath: string | null | undefined): string {
     // Remove /api/v1 from base URL and add the image path
     const baseUrl = API_CONFIG.BASE_URL.replace('/api/v1', '')
     const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
-    return `${baseUrl}${cleanPath}`
+    const finalUrl = `${baseUrl}${cleanPath}`
+    console.log('getImageUrl construction:', {
+      imagePath,
+      baseUrl,
+      cleanPath,
+      finalUrl
+    })
+    return finalUrl
   }
   
   // If it starts with static/uploads/, prepend backend URL
