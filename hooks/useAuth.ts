@@ -63,12 +63,20 @@ export const useAuth = () => {
       const tokenExpiration = localStorage.getItem('tokenExpiration')
       const isLoggedInFlag = localStorage.getItem('isLoggedIn')
 
+      console.log('Checking auth status:', { 
+        authToken: !!authToken, 
+        savedUserData: !!savedUserData, 
+        tokenExpiration, 
+        isLoggedInFlag 
+      })
+
       if (isLoggedInFlag === 'true' && authToken && savedUserData) {
         if (tokenExpiration) {
           const expirationTime = parseInt(tokenExpiration, 10)
           const currentTime = new Date().getTime()
 
           if (currentTime < expirationTime) {
+            console.log('Setting auth state to logged in from localStorage')
             setAuthState({
               isLoggedIn: true,
               userData: JSON.parse(savedUserData),
@@ -79,6 +87,7 @@ export const useAuth = () => {
             handleLogout()
           }
         } else {
+          console.log('Setting auth state to logged in from localStorage (no expiration)')
           setAuthState({
             isLoggedIn: true,
             userData: JSON.parse(savedUserData),
@@ -104,8 +113,10 @@ export const useAuth = () => {
 
   const handleLogin = useCallback((userData: UserData, authData: any) => {
     try {
-      const expiresInMinutes = authData.expires_in_minutes || 43200 // 30 days
-      const expirationTime = new Date().getTime() + expiresInMinutes * 60 * 1000
+      // Backend returns expires_in in seconds, convert to minutes
+      const expiresInSeconds = authData.expires_in || (43200 * 60) // 30 days default
+      const expiresInMinutes = Math.floor(expiresInSeconds / 60)
+      const expirationTime = new Date().getTime() + expiresInSeconds * 1000
 
       localStorage.setItem('authToken', authData.access_token || authData.token)
       localStorage.setItem('tokenType', authData.token_type || 'bearer')
@@ -121,8 +132,10 @@ export const useAuth = () => {
         userData,
         isLoading: false,
       })
+      
+      console.log('Auth state updated to logged in:', { userData, authData })
 
-      console.log('User logged in successfully')
+      console.log('User logged in successfully:', { userData, authData })
       
       // Dispatch event for cart/wishlist to sync
       window.dispatchEvent(new CustomEvent('auth:login'))
@@ -208,8 +221,9 @@ export const useAuth = () => {
 
       if (response.ok) {
         const data = await response.json()
-        if (data.data && data.data.access_token) {
-          handleLogin(data.data.user, data.data)
+        console.log("Verification response:", data)
+        if (data.access_token && data.user) {
+          handleLogin(data.user, data)
         }
         setIsSmsModalOpen(false)
         setSmsCode("")

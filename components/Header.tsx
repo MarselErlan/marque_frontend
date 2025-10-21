@@ -27,6 +27,11 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
 
   const handleHeaderLoginClick = () => {
+    console.log('Header login clicked, auth state:', { 
+      isLoggedIn: auth.isLoggedIn, 
+      userData: auth.userData,
+      isLoading: auth.isLoading 
+    })
     if (auth.isLoggedIn) {
       router.push('/profile')
     } else {
