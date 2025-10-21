@@ -218,6 +218,8 @@ export const useAuth = () => {
     setIsVerifyingCode(true)
     try {
       const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
+      console.log('🔐 Starting SMS verification:', { phone: fullPhoneNumber, code: smsCode })
+      
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VERIFY_CODE}`, {
         method: 'POST',
         mode: 'cors',
@@ -225,8 +227,12 @@ export const useAuth = () => {
         body: JSON.stringify({ phone: fullPhoneNumber, verification_code: smsCode }),
       })
 
+      console.log('🔐 Verification response status:', response.status)
+      const responseText = await response.text()
+      console.log('🔐 Verification response body:', responseText)
+
       if (response.ok) {
-        const data = await response.json()
+        const data = JSON.parse(responseText)
         console.log("Verification response:", data)
         if (data.access_token && data.user) {
           handleLogin(data.user, data)
@@ -236,9 +242,11 @@ export const useAuth = () => {
         setPhoneNumber("")
         setCountryCode("+996")
       } else {
+        console.error('🔐 Verification failed:', response.status, responseText)
         alert('Неверный код. Попробуйте еще раз.')
       }
     } catch (error) {
+      console.error('🔐 Verification error:', error)
       alert('Ошибка подключения. Проверьте интернет соединение.')
     } finally {
       setIsVerifyingCode(false)
