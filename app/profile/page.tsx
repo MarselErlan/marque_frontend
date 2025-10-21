@@ -76,6 +76,8 @@ export default function ProfilePage() {
   const auth = useAuth()
   const { isLoggedIn, userData, handleLogout } = auth
   const { wishlistItemCount } = useWishlist()
+  
+  console.log('ProfilePage render:', { isLoggedIn, userData, auth })
   const [activeTab, setActiveTab] = useState("profile")
   const [orderFilter, setOrderFilter] = useState("active")
   const [userName, setUserName] = useState("Анна Ахматова")
@@ -193,10 +195,18 @@ export default function ProfilePage() {
   // Check auth status on component mount
   useEffect(() => {
     setIsClient(true)
+    console.log('Profile page auth check:', { 
+      isLoading: auth.isLoading, 
+      isLoggedIn: auth.isLoggedIn, 
+      userData: userData 
+    })
+    
     // If loading is finished and user is not logged in, redirect
     if (!auth.isLoading && !auth.isLoggedIn) {
+      console.log('User not logged in, redirecting to home')
       router.push('/')
     } else if (userData) {
+      console.log('User data found, updating profile:', userData)
       setUserName(userData.full_name || userData.name || "Анна Ахматова")
       setPhoneNumber(userData.phone || "+996 505 32 53 11")
     }
