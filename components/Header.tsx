@@ -143,6 +143,23 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             <Link href="/profile" className="text-xs text-blue-500 ml-2 hover:underline">
               Profile Page
             </Link>
+            {/* Temporary auth state checker */}
+            <button
+              onClick={() => {
+                console.log('🔍 Manual auth state check:', {
+                  isLoggedIn: auth.isLoggedIn,
+                  userData: auth.userData,
+                  localStorage: {
+                    authToken: localStorage.getItem('authToken'),
+                    isLoggedIn: localStorage.getItem('isLoggedIn'),
+                    userData: localStorage.getItem('userData')
+                  }
+                })
+              }}
+              className="text-xs text-red-500 ml-2 hover:underline"
+            >
+              Check Auth
+            </button>
           </div>
         </div>
       </div>

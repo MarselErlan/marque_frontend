@@ -63,11 +63,13 @@ export const useAuth = () => {
       const tokenExpiration = localStorage.getItem('tokenExpiration')
       const isLoggedInFlag = localStorage.getItem('isLoggedIn')
 
-      console.log('Checking auth status:', { 
+      console.log('🔍 Checking auth status:', { 
         authToken: !!authToken, 
         savedUserData: !!savedUserData, 
         tokenExpiration, 
-        isLoggedInFlag 
+        isLoggedInFlag,
+        authTokenValue: authToken,
+        savedUserDataValue: savedUserData
       })
 
       if (isLoggedInFlag === 'true' && authToken && savedUserData) {
@@ -118,6 +120,13 @@ export const useAuth = () => {
       const expiresInMinutes = Math.floor(expiresInSeconds / 60)
       const expirationTime = new Date().getTime() + expiresInSeconds * 1000
 
+      console.log('🔐 Storing auth data in localStorage:', {
+        authToken: authData.access_token || authData.token,
+        userData: userData,
+        expiresInSeconds,
+        expirationTime
+      })
+      
       localStorage.setItem('authToken', authData.access_token || authData.token)
       localStorage.setItem('tokenType', authData.token_type || 'bearer')
       localStorage.setItem('sessionId', authData.session_id || '')
@@ -126,6 +135,12 @@ export const useAuth = () => {
       localStorage.setItem('userData', JSON.stringify(userData))
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('tokenExpiration', expirationTime.toString())
+      
+      console.log('🔐 localStorage after storing:', {
+        authToken: localStorage.getItem('authToken'),
+        isLoggedIn: localStorage.getItem('isLoggedIn'),
+        userData: localStorage.getItem('userData')
+      })
 
       setAuthState({
         isLoggedIn: true,
