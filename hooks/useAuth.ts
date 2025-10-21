@@ -203,7 +203,7 @@ export const useAuth = () => {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ phone: fullPhoneNumber, code: smsCode }),
+        body: JSON.stringify({ phone: fullPhoneNumber, verification_code: smsCode }),
       })
 
       if (response.ok) {
