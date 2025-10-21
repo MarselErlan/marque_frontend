@@ -160,6 +160,9 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                   src={getImageUrl(subcategory.image_url) || "/images/black-tshirt.jpg"}
                   alt={subcategory.name}
                   className="w-16 h-16 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/black-tshirt.jpg"
+                  }}
                 />
                 <div className="flex-1">
                   <h3 className="font-medium text-black group-hover:text-brand">{subcategory.name}</h3>
@@ -196,6 +199,9 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                         src={getImageUrl(product.image) || "/images/black-tshirt.jpg"}
                         alt={product.title || product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/black-tshirt.jpg"
+                        }}
                       />
                     </div>
                   </div>

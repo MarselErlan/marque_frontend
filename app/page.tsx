@@ -376,6 +376,9 @@ export default function MarquePage() {
                           src={getImageUrl(subcat.image_url || subcat.image) || "/images/black-tshirt.jpg"}
                           alt={subcat.name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/images/black-tshirt.jpg"
+                          }}
                         />
                       </div>
                       
@@ -610,11 +613,11 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-[24px] relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={getImageUrl(banner.image_url)} 
+                      src={getImageUrl(banner.image_url) || "/images/placeholder.jpg"} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
                       onError={(e) => { 
-                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.src = "/images/placeholder.jpg"
                       }}
                     />
                     {/* Subtle overlay for depth */}
@@ -671,10 +674,12 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={getImageUrl(banner.mobile_image_url || banner.image_url)} 
+                      src={getImageUrl(banner.mobile_image_url || banner.image_url) || "/images/placeholder.jpg"} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      onError={(e) => { 
+                        e.currentTarget.src = "/images/placeholder.jpg"
+                      }}
                     />
                     <div className="absolute inset-0 bg-black/10"></div>
                     {/* Display title on mobile if available */}
@@ -740,6 +745,9 @@ export default function MarquePage() {
                           }
                           alt={product.title || product.name || 'Product'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            e.currentTarget.src = "/images/black-tshirt.jpg"
+                          }}
                         />
                       </div>
                     </div>
