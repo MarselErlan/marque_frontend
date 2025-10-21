@@ -27,11 +27,6 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
 
   const handleHeaderLoginClick = () => {
-    console.log('Header login clicked, auth state:', { 
-      isLoggedIn: auth.isLoggedIn, 
-      userData: auth.userData,
-      isLoading: auth.isLoading 
-    })
     if (auth.isLoggedIn) {
       router.push('/profile')
     } else {
@@ -84,11 +79,11 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               <h1 className="text-2xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
             </Link>
             <Button
-              className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
+              className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg flex items-center space-x-2"
               onClick={handleCatalogClick}
             >
-              <span className="mr-2">⋮⋮⋮</span>
-              Каталог
+              <span className="text-lg">⋮⋮⋮</span>
+              <span>Каталог</span>
             </Button>
           </div>
           {/* Center Section */}
@@ -98,7 +93,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               <Input
                 type="text"
                 placeholder="Товар, бренд или артикул"
-                className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+                className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onFocus={handleSearchFocus}
@@ -110,6 +105,12 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           </div>
           {/* Right Section */}
           <div className="flex items-center space-x-6 text-sm text-gray-600">
+            <div className="flex flex-col items-center cursor-pointer hover:text-brand relative">
+              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mb-1">
+                <span className="text-lg">👤</span>
+              </div>
+              <span className="text-xs">Манекен</span>
+            </div>
             <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
               <Heart className="w-5 h-5 mb-1" />
               {wishlistItemCount > 0 && (
@@ -138,27 +139,6 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             >
               <User className="w-5 h-5 mb-1" />
               <span>{auth.isLoggedIn ? "Профиль" : "Войти"}</span>
-            </button>
-            {/* Temporary direct link to profile page for testing */}
-            <Link href="/profile" className="text-xs text-blue-500 ml-2 hover:underline">
-              Profile Page
-            </Link>
-            {/* Temporary auth state checker */}
-            <button
-              onClick={() => {
-                console.log('🔍 Manual auth state check:', {
-                  isLoggedIn: auth.isLoggedIn,
-                  userData: auth.userData,
-                  localStorage: {
-                    authToken: localStorage.getItem('authToken'),
-                    isLoggedIn: localStorage.getItem('isLoggedIn'),
-                    userData: localStorage.getItem('userData')
-                  }
-                })
-              }}
-              className="text-xs text-red-500 ml-2 hover:underline"
-            >
-              Check Auth
             </button>
           </div>
         </div>
@@ -192,29 +172,32 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               type="button"
               style={{ background: 'transparent', border: 'none' }}
             >
-              <User className="w-6 h-6 text-gray-600" />
+              <User className="w-6 h-6 text-brand" />
             </button>
           </div>
         </div>
-        <div className="mt-3 flex items-center space-x-2">
-          <Button
-            className="bg-brand hover:bg-brand-hover text-white p-2 rounded-lg"
-            onClick={handleCatalogClick}
-          >
-            <span className="text-xl">⋮⋮⋮</span>
-          </Button>
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Товар, бренд или артикул"
-              className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-              onKeyDown={handleSearchKeyDown}
-            />
+        <div className="mt-3">
+          <div className="flex items-center space-x-3">
+            <Button
+              className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+              onClick={handleCatalogClick}
+            >
+              <span className="text-lg">⋮⋮⋮</span>
+              <span>Каталог</span>
+            </Button>
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="Товар, бренд или артикул"
+                className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={handleSearchFocus}
+                onBlur={handleSearchBlur}
+                onKeyDown={handleSearchKeyDown}
+              />
+            </div>
           </div>
         </div>
       </div>

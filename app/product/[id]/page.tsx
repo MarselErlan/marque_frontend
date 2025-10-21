@@ -126,7 +126,7 @@ export default function ProductDetailPage() {
   }
 
   const handleCompare = () => {
-    console.log("Added to compare:", product.id)
+    // Compare functionality to be implemented
   }
 
   const handleWishlist = () => {

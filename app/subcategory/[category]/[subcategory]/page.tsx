@@ -77,7 +77,7 @@ export default function SubcategoryPage({
             }
           }
         } catch (catError) {
-          console.log('Categories API not available, will use data from product API')
+          // Categories API not available, will use data from product API
         }
         
         // Try to load subcategories from API
@@ -92,7 +92,7 @@ export default function SubcategoryPage({
               }
             }
           } catch (subError) {
-            console.log('Subcategories API not available, will use data from product API')
+            // Subcategories API not available, will use data from product API
           }
         }
       } catch (error) {
@@ -526,7 +526,6 @@ export default function SubcategoryPage({
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
-                              console.error('Image failed to load:', e.currentTarget.src)
                               e.currentTarget.src = '/images/black-tshirt.jpg'
                             }}
                           />

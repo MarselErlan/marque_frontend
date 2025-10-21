@@ -101,9 +101,7 @@ export default function MarquePage() {
         
         // Load banners separately (don't block on errors)
         try {
-          console.log('🔄 Attempting to load banners from backend...')
           const bannersData = await bannersApi.getAll()
-          console.log('📊 Banner API response:', bannersData)
           
           // Backend returns { hero_banners, promo_banners, category_banners, total }
           if (bannersData && (bannersData.hero_banners?.length > 0 || bannersData.promo_banners?.length > 0)) {
@@ -114,10 +112,8 @@ export default function MarquePage() {
               ...(bannersData.category_banners || [])
             ]
             setApiBanners(allBanners)
-            console.log('✅ SUCCESS! Loaded', allBanners.length, 'banners from backend')
-            console.log('📋 Hero:', bannersData.hero_banners?.length, 'Promo:', bannersData.promo_banners?.length, 'Category:', bannersData.category_banners?.length)
           } else {
-            console.warn('⚠️ No banners in response, using fallback')
+            // Fallback banners will be used automatically
           }
         } catch (err: any) {
           console.error('❌ Failed to load banners (using fallback):', err)
@@ -298,7 +294,6 @@ export default function MarquePage() {
   const removeSuggestion = (suggestion: string, e: React.MouseEvent) => {
     e.stopPropagation()
     // In a real app, you would remove this from user's search history
-    console.log("Remove suggestion:", suggestion)
   }
 
   // Catalog Sidebar Overlay (2-level navigation)
