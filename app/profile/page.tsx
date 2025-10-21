@@ -201,11 +201,18 @@ export default function ProfilePage() {
       userData: userData 
     })
     
-    // If loading is finished and user is not logged in, redirect
-    if (!auth.isLoading && !auth.isLoggedIn) {
-      console.log('User not logged in, redirecting to home')
-      router.push('/')
-    } else if (userData) {
+    // TEMPORARILY DISABLED: If loading is finished and user is not logged in, redirect
+    // if (!auth.isLoading && !auth.isLoggedIn) {
+    //   console.log('User not logged in, redirecting to home')
+    //   router.push('/')
+    // } else if (userData) {
+    //   console.log('User data found, updating profile:', userData)
+    //   setUserName(userData.full_name || userData.name || "Анна Ахматова")
+    //   setPhoneNumber(userData.phone || "+996 505 32 53 11")
+    // }
+    
+    // TEMPORARY: Always show profile page for testing
+    if (userData) {
       console.log('User data found, updating profile:', userData)
       setUserName(userData.full_name || userData.name || "Анна Ахматова")
       setPhoneNumber(userData.phone || "+996 505 32 53 11")
