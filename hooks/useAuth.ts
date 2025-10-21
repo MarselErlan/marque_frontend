@@ -142,8 +142,11 @@ export const useAuth = () => {
 
       // Execute and clear the success callback
       if (onLoginSuccess) {
+        console.log('Executing login success callback')
         onLoginSuccess()
         setOnLoginSuccess(null)
+      } else {
+        console.log('No login success callback to execute')
       }
     } catch (error) {
       console.error('Error during login:', error)
@@ -151,12 +154,15 @@ export const useAuth = () => {
   }, [onLoginSuccess])
 
   const requireAuth = (onSuccess?: () => void) => {
+    console.log('requireAuth called:', { isLoggedIn: authState.isLoggedIn, hasCallback: !!onSuccess })
     if (authState.isLoggedIn) {
+      console.log('User already logged in, executing callback immediately')
       onSuccess?.()
     } else {
       if (onSuccess) {
-        // Store the callback function directly, not a function that returns it
-        setOnLoginSuccess(() => () => onSuccess())
+        console.log('User not logged in, storing callback for after login')
+        // Store the callback function directly
+        setOnLoginSuccess(() => onSuccess())
       }
       setIsPhoneModalOpen(true)
     }

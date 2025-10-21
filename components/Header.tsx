@@ -139,6 +139,10 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               <User className="w-5 h-5 mb-1" />
               <span>{auth.isLoggedIn ? "Профиль" : "Войти"}</span>
             </button>
+            {/* Temporary test link - remove after testing */}
+            <Link href="/profile" className="text-xs text-blue-500 ml-2">
+              Test Profile
+            </Link>
           </div>
         </div>
       </div>
