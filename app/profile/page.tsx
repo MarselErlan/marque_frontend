@@ -625,11 +625,11 @@ export default function ProfilePage() {
                 <h1 className="text-2xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
               </Link>
               <Button
-                className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg"
+                className="bg-brand hover:bg-brand-hover text-white px-6 py-2 rounded-lg flex items-center space-x-2"
                 onClick={() => router.push('/?catalog=true')}
               >
-                <span className="mr-2">⋮⋮⋮</span>
-                Каталог
+                <span className="text-lg">⋮⋮⋮</span>
+                <span>Каталог</span>
               </Button>
             </div>
             <div className="flex-1 flex justify-center px-8">
@@ -638,7 +638,7 @@ export default function ProfilePage() {
                 <Input
                   type="text"
                   placeholder="Товар, бренд или артикул"
-                  className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+                  className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand"
                   value={searchQuery}
                   onChange={handleSearchChange}
                   onFocus={handleSearchFocus}
@@ -652,6 +652,12 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="flex items-center space-x-6 text-sm text-gray-600">
+              <div className="flex flex-col items-center cursor-pointer hover:text-brand relative">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mb-1">
+                  <span className="text-lg">👤</span>
+                </div>
+                <span className="text-xs">Манекен</span>
+              </div>
               <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
                 <Heart className="w-5 h-5 mb-1" />
                 {isClient && wishlistItemCount > 0 && (
@@ -710,6 +716,29 @@ export default function ProfilePage() {
               </button>
             </div>
           </div>
+          <div className="mt-3">
+            <div className="flex items-center space-x-3">
+              <Button
+                className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                onClick={() => router.push('/?catalog=true')}
+              >
+                <span className="text-lg">⋮⋮⋮</span>
+                <span>Каталог</span>
+              </Button>
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="Товар, бренд или артикул"
+                  className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={handleSearchFocus}
+                  onBlur={handleSearchBlur}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Mobile Tabs */}
@@ -762,45 +791,56 @@ export default function ProfilePage() {
           {/* Content Area */}
           <div className="flex-1">
             {activeTab === "profile" && (
-              <div className="bg-white rounded-lg p-6">
+              <div className="bg-white rounded-lg p-6 md:p-8">
                 {/* Profile Header */}
-                <div className="flex items-center space-x-4 mb-8">
+                <div className="flex items-center space-x-6 mb-8">
                   <div className="relative">
-                    <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-10 h-10 text-gray-400" />
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
+                      <User className="w-12 h-12 text-gray-400" />
                     </div>
-                    <button className="absolute bottom-0 right-0 w-6 h-6 bg-brand rounded-full flex items-center justify-center">
-                      <Camera className="w-3 h-3 text-white" />
+                    <button className="absolute bottom-0 right-0 w-8 h-8 bg-brand rounded-full flex items-center justify-center hover:bg-brand-hover transition-colors">
+                      <Camera className="w-4 h-4 text-white" />
                     </button>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-semibold text-black">{userName}</h2>
-                    <p className="text-gray-500">{phoneNumber}</p>
-                    <button className="text-brand text-sm hover:underline mt-1">Редактировать фото</button>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-1">{userName}</h2>
+                    <p className="text-gray-600 text-lg mb-3">{phoneNumber}</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-brand border-brand hover:bg-brand hover:text-white transition-colors"
+                    >
+                      Редактировать фото
+                    </Button>
                   </div>
                 </div>
 
                 {/* Profile Form */}
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">ФИО</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">ФИО</label>
                     <Input
                       type="text"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      className="w-full"
+                      className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       Номер телефона (нельзя изменить)
                     </label>
-                    <Input type="tel" value={phoneNumber} disabled className="w-full bg-gray-50" />
+                    <Input 
+                      type="tel" 
+                      value={phoneNumber} 
+                      disabled 
+                      className="w-full h-12 text-lg bg-gray-50 border-gray-200 text-gray-500" 
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       Дополнительный номер телефона
                     </label>
                     <Input
@@ -808,19 +848,19 @@ export default function ProfilePage() {
                       value={additionalPhone}
                       onChange={(e) => setAdditionalPhone(e.target.value)}
                       placeholder="+996 505 32 53 11"
-                      className="w-full"
+                      className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
                     />
                   </div>
 
                   {/* Logout Button */}
-                  <div className="pt-6 border-t border-gray-200">
+                  <div className="pt-8 border-t border-gray-200">
                     <Button
                       onClick={handleLogout}
                       variant="outline"
-                      className="flex items-center space-x-2 text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
+                      className="w-full h-12 flex items-center justify-center space-x-3 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors"
                     >
-                      <LogOut className="w-4 h-4" />
-                      <span>Выйти из аккаунта</span>
+                      <LogOut className="w-5 h-5" />
+                      <span className="text-lg font-medium">Выйти из аккаунта</span>
                     </Button>
                   </div>
                 </div>
@@ -828,53 +868,62 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "orders" && !selectedOrder && !showReviewForm && (
-              <div className="bg-white rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-black mb-2">Мои заказы</h2>
-                <p className="text-gray-500 text-sm mb-6">{activeOrdersCount} активных</p>
+              <div className="bg-white rounded-lg p-6 md:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-1">Мои заказы</h2>
+                    <p className="text-gray-600">{activeOrdersCount} активных</p>
+                  </div>
+                </div>
 
-                <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
+                <div className="flex space-x-1 mb-8 bg-gray-100 rounded-lg p-1 w-fit">
                   <button
                     onClick={() => setOrderFilter("active")}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      orderFilter === "active" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"
+                    className={`px-6 py-3 rounded-md text-sm font-medium transition-colors ${
+                      orderFilter === "active" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     Активные
                   </button>
                   <button
                     onClick={() => setOrderFilter("archive")}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      orderFilter === "archive" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"
+                    className={`px-6 py-3 rounded-md text-sm font-medium transition-colors ${
+                      orderFilter === "archive" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     Архив
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {filteredOrders.map((order, index) => (
-                    <div key={`${order.id}-${index}`} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                        <div className="flex items-center space-x-4 mb-2 md:mb-0">
-                          <span className="font-medium">Заказ №{order.id}</span>
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${order.statusColor} bg-opacity-10`}>
+                    <div key={`${order.id}-${index}`} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                        <div className="flex items-center space-x-4 mb-3 md:mb-0">
+                          <span className="text-lg font-semibold text-gray-900">Заказ №{order.id}</span>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            order.status === "ОФОРМЛЕН" ? "bg-green-100 text-green-700" :
+                            order.status === "В ПУТИ" ? "bg-yellow-100 text-yellow-700" :
+                            order.status === "ДОСТАВЛЕН" ? "bg-purple-100 text-purple-700" :
+                            "bg-gray-100 text-gray-700"
+                          }`}>
                             {order.status}
                           </span>
                         </div>
                         <div className="text-sm text-gray-500">{order.date}</div>
                       </div>
 
-                      <div className="flex items-center space-x-4 mb-4">
+                      <div className="flex items-center space-x-3 mb-6">
                         {order.items.slice(0, 8).map((item, itemIndex) => (
                           <img
                             key={`${item.id}-${itemIndex}`}
                             src={getImageUrl(item.image) || "/placeholder.svg"}
                             alt={item.name}
-                            className="w-12 h-12 object-cover rounded"
+                            className="w-16 h-16 object-cover rounded-lg border border-gray-200"
                           />
                         ))}
                         {order.items.length > 8 && (
-                          <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-500">
+                          <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-sm text-gray-500 border border-gray-200">
                             +{order.items.length - 8}
                           </div>
                         )}
@@ -882,18 +931,23 @@ export default function ProfilePage() {
 
                       <div className="flex flex-col md:flex-row md:items-center justify-between">
                         <div>
-                          <div className="text-sm text-gray-500 mb-1">Доставка {order.deliveryDate}</div>
-                          <div className="text-lg font-semibold">{order.total}</div>
+                          <div className="text-sm text-gray-500 mb-2">Доставка {order.deliveryDate}</div>
+                          <div className="text-xl font-semibold text-gray-900">{order.total}</div>
                         </div>
-                        <div className="flex space-x-2 mt-2 md:mt-0">
-                          <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>
+                        <div className="flex space-x-3 mt-4 md:mt-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setSelectedOrder(order)}
+                            className="px-6 py-2 border-gray-300 hover:border-gray-400"
+                          >
                             Детали
                           </Button>
                           {order.canReview && (
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-brand border-brand-light hover:bg-brand-50 bg-transparent"
+                              className="px-6 py-2 text-brand border-brand hover:bg-brand hover:text-white transition-colors"
                               onClick={() => {
                                 setSelectedOrder(order)
                                 setShowReviewForm(true)
@@ -1068,37 +1122,39 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "addresses" && !showAddressForm && (
-              <div className="bg-white rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-black mb-2">Адреса доставки</h2>
-                <p className="text-gray-500 text-sm mb-6">{addresses.length} адреса</p>
+              <div className="bg-white rounded-lg p-6 md:p-8">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">Адреса доставки</h2>
+                  <p className="text-gray-600">{addresses.length} адреса</p>
+                </div>
 
-                <div className="space-y-4 mb-6">
+                <div className="space-y-4 mb-8">
                   {addresses.map((address) => (
                     <div
                       key={address.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                      className="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
                     >
                       <div>
-                        <p className="font-medium text-gray-900">{address.label}</p>
+                        <p className="text-lg font-medium text-gray-900 mb-1">{address.label}</p>
                         <p className="text-gray-600">{address.address}</p>
-                        {address.city && <p className="text-sm text-gray-500">{address.city}</p>}
+                        {address.city && <p className="text-sm text-gray-500 mt-1">{address.city}</p>}
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditAddress(address)}
-                          className="text-gray-500 hover:text-gray-700"
+                          className="text-gray-500 hover:text-gray-700 p-2"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-5 h-5" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteAddress(address.id)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 p-2"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </Button>
                       </div>
                     </div>
@@ -1107,7 +1163,7 @@ export default function ProfilePage() {
 
                 <Button
                   onClick={() => setShowAddressForm(true)}
-                  className="w-full bg-brand hover:bg-brand-hover text-white"
+                  className="w-full h-12 bg-brand hover:bg-brand-hover text-white text-lg font-medium rounded-lg transition-colors"
                 >
                   Добавить адрес
                 </Button>
@@ -1216,38 +1272,40 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "payments" && !showPaymentForm && (
-              <div className="bg-white rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-black mb-2">Способы оплаты</h2>
-                <p className="text-gray-500 text-sm mb-6">{paymentMethods.length} способа</p>
+              <div className="bg-white rounded-lg p-6 md:p-8">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">Способы оплаты</h2>
+                  <p className="text-gray-600">{paymentMethods.length} способа</p>
+                </div>
 
-                <div className="space-y-4 mb-6">
+                <div className="space-y-4 mb-8">
                   {paymentMethods.map((payment) => (
                     <div
                       key={payment.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                      className="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
                     >
                       <div>
-                        <p className="font-medium text-gray-900">{payment.type}</p>
+                        <p className="text-lg font-medium text-gray-900 mb-1">{payment.type}</p>
                         <p className="text-gray-600">
                           {payment.brand} {payment.fullNumber}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditPayment(payment)}
-                          className="text-gray-500 hover:text-gray-700"
+                          className="text-gray-500 hover:text-gray-700 p-2"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-5 h-5" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeletePayment(payment.id)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 p-2"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </Button>
                       </div>
                     </div>
@@ -1256,7 +1314,7 @@ export default function ProfilePage() {
 
                 <Button
                   onClick={() => setShowPaymentForm(true)}
-                  className="w-full bg-brand hover:bg-brand-hover text-white"
+                  className="w-full h-12 bg-brand hover:bg-brand-hover text-white text-lg font-medium rounded-lg transition-colors"
                 >
                   Добавить способ оплаты
                 </Button>
@@ -1374,20 +1432,22 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "notifications" && (
-              <div className="bg-white rounded-lg p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-black mb-4 sm:mb-0">Уведомления</h2>
+              <div className="bg-white rounded-lg p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-1">Уведомления</h2>
+                  </div>
 
                   {/* Notification Settings Toggle */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 mt-4 sm:mt-0">
                     <button
                       onClick={() =>
                         setNotificationSettings((prev) => ({ ...prev, emailNotifications: !prev.emailNotifications }))
                       }
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         notificationSettings.emailNotifications
-                          ? "bg-brand-light text-purple-700"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-brand text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       <Bell className="w-4 h-4" />
@@ -1397,10 +1457,10 @@ export default function ProfilePage() {
                       onClick={() =>
                         setNotificationSettings((prev) => ({ ...prev, pushNotifications: !prev.pushNotifications }))
                       }
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         notificationSettings.pushNotifications
-                          ? "bg-brand-light text-purple-700"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-brand text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       <Bell className="w-4 h-4" />
@@ -1410,31 +1470,31 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
+                <div className="flex gap-1 mb-8 bg-gray-100 p-1 rounded-lg">
                   <button
                     onClick={() => setNotificationFilter("all")}
-                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      notificationFilter === "all" ? "bg-white text-black shadow-sm" : "text-gray-600 hover:text-black"
+                    className={`flex-1 px-6 py-3 rounded-md text-sm font-medium transition-colors ${
+                      notificationFilter === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     Все
                   </button>
                   <button
                     onClick={() => setNotificationFilter("orders")}
-                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex-1 px-6 py-3 rounded-md text-sm font-medium transition-colors ${
                       notificationFilter === "orders"
-                        ? "bg-white text-black shadow-sm"
-                        : "text-gray-600 hover:text-black"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     Заказы
                   </button>
                   <button
                     onClick={() => setNotificationFilter("sales")}
-                    className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex-1 px-6 py-3 rounded-md text-sm font-medium transition-colors ${
                       notificationFilter === "sales"
-                        ? "bg-white text-black shadow-sm"
-                        : "text-gray-600 hover:text-black"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     Акции
@@ -1442,15 +1502,15 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Notifications List */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {Object.entries(groupedNotifications).map(([date, dateNotifications]) => (
                     <div key={date}>
-                      <h3 className="text-sm font-medium text-gray-500 mb-3 lowercase">{date}</h3>
-                      <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-500 mb-4 lowercase">{date}</h3>
+                      <div className="space-y-4">
                         {dateNotifications.map((notification) => (
                           <div
                             key={notification.id}
-                            className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors"
                           >
                             {notification.products.length > 0 && (
                               <div className="flex -space-x-2">
@@ -1459,19 +1519,19 @@ export default function ProfilePage() {
                                     key={index}
                                     src={getImageUrl(product.image) || "/placeholder.svg"}
                                     alt=""
-                                    className="w-10 h-10 rounded-lg border-2 border-white object-cover"
+                                    className="w-12 h-12 rounded-lg border-2 border-white object-cover"
                                   />
                                 ))}
                               </div>
                             )}
                             {notification.products.length === 0 && (
-                              <div className="w-10 h-10 bg-brand-light rounded-lg flex items-center justify-center">
-                                <Bell className="w-5 h-5 text-brand" />
+                              <div className="w-12 h-12 bg-brand/10 rounded-lg flex items-center justify-center">
+                                <Bell className="w-6 h-6 text-brand" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-black">{notification.title}</p>
-                              <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                              <p className="text-base font-medium text-gray-900">{notification.title}</p>
+                              <p className="text-sm text-gray-500 mt-1">{notification.time}</p>
                             </div>
                           </div>
                         ))}
@@ -1545,38 +1605,40 @@ export default function ProfilePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 mt-12">
+      <footer className="bg-gray-900 text-white py-16 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <h3 className="text-xl font-bold mb-6">MARQUE</h3>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
-                <div className="space-y-2 text-sm text-gray-400">
-                  <div>Мужчинам</div>
-                  <div>Женщинам</div>
-                  <div>Детям</div>
-                  <div>Спорт</div>
-                  <div>Обувь</div>
-                  <div>Аксессуары</div>
+              <h3 className="text-2xl font-bold mb-8">MARQUE</h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
+                    <div className="hover:text-white cursor-pointer transition-colors">Мужчинам</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">Женщинам</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">Детям</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">Спорт</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">Обувь</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">Аксессуары</div>
+                  </div>
                 </div>
               </div>
             </div>
             <div>
               <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
-              <div className="space-y-2 text-sm text-gray-400">
-                <div>ECCO</div>
-                <div>VANS</div>
-                <div>MANGO</div>
-                <div>H&M</div>
-                <div>LIME</div>
-                <div>GUCCI</div>
+              <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
+                <div className="hover:text-white cursor-pointer transition-colors">ECCO</div>
+                <div className="hover:text-white cursor-pointer transition-colors">VANS</div>
+                <div className="hover:text-white cursor-pointer transition-colors">MANGO</div>
+                <div className="hover:text-white cursor-pointer transition-colors">H&M</div>
+                <div className="hover:text-white cursor-pointer transition-colors">LIME</div>
+                <div className="hover:text-white cursor-pointer transition-colors">GUCCI</div>
               </div>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div>Политика конфиденциальности</div>
-            <div>Условия пользования</div>
+          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+            <div className="hover:text-white cursor-pointer transition-colors">Политика конфиденциальности</div>
+            <div className="hover:text-white cursor-pointer transition-colors">Условия пользования</div>
           </div>
         </div>
       </footer>
