@@ -16,7 +16,6 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { ProductCardSkeletonGrid } from "@/components/ProductCardSkeleton"
-import { Header } from "@/components/Header"
 import { getImageUrl } from "@/lib/utils"
 
 export default function MarquePage() {
@@ -571,11 +570,7 @@ export default function MarquePage() {
       
       {/* Catalog Sidebar - renders when showCatalog is true */}
       <CatalogSidebar />
-      
-      {/* Header - Using same Header component as cart/wishlist pages */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <Header authInstance={auth} />
-      </header>
+    
 
       {/* Main Content */}
       <main className="w-full relative">

@@ -11,8 +11,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { getImageUrl } from "@/lib/utils"
+import { useAuth } from "@/hooks/useAuth"
+import { useRouter } from "next/navigation"
 
 export default function AdminDashboard() {
+  const auth = useAuth()
+  const router = useRouter()
+  
   const [currentView, setCurrentView] = useState<
     "dashboard" | "orders" | "order-detail" | "all-orders" | "revenue" | "settings"
   >("dashboard")
@@ -241,9 +246,9 @@ export default function AdminDashboard() {
   }
 
   const handleLogout = () => {
-    console.log("Logging out admin...")
+    auth.handleLogout()
     setIsLogoutConfirmOpen(false)
-    // Redirect to login or clear session
+    router.push('/')
   }
 
   const handleNotificationToggle = (setting: string, value: boolean) => {

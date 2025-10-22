@@ -7,7 +7,6 @@ import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { useWishlist } from "@/hooks/useWishlist"
 import { AuthModals } from "@/components/AuthModals"
-import { Header } from "@/components/Header"
 import { getImageUrl } from "@/lib/utils"
 
 export default function WishlistPage() {
@@ -27,9 +26,6 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AuthModals {...auth} />
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <Header authInstance={auth} />
-      </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-black">Избранные</h1>

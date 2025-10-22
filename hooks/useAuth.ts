@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { API_CONFIG } from '@/lib/config'
+import { authApi } from '@/lib/api'
 
 export interface UserData {
   id?: string
@@ -34,7 +35,16 @@ export const useAuth = () => {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false)
   const [onLoginSuccess, setOnLoginSuccess] = useState<(() => void) | null>(null)
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback(async () => {
+    try {
+      // Call backend logout API first
+      await authApi.logout()
+    } catch (error) {
+      console.error('Logout API call failed:', error)
+      // Continue with local logout even if API fails
+    }
+
+    // Clear local storage
     localStorage.removeItem('authToken')
     localStorage.removeItem('tokenType')
     localStorage.removeItem('sessionId')

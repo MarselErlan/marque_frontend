@@ -8,7 +8,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
-import { Header } from "@/components/Header"
 import { useCart } from "@/hooks/useCart"
 import { getImageUrl } from "@/lib/utils"
 
@@ -72,9 +71,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AuthModals {...auth} />
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <Header authInstance={auth} />
-      </header>
+
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">

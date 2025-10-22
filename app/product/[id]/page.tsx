@@ -10,7 +10,6 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { useCart } from "@/hooks/useCart"
-import { Header } from "@/components/Header"
 import { toast } from "@/lib/toast"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
@@ -176,9 +175,6 @@ export default function ProductDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <AuthModals {...auth} />
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <Header />
-        </header>
         <main className="max-w-7xl mx-auto lg:px-8 py-20">
           <div className="flex items-center justify-center flex-col">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
@@ -194,9 +190,6 @@ export default function ProductDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <AuthModals {...auth} />
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <Header />
-        </header>
         <main className="max-w-7xl mx-auto lg:px-8 py-20 text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Товар не найден</h1>
           <p className="text-gray-600 mb-8">{error || 'Запрошенный товар не существует'}</p>
@@ -212,12 +205,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AuthModals {...auth} />
-      {/* The full header is now managed by the Header component */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <Header />
-      </header>
-      
+      <AuthModals {...auth} />    
       {/* Main Content */}
       <main className="max-w-7xl mx-auto lg:px-8 py-4 lg:py-8">
         {/* Breadcrumb - Hidden on Mobile */}
