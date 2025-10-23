@@ -390,6 +390,265 @@ export const bannersApi = {
   }
 }
 
+// Profile API
+export const profileApi = {
+  // Profile Management
+  getProfile: () =>
+    apiRequest<{
+      id: number
+      phone_number: string
+      full_name: string | null
+      profile_image_url: string | null
+      is_active: boolean
+      is_verified: boolean
+      last_login: string | null
+      market: string
+      language: string
+      country: string
+      created_at: string
+    }>(API_CONFIG.ENDPOINTS.USER_PROFILE, { requiresAuth: true }),
+  
+  updateProfile: (data: { full_name?: string; profile_image_url?: string }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      user: any
+    }>(API_CONFIG.ENDPOINTS.USER_PROFILE, {
+      method: 'PUT',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
+  
+  // Addresses
+  getAddresses: () =>
+    apiRequest<{
+      success: boolean
+      addresses: Array<{
+        id: number
+        title: string
+        full_address: string
+        street: string | null
+        building: string | null
+        apartment: string | null
+        city: string | null
+        postal_code: string | null
+        country: string | null
+        is_default: boolean
+        created_at: string
+      }>
+      total: number
+    }>('/api/v1/profile/addresses', { requiresAuth: true }),
+  
+  createAddress: (data: {
+    title: string
+    full_address: string
+    street?: string
+    building?: string
+    apartment?: string
+    city?: string
+    postal_code?: string
+    country?: string
+    is_default?: boolean
+  }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      address: any
+    }>('/api/v1/profile/addresses', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
+  
+  updateAddress: (id: number, data: {
+    title?: string
+    full_address?: string
+    street?: string
+    building?: string
+    apartment?: string
+    city?: string
+    postal_code?: string
+    country?: string
+    is_default?: boolean
+  }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      address: any
+    }>(`/api/v1/profile/addresses/${id}`, {
+      method: 'PUT',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
+  
+  deleteAddress: (id: number) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(`/api/v1/profile/addresses/${id}`, {
+      method: 'DELETE',
+      requiresAuth: true,
+    }),
+  
+  // Payment Methods
+  getPaymentMethods: () =>
+    apiRequest<{
+      success: boolean
+      payment_methods: Array<{
+        id: number
+        payment_type: string
+        card_type: string
+        card_number_masked: string
+        card_holder_name: string
+        is_default: boolean
+        created_at: string
+      }>
+      total: number
+    }>('/api/v1/profile/payment-methods', { requiresAuth: true }),
+  
+  createPaymentMethod: (data: {
+    card_number: string
+    card_holder_name: string
+    expiry_month: string
+    expiry_year: string
+    is_default?: boolean
+  }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      payment_method: any
+    }>('/api/v1/profile/payment-methods', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
+  
+  updatePaymentMethod: (id: number, data: { is_default?: boolean }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(`/api/v1/profile/payment-methods/${id}`, {
+      method: 'PUT',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
+  
+  deletePaymentMethod: (id: number) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(`/api/v1/profile/payment-methods/${id}`, {
+      method: 'DELETE',
+      requiresAuth: true,
+    }),
+  
+  // Orders
+  getOrders: (params?: { status?: string; limit?: number; offset?: number }) =>
+    apiRequest<{
+      success: boolean
+      orders: Array<{
+        id: number
+        order_number: string
+        status: string
+        total_amount: number
+        currency: string
+        order_date: string
+        delivery_date: string | null
+        delivery_address: string
+        items_count: number
+        items: Array<{
+          product_name: string
+          quantity: number
+          price: number
+          image_url: string
+        }>
+      }>
+      total: number
+      has_more: boolean
+    }>('/api/v1/profile/orders', {
+      requiresAuth: true,
+      params: params as any,
+    }),
+  
+  getOrderDetail: (orderId: number) =>
+    apiRequest<{
+      success: boolean
+      order: {
+        id: number
+        order_number: string
+        status: string
+        customer_name: string
+        customer_phone: string
+        delivery_address: string
+        subtotal: number
+        shipping_cost: number
+        total_amount: number
+        currency: string
+        order_date: string
+        confirmed_date: string | null
+        shipped_date: string | null
+        delivered_date: string | null
+        items: Array<{
+          product_name: string
+          quantity: number
+          price: number
+          subtotal: number
+          image_url: string
+        }>
+      }
+    }>(`/api/v1/profile/orders/${orderId}`, { requiresAuth: true }),
+  
+  cancelOrder: (orderId: number) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      order_id: number
+      status: string
+    }>(`/api/v1/profile/orders/${orderId}/cancel`, {
+      method: 'POST',
+      requiresAuth: true,
+    }),
+  
+  // Notifications
+  getNotifications: (params?: { unread_only?: boolean; limit?: number; offset?: number }) =>
+    apiRequest<{
+      success: boolean
+      notifications: Array<{
+        id: number
+        type: string
+        title: string
+        message: string
+        is_read: boolean
+        order_id: number | null
+        created_at: string
+      }>
+      total: number
+      unread_count: number
+    }>('/api/v1/profile/notifications', {
+      requiresAuth: true,
+      params: params as any,
+    }),
+  
+  markNotificationRead: (id: number) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(`/api/v1/profile/notifications/${id}/read`, {
+      method: 'PUT',
+      requiresAuth: true,
+    }),
+  
+  markAllNotificationsRead: () =>
+    apiRequest<{
+      success: boolean
+      message: string
+      count: number
+    }>('/api/v1/profile/notifications/read-all', {
+      method: 'PUT',
+      requiresAuth: true,
+    }),
+}
+
 // Export for convenience
 export { ApiError }
 
