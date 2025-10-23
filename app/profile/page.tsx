@@ -27,6 +27,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useWishlist } from "@/hooks/useWishlist"
 import { AuthModals } from "@/components/AuthModals"
 import { getImageUrl } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface OrderItem {
   id: number
@@ -76,6 +77,18 @@ export default function ProfilePage() {
   const auth = useAuth()
   const { isLoggedIn, userData, handleLogout } = auth
   const { wishlistItemCount } = useWishlist()
+  
+  // Handle logout with redirect
+  const handleLogoutClick = async () => {
+    try {
+      await handleLogout()
+      toast.success('Вы успешно вышли из аккаунта')
+      router.push('/')
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('Ошибка при выходе из аккаунта')
+    }
+  }
   
   const [activeTab, setActiveTab] = useState("profile")
   const [orderFilter, setOrderFilter] = useState("active")
@@ -700,7 +713,7 @@ export default function ProfilePage() {
                   {/* Logout Button */}
                   <div className="pt-8 border-t border-gray-200">
                     <Button
-                      onClick={handleLogout}
+                      onClick={handleLogoutClick}
                       variant="outline"
                       className="w-full h-12 flex items-center justify-center space-x-3 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors"
                     >
