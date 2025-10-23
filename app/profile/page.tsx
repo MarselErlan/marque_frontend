@@ -81,11 +81,15 @@ export default function ProfilePage() {
   // Handle logout with redirect
   const handleLogoutClick = async () => {
     try {
+      console.log('🔴 Profile: Starting logout...')
       await handleLogout()
       toast.success('Вы успешно вышли из аккаунта')
-      router.push('/')
+      console.log('🔴 Profile: Redirecting to home...')
+      
+      // Force a hard navigation to ensure auth state is reset
+      window.location.href = '/'
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('🔴 Profile: Logout error:', error)
       toast.error('Ошибка при выходе из аккаунта')
     }
   }
@@ -208,15 +212,14 @@ export default function ProfilePage() {
   useEffect(() => {
     setIsClient(true)
     
-    // TEMPORARILY DISABLED: If loading is finished and user is not logged in, redirect
-    // if (!auth.isLoading && !auth.isLoggedIn) {
-    //   router.push('/')
-    // } else if (userData) {
-    //   setUserName(userData.full_name || userData.name || "Анна Ахматова")
-    //   setPhoneNumber(userData.phone || "+996 505 32 53 11")
-    // }
+    // If loading is finished and user is not logged in, redirect to home
+    if (!auth.isLoading && !auth.isLoggedIn) {
+      console.log('🔴 Profile: User not logged in, redirecting to home...')
+      router.push('/')
+      return
+    }
     
-    // TEMPORARY: Always show profile page for testing
+    // Update user data if logged in
     if (userData) {
       setUserName(userData.full_name || userData.name || "Анна Ахматова")
       setPhoneNumber(userData.phone || "+996 505 32 53 11")

@@ -36,15 +36,26 @@ export const useAuth = () => {
   const [onLoginSuccess, setOnLoginSuccess] = useState<(() => void) | null>(null)
 
   const handleLogout = useCallback(async () => {
+    console.log('🔴 Starting logout process...')
+    
     try {
       // Call backend logout API first
-      await authApi.logout()
+      const token = localStorage.getItem('authToken')
+      if (token) {
+        console.log('🔴 Calling backend logout API...')
+        await authApi.logout()
+        console.log('🔴 Backend logout successful')
+      }
     } catch (error) {
-      console.error('Logout API call failed:', error)
+      console.error('🔴 Logout API call failed:', error)
       // Continue with local logout even if API fails
     }
 
-    // Clear local storage
+    // Clear ALL localStorage items
+    console.log('🔴 Clearing localStorage...')
+    localStorage.clear() // Clear everything to ensure complete logout
+    
+    // Or be specific:
     localStorage.removeItem('authToken')
     localStorage.removeItem('tokenType')
     localStorage.removeItem('sessionId')
@@ -54,6 +65,7 @@ export const useAuth = () => {
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('tokenExpiration')
 
+    console.log('🔴 Setting auth state to logged out...')
     setAuthState({
       isLoggedIn: false,
       userData: null,
@@ -63,7 +75,11 @@ export const useAuth = () => {
     // Dispatch event for cart/wishlist to sync
     window.dispatchEvent(new CustomEvent('auth:logout'))
     
-    console.log('User logged out successfully')
+    console.log('🔴 User logged out successfully - localStorage cleared:', {
+      authToken: localStorage.getItem('authToken'),
+      isLoggedIn: localStorage.getItem('isLoggedIn'),
+      userData: localStorage.getItem('userData')
+    })
   }, [])
 
   const checkAuthStatus = useCallback(() => {
