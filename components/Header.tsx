@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Search, Heart, ShoppingCart, User } from 'lucide-react'
+import { Search, Heart, ShoppingCart, User, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
@@ -10,7 +10,6 @@ import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCatalog } from '@/contexts/CatalogContext'
-import { DetailedMannequinIcon } from '@/components/MannequinIcon'
 
 interface HeaderProps {
   authInstance?: UseAuthReturn
@@ -106,12 +105,13 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           </div>
           {/* Right Section */}
           <div className="flex items-center space-x-6 text-sm text-gray-600">
-            <div className="flex flex-col items-center cursor-pointer hover:text-brand relative group transition-all">
-              <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-1 shadow-sm group-hover:shadow-md group-hover:from-brand-light group-hover:to-brand-50 transition-all">
-                <DetailedMannequinIcon size={32} className="text-gray-700 group-hover:text-brand transition-colors" />
+              <div className="flex flex-col items-center cursor-pointer hover:text-brand relative group transition-all">
+                <img 
+                  src="/images/adobeman.png" 
+                  alt="Mannequin" 
+                  className="w-14 h-14 mb-1 object-contain"
+                />
               </div>
-              <span className="text-xs font-medium">Манекен AI</span>
-            </div>
             <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
               <Heart className="w-5 h-5 mb-1" />
               {wishlistItemCount > 0 && (
