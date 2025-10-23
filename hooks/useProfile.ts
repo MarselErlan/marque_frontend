@@ -56,7 +56,7 @@ export interface Notification {
 
 export interface Profile {
   id: number
-  phone_number: string
+  phone: string
   full_name: string | null
   profile_image_url: string | null
   is_active: boolean

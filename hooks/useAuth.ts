@@ -218,7 +218,7 @@ export const useAuth = () => {
     setIsSendingSms(true)
     const fullPhoneNumber = `${countryCode}${phoneNumber.replace(/[-\s]/g, '')}`
     
-    console.log("Attempting to send verification code to:", fullPhoneNumber)
+    console.log("📱 Attempting to send verification code to:", fullPhoneNumber)
 
     try {
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEND_VERIFICATION}`, {
@@ -228,21 +228,23 @@ export const useAuth = () => {
         body: JSON.stringify({ phone: fullPhoneNumber }),
       })
 
-      console.log("API Response Status:", response.status)
+      console.log("📱 API Response Status:", response.status)
       const responseBody = await response.text()
-      console.log("API Response Body:", responseBody)
+      console.log("📱 API Response Body:", responseBody)
 
       if (response.ok) {
+        const data = JSON.parse(responseBody)
+        console.log("📱 SMS sent successfully:", data)
         setIsPhoneModalOpen(false)
         setIsSmsModalOpen(true)
       } else {
-        let errorData = { message: "Unknown error" }
+        let errorData: any = { message: "Unknown error" }
         try {
           errorData = JSON.parse(responseBody)
         } catch (e) {
           console.error("Could not parse error response JSON:", e)
         }
-        alert(`Не удалось отправить SMS: ${errorData.message || 'Попробуйте еще раз.'}`)
+        alert(`Не удалось отправить SMS: ${errorData.detail || errorData.message || 'Попробуйте еще раз.'}`)
         console.error("Failed to send SMS:", errorData)
       }
     } catch (error) {
@@ -265,7 +267,10 @@ export const useAuth = () => {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ phone: fullPhoneNumber, verification_code: smsCode }),
+        body: JSON.stringify({ 
+          phone: fullPhoneNumber,
+          verification_code: smsCode
+        }),
       })
 
       console.log('🔐 Verification response status:', response.status)
@@ -274,9 +279,24 @@ export const useAuth = () => {
 
       if (response.ok) {
         const data = JSON.parse(responseText)
-        console.log("Verification response:", data)
+        console.log("🔐 Verification response:", data)
+        
+        // New backend response format - simpler structure
         if (data.access_token && data.user) {
-          handleLogin(data.user, data)
+          // Update user data with new fields from backend
+          const userData = {
+            id: data.user.id,
+            phone: data.user.phone,
+            name: data.user.name || data.user.full_name,
+            full_name: data.user.full_name,
+            is_active: data.user.is_active,
+            is_verified: data.user.is_verified
+          }
+          
+          console.log("🔐 User data:", userData)
+          console.log("🔐 Is new user:", data.is_new_user)
+          
+          handleLogin(userData, data)
         }
         setIsSmsModalOpen(false)
         setSmsCode("")
@@ -284,7 +304,8 @@ export const useAuth = () => {
         setCountryCode("+996")
       } else {
         console.error('🔐 Verification failed:', response.status, responseText)
-        alert('Неверный код. Попробуйте еще раз.')
+        const errorData = JSON.parse(responseText)
+        alert(errorData.detail || 'Неверный код. Попробуйте еще раз.')
       }
     } catch (error) {
       console.error('🔐 Verification error:', error)

@@ -129,7 +129,14 @@ export async function apiRequest<T = any>(
 // Authentication API
 export const authApi = {
   sendVerification: (phone: string) =>
-    apiRequest<{ success: boolean; message: string; session_id: string }>(
+    apiRequest<{ 
+      success: boolean
+      message: string
+      phone: string
+      market: string
+      language: string
+      expires_in_minutes: number
+    }>(
       API_CONFIG.ENDPOINTS.SEND_VERIFICATION,
       {
         method: 'POST',
@@ -137,34 +144,40 @@ export const authApi = {
       }
     ),
   
-  verifyCode: (phone: string, code: string) =>
+  verifyCode: (phone: string, verification_code: string) =>
     apiRequest<{
-      success: boolean
-      data: {
-        access_token: string
-        token_type: string
-        session_id: string
-        expires_in_minutes: number
-        market: string
-        user: {
-          id: string
-          phone: string
-          full_name?: string
-          email?: string
-        }
+      access_token: string
+      token_type: string
+      user: {
+        id: string
+        name: string
+        phone: string
+        is_active: boolean
+        is_verified: boolean
       }
+      market: string
+      is_new_user: boolean
     }>(API_CONFIG.ENDPOINTS.VERIFY_CODE, {
       method: 'POST',
-      body: JSON.stringify({ phone, code }),
+      body: JSON.stringify({ phone, verification_code }),
     }),
   
   getProfile: () =>
     apiRequest<{
       id: string
       phone: string
-      full_name?: string
-      email?: string
+      formatted_phone: string
+      name: string
+      full_name: string | null
+      profile_image_url: string | null
+      is_active: boolean
+      is_verified: boolean
       market: string
+      language: string
+      country: string
+      currency: string
+      currency_code: string
+      last_login: string
       created_at: string
     }>(API_CONFIG.ENDPOINTS.USER_PROFILE, { requiresAuth: true }),
   
@@ -396,7 +409,7 @@ export const profileApi = {
   getProfile: () =>
     apiRequest<{
       id: number
-      phone_number: string
+      phone: string
       full_name: string | null
       profile_image_url: string | null
       is_active: boolean
