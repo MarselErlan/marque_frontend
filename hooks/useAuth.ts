@@ -200,10 +200,11 @@ export const useAuth = () => {
       console.log('User already logged in, executing callback immediately')
       onSuccess?.()
     } else {
+      console.log('User not logged in, opening phone modal')
       if (onSuccess) {
-        console.log('User not logged in, storing callback for after login')
-        // Store the callback function directly
-        setOnLoginSuccess(() => onSuccess())
+        console.log('Storing callback for after login')
+        // Store the callback function to be called after successful login
+        setOnLoginSuccess(() => onSuccess)
       }
       setIsPhoneModalOpen(true)
     }

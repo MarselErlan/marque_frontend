@@ -10,6 +10,7 @@ import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCatalog } from '@/contexts/CatalogContext'
+import { AuthModals } from '@/components/AuthModals'
 import { toast } from 'sonner'
 
 interface HeaderProps {
@@ -227,6 +228,24 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           </div>
         </div>
       </div>
+      
+      {/* Authentication Modals */}
+      <AuthModals
+        isPhoneModalOpen={auth.isPhoneModalOpen}
+        setIsPhoneModalOpen={auth.setIsPhoneModalOpen}
+        isSmsModalOpen={auth.isSmsModalOpen}
+        setIsSmsModalOpen={auth.setIsSmsModalOpen}
+        phoneNumber={auth.phoneNumber}
+        setPhoneNumber={auth.setPhoneNumber}
+        countryCode={auth.countryCode}
+        setCountryCode={auth.setCountryCode}
+        smsCode={auth.smsCode}
+        setSmsCode={auth.setSmsCode}
+        handlePhoneSubmit={auth.handlePhoneSubmit}
+        handleSmsVerification={auth.handleSmsVerification}
+        isSendingSms={auth.isSendingSms}
+        isVerifyingCode={auth.isVerifyingCode}
+      />
     </>
   )
 }
