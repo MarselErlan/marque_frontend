@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Search, Heart, ShoppingCart, User, Sparkles } from 'lucide-react'
+import { Search, Heart, ShoppingCart, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
@@ -10,6 +10,7 @@ import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCatalog } from '@/contexts/CatalogContext'
+import { toast } from 'sonner'
 
 interface HeaderProps {
   authInstance?: UseAuthReturn
@@ -26,10 +27,21 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
 
-  const handleHeaderLoginClick = () => {
+  const handleHeaderAuthClick = async () => {
     if (auth.isLoggedIn) {
-      router.push('/profile')
+      // User is logged in, so logout
+      try {
+        console.log('🔴 Header: Starting logout...')
+        await auth.handleLogout()
+        toast.success('Вы успешно вышли из аккаунта')
+        console.log('🔴 Header: Redirecting to home...')
+        window.location.href = '/'
+      } catch (error) {
+        console.error('🔴 Header: Logout error:', error)
+        toast.error('Ошибка при выходе из аккаунта')
+      }
     } else {
+      // User is not logged in, so show login modal
       auth.requireAuth(() => {
         router.push('/profile')
       })
@@ -133,13 +145,22 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               <span>Корзина</span>
             </Link>
             <button
-              onClick={handleHeaderLoginClick}
+              onClick={handleHeaderAuthClick}
               className="flex flex-col items-center cursor-pointer hover:text-brand transition-colors relative"
               style={{ background: 'transparent', border: 'none', padding: '8px' }}
               type="button"
             >
-              <User className="w-5 h-5 mb-1" />
-              <span>{auth.isLoggedIn ? "Профиль" : "Войти"}</span>
+              {auth.isLoggedIn ? (
+                <>
+                  <LogOut className="w-5 h-5 mb-1" />
+                  <span>Выйти</span>
+                </>
+              ) : (
+                <>
+                  <User className="w-5 h-5 mb-1" />
+                  <span>Войти</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -168,12 +189,16 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               )}
             </Link>
             <button 
-              onClick={handleHeaderLoginClick} 
+              onClick={handleHeaderAuthClick} 
               className="p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-colors"
               type="button"
               style={{ background: 'transparent', border: 'none' }}
             >
-              <User className="w-6 h-6 text-brand" />
+              {auth.isLoggedIn ? (
+                <LogOut className="w-6 h-6 text-red-600" />
+              ) : (
+                <User className="w-6 h-6 text-brand" />
+              )}
             </button>
           </div>
         </div>
