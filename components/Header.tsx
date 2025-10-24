@@ -5,7 +5,7 @@ import { Search, Heart, ShoppingCart, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
@@ -19,6 +19,7 @@ interface HeaderProps {
 
 export const Header = ({ authInstance }: HeaderProps = {}) => {
   const router = useRouter()
+  const pathname = usePathname()
   const defaultAuth = useAuth()
   const auth = authInstance || defaultAuth
   const { cartItemCount } = useCart()
@@ -27,19 +28,27 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
   
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
+  
+  // Check if we're on the profile page
+  const isOnProfilePage = pathname === '/profile'
 
   const handleHeaderAuthClick = async () => {
     if (auth.isLoggedIn) {
-      // User is logged in, so logout
-      try {
-        console.log('🔴 Header: Starting logout...')
-        await auth.handleLogout()
-        toast.success('Вы успешно вышли из аккаунта')
-        console.log('🔴 Header: Redirecting to home...')
-        window.location.href = '/'
-      } catch (error) {
-        console.error('🔴 Header: Logout error:', error)
-        toast.error('Ошибка при выходе из аккаунта')
+      // If on profile page, show logout button
+      if (isOnProfilePage) {
+        try {
+          console.log('🔴 Header: Starting logout...')
+          await auth.handleLogout()
+          toast.success('Вы успешно вышли из аккаунта')
+          console.log('🔴 Header: Redirecting to home...')
+          window.location.href = '/'
+        } catch (error) {
+          console.error('🔴 Header: Logout error:', error)
+          toast.error('Ошибка при выходе из аккаунта')
+        }
+      } else {
+        // Not on profile page, navigate to profile
+        router.push('/profile')
       }
     } else {
       // User is not logged in, so show login modal
@@ -152,10 +161,17 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               type="button"
             >
               {auth.isLoggedIn ? (
-                <>
-                  <LogOut className="w-5 h-5 mb-1" />
-                  <span>Выйти</span>
-                </>
+                isOnProfilePage ? (
+                  <>
+                    <LogOut className="w-5 h-5 mb-1" />
+                    <span>Выйти</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-5 h-5 mb-1" />
+                    <span>Профиль</span>
+                  </>
+                )
               ) : (
                 <>
                   <User className="w-5 h-5 mb-1" />
@@ -196,7 +212,11 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               style={{ background: 'transparent', border: 'none' }}
             >
               {auth.isLoggedIn ? (
-                <LogOut className="w-6 h-6 text-red-600" />
+                isOnProfilePage ? (
+                  <LogOut className="w-6 h-6 text-red-600" />
+                ) : (
+                  <User className="w-6 h-6 text-brand" />
+                )
               ) : (
                 <User className="w-6 h-6 text-brand" />
               )}
