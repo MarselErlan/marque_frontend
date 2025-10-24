@@ -253,15 +253,20 @@ export default function MarquePage() {
     e.preventDefault()
     e.stopPropagation()
     
-      if (isInWishlist(product.id)) {
-      // Remove from wishlist (no auth required for this action)
-        removeFromWishlist(product.id)
-      } else {
-      // Add to wishlist (requires auth)
-      auth.requireAuth(() => {
+    if (isInWishlist(product.id)) {
+      // Remove from wishlist
+      removeFromWishlist(product.id)
+    } else {
+      // Add to wishlist
+      // If logged in, add directly. If not, show login modal first.
+      if (isLoggedIn) {
         addToWishlist(product)
-      })
+      } else {
+        auth.requireAuth(() => {
+          addToWishlist(product)
+        })
       }
+    }
   }
 
   const handleCatalogClick = () => {

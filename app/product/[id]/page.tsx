@@ -129,14 +129,21 @@ export default function ProductDetailPage() {
   }
 
   const handleWishlist = () => {
-    auth.requireAuth(() => {
-      const productId = product.id as string
-      if (isInWishlist(productId)) {
-        removeFromWishlist(productId)
-      } else {
+    const productId = product.id as string
+    
+    if (isInWishlist(productId)) {
+      // Remove from wishlist
+      removeFromWishlist(productId)
+    } else {
+      // Add to wishlist
+      if (isLoggedIn) {
         addToWishlist(product as any)
+      } else {
+        auth.requireAuth(() => {
+          addToWishlist(product as any)
+        })
       }
-    })
+    }
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -556,14 +563,19 @@ export default function ProductDetailPage() {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          auth.requireAuth(() => {
-                            const productId = similarProduct.id.toString()
-                            if (isInWishlist(productId)) {
-                              removeFromWishlist(productId)
-                            } else {
+                          
+                          const productId = similarProduct.id.toString()
+                          if (isInWishlist(productId)) {
+                            removeFromWishlist(productId)
+                          } else {
+                            if (isLoggedIn) {
                               addToWishlist(similarProduct)
+                            } else {
+                              auth.requireAuth(() => {
+                                addToWishlist(similarProduct)
+                              })
                             }
-                          })
+                          }
                         }}
                       >
                         <Heart className={`w-4 h-4 ${isInWishlist(similarProduct.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
