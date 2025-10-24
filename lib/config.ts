@@ -24,9 +24,11 @@ export const API_CONFIG = {
     CART: '/cart',
     CART_ITEMS: '/cart/items',
     
-    // Wishlist
-    WISHLIST: '/wishlist',
-    WISHLIST_ITEMS: '/wishlist/items',
+    // Wishlist (Stateless API)
+    WISHLIST_GET: '/wishlist/get',
+    WISHLIST_ADD: '/wishlist/add',
+    WISHLIST_REMOVE: '/wishlist/remove',
+    WISHLIST_CLEAR: '/wishlist/clear',
     
     // Banners (no trailing slash to avoid redirects)
     BANNERS: '/banners',

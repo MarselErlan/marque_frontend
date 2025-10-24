@@ -302,32 +302,45 @@ export const cartApi = {
     }),
 }
 
-// Wishlist API
+// Wishlist API (Stateless - requires user_id)
 export const wishlistApi = {
-  get: () =>
+  get: (userId: string) =>
     apiRequest<{
       id: number
       user_id: string
       items: any[]
-    }>(API_CONFIG.ENDPOINTS.WISHLIST, { requiresAuth: true }),
-  
-  add: (productId: number) =>
-    apiRequest(API_CONFIG.ENDPOINTS.WISHLIST_ITEMS, {
+    }>(API_CONFIG.ENDPOINTS.WISHLIST_GET, {
       method: 'POST',
-      requiresAuth: true,
-      body: JSON.stringify({ product_id: productId }),
+      body: JSON.stringify({ user_id: userId }),
     }),
   
-  remove: (productId: number) =>
-    apiRequest(`${API_CONFIG.ENDPOINTS.WISHLIST_ITEMS}/${productId}`, {
-      method: 'DELETE',
-      requiresAuth: true,
+  add: (userId: string, productId: number) =>
+    apiRequest<{
+      id: number
+      user_id: string
+      items: any[]
+    }>(API_CONFIG.ENDPOINTS.WISHLIST_ADD, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, product_id: productId }),
     }),
   
-  clear: () =>
-    apiRequest(API_CONFIG.ENDPOINTS.WISHLIST, {
-      method: 'DELETE',
-      requiresAuth: true,
+  remove: (userId: string, productId: number) =>
+    apiRequest<{
+      id: number
+      user_id: string
+      items: any[]
+    }>(API_CONFIG.ENDPOINTS.WISHLIST_REMOVE, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, product_id: productId }),
+    }),
+  
+  clear: (userId: string) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(API_CONFIG.ENDPOINTS.WISHLIST_CLEAR, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId }),
     }),
 }
 
