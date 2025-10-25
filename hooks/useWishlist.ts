@@ -17,11 +17,20 @@ export const useWishlist = () => {
   const loadWishlist = async () => {
     try {
       const token = localStorage.getItem('authToken')
+      const userDataStr = localStorage.getItem('userData')
       
-      if (token) {
+      if (token && userDataStr) {
         // User is authenticated, fetch from backend
         try {
-          const backendWishlist = await wishlistApi.get()
+          const userData = JSON.parse(userDataStr)
+          const userId = userData.id
+          
+          if (!userId) {
+            console.error('No user_id found in userData')
+            throw new Error('No user_id')
+          }
+          
+          const backendWishlist = await wishlistApi.get(userId)
           const items = backendWishlist.items.map((item: any) => {
             const product = item.product
             return {
@@ -76,12 +85,20 @@ export const useWishlist = () => {
 
   const addToWishlist = useCallback(async (product: Product) => {
     const token = localStorage.getItem('authToken')
+    const userDataStr = localStorage.getItem('userData')
     
-    if (token) {
+    if (token && userDataStr) {
       // Add to backend wishlist
       try {
+        const userData = JSON.parse(userDataStr)
+        const userId = userData.id
+        
+        if (!userId) {
+          throw new Error('No user_id found')
+        }
+        
         const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id
-        await wishlistApi.add(productId)
+        await wishlistApi.add(userId, productId)
         await loadWishlist() // Reload wishlist from backend
         toast.success('Товар добавлен в избранное!')
         return
@@ -105,12 +122,20 @@ export const useWishlist = () => {
 
   const removeFromWishlist = useCallback(async (productId: string | number) => {
     const token = localStorage.getItem('authToken')
+    const userDataStr = localStorage.getItem('userData')
     
-    if (token && isAuthenticated) {
+    if (token && userDataStr && isAuthenticated) {
       // Remove from backend wishlist
       try {
+        const userData = JSON.parse(userDataStr)
+        const userId = userData.id
+        
+        if (!userId) {
+          throw new Error('No user_id found')
+        }
+        
         const numericId = typeof productId === 'string' ? parseInt(productId) : productId
-        await wishlistApi.remove(numericId)
+        await wishlistApi.remove(userId, numericId)
         await loadWishlist() // Reload wishlist from backend
         toast.success('Товар удален из избранного')
         return
@@ -137,7 +162,17 @@ export const useWishlist = () => {
   const syncWishlistWithBackend = useCallback(async () => {
     try {
       const token = localStorage.getItem('authToken')
-      if (!token) return
+      const userDataStr = localStorage.getItem('userData')
+      
+      if (!token || !userDataStr) return
+      
+      const userData = JSON.parse(userDataStr)
+      const userId = userData.id
+      
+      if (!userId) {
+        console.error('No user_id found for sync')
+        return
+      }
       
       // Get local wishlist items
       const localWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]') as Product[]
@@ -152,7 +187,7 @@ export const useWishlist = () => {
       for (const localItem of localWishlist) {
         try {
           const productId = typeof localItem.id === 'string' ? parseInt(localItem.id) : localItem.id
-          await wishlistApi.add(productId)
+          await wishlistApi.add(userId, productId)
         } catch (error) {
           console.error('Failed to sync wishlist item:', error)
         }
