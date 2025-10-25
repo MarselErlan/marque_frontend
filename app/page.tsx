@@ -608,11 +608,11 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-[24px] relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={getImageUrl(banner.image_url) || "/images/placeholder.jpg"} 
+                      src={getImageUrl(banner.image_url) || "/images/placeholder.png"} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
                       onError={(e) => { 
-                        e.currentTarget.src = "/images/placeholder.jpg"
+                        e.currentTarget.src = "/images/placeholder.png"
                       }}
                     />
                     {/* Subtle overlay for depth */}
@@ -669,11 +669,11 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={getImageUrl(banner.mobile_image_url || banner.image_url) || "/images/placeholder.jpg"} 
+                      src={getImageUrl(banner.mobile_image_url || banner.image_url) || "/images/placeholder.png"} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
                       onError={(e) => { 
-                        e.currentTarget.src = "/images/placeholder.jpg"
+                        e.currentTarget.src = "/images/placeholder.png"
                       }}
                     />
                     <div className="absolute inset-0 bg-black/10"></div>

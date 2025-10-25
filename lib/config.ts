@@ -24,11 +24,9 @@ export const API_CONFIG = {
     CART: '/cart',
     CART_ITEMS: '/cart/items',
     
-    // Wishlist (Stateless API)
-    WISHLIST_GET: '/wishlist/get',
-    WISHLIST_ADD: '/wishlist/add',
-    WISHLIST_REMOVE: '/wishlist/remove',
-    WISHLIST_CLEAR: '/wishlist/clear',
+    // Wishlist (JWT Token-based - OLD API)
+    WISHLIST: '/wishlist',
+    WISHLIST_ITEMS: '/wishlist/items',
     
     // Banners (no trailing slash to avoid redirects)
     BANNERS: '/banners',

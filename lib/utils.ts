@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
  * Otherwise, prepend the backend base URL
  */
 export function getImageUrl(imagePath: string | null | undefined): string {
-  if (!imagePath) return '/images/placeholder.jpg'
+  if (!imagePath) return '/images/placeholder.png'
   
   // If it's already a full URL (http:// or https://), return as-is
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {

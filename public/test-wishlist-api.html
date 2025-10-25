@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 0; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #45a049; }
+        button.secondary { background: #2196F3; }
+        button.secondary:hover { background: #0b7dda; }
+        .result {
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Wishlist API Debugger</h1>
+    <p>This tool will help us find out what's wrong with your wishlist.</p>
+
+    <!-- Step 1: Check User Data -->
+    <div class="test-section">
+        <h2>Step 1: Check Your User Data</h2>
+        <button onclick="checkUserData()">Check User Data</button>
+        <div id="userData-result"></div>
+    </div>
+
+    <!-- Step 2: Test Old Wishlist Endpoint -->
+    <div class="test-section">
+        <h2>Step 2: Test OLD Wishlist Endpoint (JWT Token)</h2>
+        <button onclick="testOldWishlistGet()">Test GET /wishlist (old)</button>
+        <div id="oldWishlist-result"></div>
+    </div>
+
+    <!-- Step 3: Test New Wishlist Endpoint -->
+    <div class="test-section">
+        <h2>Step 3: Test NEW Wishlist Endpoint (user_id)</h2>
+        <button onclick="testNewWishlistGet()">Test POST /wishlist/get (new)</button>
+        <div id="newWishlist-result"></div>
+    </div>
+
+    <!-- Step 4: Test Add to Wishlist -->
+    <div class="test-section">
+        <h2>Step 4: Test Add to Wishlist</h2>
+        <input type="number" id="productId" placeholder="Product ID (e.g., 1)" value="1" style="padding: 8px; margin: 5px;">
+        <button onclick="testAddToWishlist()">Test Add to Wishlist</button>
+        <div id="addWishlist-result"></div>
+    </div>
+
+    <!-- Step 5: Check Backend Health -->
+    <div class="test-section">
+        <h2>Step 5: Check Backend Health</h2>
+        <button class="secondary" onclick="checkBackendHealth()">Check Backend Status</button>
+        <div id="health-result"></div>
+    </div>
+
+    <!-- Step 6: View All LocalStorage -->
+    <div class="test-section">
+        <h2>Step 6: View All Stored Data</h2>
+        <button class="secondary" onclick="viewLocalStorage()">View All LocalStorage</button>
+        <div id="localStorage-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://marquebackend-production.up.railway.app/api/v1';
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        // Step 1: Check User Data
+        function checkUserData() {
+            try {
+                const authToken = localStorage.getItem('authToken');
+                const userData = localStorage.getItem('userData');
+                const isLoggedIn = localStorage.getItem('isLoggedIn');
+
+                if (!authToken) {
+                    showResult('userData-result', '❌ ERROR: No authToken found!\n\nYou need to login first.', 'error');
+                    return;
+                }
+
+                if (!userData) {
+                    showResult('userData-result', '❌ ERROR: No userData found!\n\nYou are logged in but userData is missing.', 'error');
+                    return;
+                }
+
+                const user = JSON.parse(userData);
+                
+                let result = '✅ User Data Found!\n\n';
+                result += `User ID: ${user.id}\n`;
+                result += `Name: ${user.name || user.full_name || 'Not set'}\n`;
+                result += `Phone: ${user.phone || 'Not set'}\n`;
+                result += `Is Logged In: ${isLoggedIn}\n\n`;
+                result += `Raw userData:\n${JSON.stringify(user, null, 2)}`;
+
+                if (!user.id) {
+                    result += '\n\n⚠️ WARNING: user.id is missing!';
+                    showResult('userData-result', result, 'warning');
+                } else {
+                    showResult('userData-result', result, 'info');
+                }
+            } catch (error) {
+                showResult('userData-result', `❌ ERROR: ${error.message}\n\n${error.stack}`, 'error');
+            }
+        }
+
+        // Step 2: Test Old Wishlist GET
+        async function testOldWishlistGet() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    showResult('oldWishlist-result', '❌ No auth token found. Login first.', 'error');
+                    return;
+                }
+
+                showResult('oldWishlist-result', '⏳ Testing old endpoint...', 'info');
+
+                const response = await fetch(`${API_BASE}/wishlist`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                let result = `Status: ${response.status} ${response.statusText}\n\n`;
+                result += `Response:\n${JSON.stringify(data, null, 2)}`;
+
+                if (response.ok) {
+                    showResult('oldWishlist-result', `✅ OLD endpoint works!\n\n${result}`, 'info');
+                } else {
+                    showResult('oldWishlist-result', `⚠️ OLD endpoint returned error:\n\n${result}`, 'warning');
+                }
+            } catch (error) {
+                showResult('oldWishlist-result', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        // Step 3: Test New Wishlist POST
+        async function testNewWishlistGet() {
+            try {
+                const userDataStr = localStorage.getItem('userData');
+                if (!userDataStr) {
+                    showResult('newWishlist-result', '❌ No userData found. Login first.', 'error');
+                    return;
+                }
+
+                const userData = JSON.parse(userDataStr);
+                const userId = userData.id;
+
+                if (!userId) {
+                    showResult('newWishlist-result', '❌ No user ID found in userData!', 'error');
+                    return;
+                }
+
+                showResult('newWishlist-result', `⏳ Testing new endpoint with user_id: ${userId}...`, 'info');
+
+                const response = await fetch(`${API_BASE}/wishlist/get`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                const data = await response.json();
+
+                let result = `Request:\nPOST ${API_BASE}/wishlist/get\n`;
+                result += `Body: { user_id: "${userId}" }\n\n`;
+                result += `Status: ${response.status} ${response.statusText}\n\n`;
+                result += `Response:\n${JSON.stringify(data, null, 2)}`;
+
+                if (response.ok) {
+                    showResult('newWishlist-result', `✅ NEW endpoint works!\n\n${result}`, 'info');
+                } else {
+                    showResult('newWishlist-result', `❌ NEW endpoint failed:\n\n${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('newWishlist-result', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        // Step 4: Test Add to Wishlist
+        async function testAddToWishlist() {
+            try {
+                const userDataStr = localStorage.getItem('userData');
+                if (!userDataStr) {
+                    showResult('addWishlist-result', '❌ No userData found. Login first.', 'error');
+                    return;
+                }
+
+                const userData = JSON.parse(userDataStr);
+                const userId = userData.id;
+                const productId = document.getElementById('productId').value;
+
+                if (!userId) {
+                    showResult('addWishlist-result', '❌ No user ID found!', 'error');
+                    return;
+                }
+
+                if (!productId) {
+                    showResult('addWishlist-result', '❌ Please enter a product ID!', 'error');
+                    return;
+                }
+
+                showResult('addWishlist-result', `⏳ Adding product ${productId} to wishlist...`, 'info');
+
+                const response = await fetch(`${API_BASE}/wishlist/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        user_id: userId,
+                        product_id: parseInt(productId)
+                    })
+                });
+
+                const data = await response.json();
+
+                let result = `Request:\nPOST ${API_BASE}/wishlist/add\n`;
+                result += `Body: { user_id: "${userId}", product_id: ${productId} }\n\n`;
+                result += `Status: ${response.status} ${response.statusText}\n\n`;
+                result += `Response:\n${JSON.stringify(data, null, 2)}`;
+
+                if (response.ok) {
+                    showResult('addWishlist-result', `✅ Product added!\n\n${result}`, 'info');
+                } else {
+                    showResult('addWishlist-result', `❌ Failed to add:\n\n${result}`, 'error');
+                }
+            } catch (error) {
+                showResult('addWishlist-result', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        // Step 5: Check Backend Health
+        async function checkBackendHealth() {
+            try {
+                showResult('health-result', '⏳ Checking backend...', 'info');
+
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+
+                showResult('health-result', `✅ Backend is UP!\n\n${JSON.stringify(data, null, 2)}`, 'info');
+            } catch (error) {
+                showResult('health-result', `❌ Backend is DOWN or unreachable!\n\n${error.message}`, 'error');
+            }
+        }
+
+        // Step 6: View LocalStorage
+        function viewLocalStorage() {
+            try {
+                let result = 'All LocalStorage Data:\n\n';
+                
+                const keys = ['authToken', 'userData', 'isLoggedIn', 'tokenExpiration', 'market', 'wishlist', 'cart'];
+                
+                keys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    if (value) {
+                        result += `${key}:\n`;
+                        try {
+                            // Try to parse as JSON for pretty print
+                            const parsed = JSON.parse(value);
+                            result += JSON.stringify(parsed, null, 2);
+                        } catch {
+                            // Not JSON, show as-is
+                            result += value;
+                        }
+                        result += '\n\n';
+                    } else {
+                        result += `${key}: (not set)\n\n`;
+                    }
+                });
+
+                showResult('localStorage-result', result, 'info');
+            } catch (error) {
+                showResult('localStorage-result', `❌ ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run Step 1 on page load
+        window.onload = function() {
+            checkUserData();
+        };
+    </script>
+</body>
+</html>
+
