@@ -265,40 +265,66 @@ export const categoriesApi = {
 }
 
 // Cart API
+// Cart API (Stateless - requires user_id)
 export const cartApi = {
-  get: () =>
+  get: (userId: string) =>
     apiRequest<{
       id: number
-      user_id: string
+      user_id: number
       items: any[]
       total_items: number
       total_price: number
-    }>(API_CONFIG.ENDPOINTS.CART, { requiresAuth: true }),
-  
-  add: (skuId: number, quantity: number) =>
-    apiRequest(API_CONFIG.ENDPOINTS.CART_ITEMS, {
+    }>(API_CONFIG.ENDPOINTS.CART_GET, {
       method: 'POST',
-      requiresAuth: true,
-      body: JSON.stringify({ sku_id: skuId, quantity }),
+      body: JSON.stringify({ user_id: userId }),
     }),
   
-  updateQuantity: (itemId: number, quantity: number) =>
-    apiRequest(`${API_CONFIG.ENDPOINTS.CART_ITEMS}/${itemId}`, {
-      method: 'PUT',
-      requiresAuth: true,
-      params: { quantity },
+  add: (userId: string, skuId: number, quantity: number = 1) =>
+    apiRequest<{
+      id: number
+      user_id: number
+      items: any[]
+      total_items: number
+      total_price: number
+    }>(API_CONFIG.ENDPOINTS.CART_ADD, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, sku_id: skuId, quantity }),
     }),
   
-  remove: (itemId: number) =>
-    apiRequest(`${API_CONFIG.ENDPOINTS.CART_ITEMS}/${itemId}`, {
-      method: 'DELETE',
-      requiresAuth: true,
+  updateQuantity: (userId: string, cartItemId: number, quantity: number) =>
+    apiRequest<{
+      id: number
+      user_id: number
+      items: any[]
+      total_items: number
+      total_price: number
+    }>(API_CONFIG.ENDPOINTS.CART_UPDATE, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, cart_item_id: cartItemId, quantity }),
     }),
   
-  clear: () =>
-    apiRequest(API_CONFIG.ENDPOINTS.CART, {
-      method: 'DELETE',
-      requiresAuth: true,
+  remove: (userId: string, cartItemId: number) =>
+    apiRequest<{
+      id: number
+      user_id: number
+      items: any[]
+      total_items: number
+      total_price: number
+    }>(API_CONFIG.ENDPOINTS.CART_REMOVE, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, cart_item_id: cartItemId }),
+    }),
+  
+  clear: (userId: string) =>
+    apiRequest<{
+      id: number
+      user_id: number
+      items: any[]
+      total_items: number
+      total_price: number
+    }>(API_CONFIG.ENDPOINTS.CART_CLEAR, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId }),
     }),
 }
 

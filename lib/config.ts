@@ -20,9 +20,12 @@ export const API_CONFIG = {
     CATEGORY_DETAIL: '/categories',
     SUBCATEGORY_PRODUCTS: '/categories',
     
-    // Cart
-    CART: '/cart',
-    CART_ITEMS: '/cart/items',
+    // Cart (Stateless API - NEW)
+    CART_GET: '/cart/get',
+    CART_ADD: '/cart/add',
+    CART_UPDATE: '/cart/update',
+    CART_REMOVE: '/cart/remove',
+    CART_CLEAR: '/cart/clear',
     
     // Wishlist (Stateless API - NEW)
     WISHLIST_GET: '/wishlist/get',

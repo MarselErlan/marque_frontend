@@ -20,15 +20,28 @@ export const useCart = () => {
   const [cartItemCount, setCartItemCount] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
+  // Get user_id from localStorage
+  const getUserId = (): string | null => {
+    try {
+      const userDataStr = localStorage.getItem('userData')
+      if (!userDataStr) return null
+      const userData = JSON.parse(userDataStr)
+      return userData.id ? String(userData.id) : null
+    } catch (error) {
+      console.error('Failed to get user_id:', error)
+      return null
+    }
+  }
+
   // Load cart from backend or localStorage
   const loadCart = async () => {
     try {
-      const token = localStorage.getItem('authToken')
+      const userId = getUserId()
       
-      if (token) {
+      if (userId) {
         // User is authenticated, fetch from backend
         try {
-          const backendCart = await cartApi.get()
+          const backendCart = await cartApi.get(userId)
           const items = backendCart.items.map((item: any) => ({
             id: item.id,
             name: item.name,
@@ -77,12 +90,12 @@ export const useCart = () => {
 
   // Add item to cart
   const addToCart = async (product: Omit<CartItem, 'quantity'>) => {
-    const token = localStorage.getItem('authToken')
+    const userId = getUserId()
     
-    if (token && product.sku_id) {
+    if (userId && product.sku_id) {
       // Add to backend cart
       try {
-        await cartApi.add(product.sku_id, 1)
+        await cartApi.add(userId, product.sku_id, 1)
         await loadCart() // Reload cart from backend
         toast.success('Товар добавлен в корзину!')
         return
@@ -122,12 +135,12 @@ export const useCart = () => {
 
   // Remove item from cart
   const removeFromCart = async (productId: string | number, size?: string, color?: string) => {
-    const token = localStorage.getItem('authToken')
+    const userId = getUserId()
     
-    if (token && isAuthenticated) {
-      // Remove from backend cart
+    if (userId && isAuthenticated) {
+      // Remove from backend cart (productId here is cart_item_id)
       try {
-        await cartApi.remove(Number(productId))
+        await cartApi.remove(userId, Number(productId))
         await loadCart() // Reload cart from backend
         toast.success('Товар удален из корзины')
         return
@@ -156,12 +169,12 @@ export const useCart = () => {
       return
     }
 
-    const token = localStorage.getItem('authToken')
+    const userId = getUserId()
     
-    if (token && isAuthenticated) {
-      // Update backend cart
+    if (userId && isAuthenticated) {
+      // Update backend cart (productId here is cart_item_id)
       try {
-        await cartApi.updateQuantity(Number(productId), newQuantity)
+        await cartApi.updateQuantity(userId, Number(productId), newQuantity)
         await loadCart() // Reload cart from backend
         return
       } catch (error) {
@@ -184,12 +197,12 @@ export const useCart = () => {
 
   // Clear cart
   const clearCart = async () => {
-    const token = localStorage.getItem('authToken')
+    const userId = getUserId()
     
-    if (token && isAuthenticated) {
+    if (userId && isAuthenticated) {
       // Clear backend cart
       try {
-        await cartApi.clear()
+        await cartApi.clear(userId)
       } catch (error) {
         console.error('Failed to clear backend cart:', error)
       }
@@ -204,8 +217,8 @@ export const useCart = () => {
   // Sync local cart with backend when user logs in
   const syncCartWithBackend = async () => {
     try {
-      const token = localStorage.getItem('authToken')
-      if (!token) return
+      const userId = getUserId()
+      if (!userId) return
       
       // Get local cart items
       const localCart = JSON.parse(localStorage.getItem('cart') || '[]') as CartItem[]
@@ -219,7 +232,7 @@ export const useCart = () => {
       // Get backend cart
       let backendCart: any
       try {
-        backendCart = await cartApi.get()
+        backendCart = await cartApi.get(userId)
       } catch (error) {
         console.error('Failed to get backend cart:', error)
         return
@@ -229,7 +242,7 @@ export const useCart = () => {
       for (const localItem of localCart) {
         if (localItem.sku_id) {
           try {
-            await cartApi.add(localItem.sku_id, localItem.quantity)
+            await cartApi.add(userId, localItem.sku_id, localItem.quantity)
           } catch (error) {
             console.error('Failed to sync cart item:', error)
           }
