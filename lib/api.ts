@@ -265,9 +265,9 @@ export const categoriesApi = {
 }
 
 // Cart API
-// Cart API (Stateless - requires user_id)
+// Cart API (Stateless - requires user_id as integer)
 export const cartApi = {
-  get: (userId: string) =>
+  get: (userId: number) =>
     apiRequest<{
       id: number
       user_id: number
@@ -279,7 +279,7 @@ export const cartApi = {
       body: JSON.stringify({ user_id: userId }),
     }),
   
-  add: (userId: string, skuId: number, quantity: number = 1) =>
+  add: (userId: number, skuId: number, quantity: number = 1) =>
     apiRequest<{
       id: number
       user_id: number
@@ -291,7 +291,7 @@ export const cartApi = {
       body: JSON.stringify({ user_id: userId, sku_id: skuId, quantity }),
     }),
   
-  updateQuantity: (userId: string, cartItemId: number, quantity: number) =>
+  updateQuantity: (userId: number, cartItemId: number, quantity: number) =>
     apiRequest<{
       id: number
       user_id: number
@@ -303,7 +303,7 @@ export const cartApi = {
       body: JSON.stringify({ user_id: userId, cart_item_id: cartItemId, quantity }),
     }),
   
-  remove: (userId: string, cartItemId: number) =>
+  remove: (userId: number, cartItemId: number) =>
     apiRequest<{
       id: number
       user_id: number
@@ -315,7 +315,7 @@ export const cartApi = {
       body: JSON.stringify({ user_id: userId, cart_item_id: cartItemId }),
     }),
   
-  clear: (userId: string) =>
+  clear: (userId: number) =>
     apiRequest<{
       id: number
       user_id: number
@@ -328,19 +328,19 @@ export const cartApi = {
     }),
 }
 
-// Wishlist API (Stateless - requires user_id)
+// Wishlist API (Stateless - requires user_id as integer)
 export const wishlistApi = {
-  get: (userId: string) =>
+  get: (userId: number) =>
     apiRequest<{
       id: number
-      user_id: string
+      user_id: number
       items: any[]
     }>(API_CONFIG.ENDPOINTS.WISHLIST_GET, {
       method: 'POST',
       body: JSON.stringify({ user_id: userId }),
     }),
   
-  add: (userId: string, productId: number) =>
+  add: (userId: number, productId: number) =>
     apiRequest<{
       id: number
       user_id: string
@@ -350,17 +350,17 @@ export const wishlistApi = {
       body: JSON.stringify({ user_id: userId, product_id: productId }),
     }),
   
-  remove: (userId: string, productId: number) =>
+  remove: (userId: number, productId: number) =>
     apiRequest<{
       id: number
-      user_id: string
+      user_id: number
       items: any[]
     }>(API_CONFIG.ENDPOINTS.WISHLIST_REMOVE, {
       method: 'POST',
       body: JSON.stringify({ user_id: userId, product_id: productId }),
     }),
   
-  clear: (userId: string) =>
+  clear: (userId: number) =>
     apiRequest<{
       success: boolean
       message: string

@@ -20,13 +20,13 @@ export const useCart = () => {
   const [cartItemCount, setCartItemCount] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  // Get user_id from localStorage
-  const getUserId = (): string | null => {
+  // Get user_id from localStorage as number
+  const getUserId = (): number | null => {
     try {
       const userDataStr = localStorage.getItem('userData')
       if (!userDataStr) return null
       const userData = JSON.parse(userDataStr)
-      return userData.id ? String(userData.id) : null
+      return userData.id ? Number(userData.id) : null
     } catch (error) {
       console.error('Failed to get user_id:', error)
       return null

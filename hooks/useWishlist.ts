@@ -23,7 +23,7 @@ export const useWishlist = () => {
         // User is authenticated, fetch from backend
         try {
           const userData = JSON.parse(userDataStr)
-          const userId = userData.id
+          const userId = Number(userData.id)
           
           if (!userId) {
             console.error('No user_id found in userData')
@@ -91,7 +91,7 @@ export const useWishlist = () => {
       // Add to backend wishlist
       try {
         const userData = JSON.parse(userDataStr)
-        const userId = userData.id
+        const userId = Number(userData.id)
         
         if (!userId) {
           throw new Error('No user_id found')
@@ -128,7 +128,7 @@ export const useWishlist = () => {
       // Remove from backend wishlist
       try {
         const userData = JSON.parse(userDataStr)
-        const userId = userData.id
+        const userId = Number(userData.id)
         
         if (!userId) {
           throw new Error('No user_id found')
@@ -167,7 +167,7 @@ export const useWishlist = () => {
       if (!token || !userDataStr) return
       
       const userData = JSON.parse(userDataStr)
-      const userId = userData.id
+      const userId = Number(userData.id)
       
       if (!userId) {
         console.error('No user_id found for sync')
