@@ -8,6 +8,17 @@ export interface User {
   email?: string
 }
 
+export interface SKU {
+  id: number
+  sku_code: string
+  size: string
+  color: string
+  price: number
+  original_price?: number
+  stock: number
+  variant_image?: string | null  // NEW: Image for this specific variant
+}
+
 export interface CartItem {
   id: string | number
   name: string
@@ -40,6 +51,7 @@ export interface Product {
   inStock?: boolean
   description?: string
   features?: string[]
+  skus?: SKU[]  // NEW: Array of SKU variants
 }
 
 export interface Address {

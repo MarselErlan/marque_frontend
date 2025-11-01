@@ -28,6 +28,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [currentDisplayImage, setCurrentDisplayImage] = useState<string | null>(null) // NEW: For variant images
   
   const [isClient, setIsClient] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -82,6 +83,48 @@ export default function ProductDetailPage() {
     setIsClient(true)
   }, [])
 
+  // NEW: Find matching SKU based on selected size and color
+  const getMatchingSKU = () => {
+    if (!product || !product.skus || !selectedSize || !selectedColor) {
+      return null
+    }
+    
+    return product.skus.find((sku: any) => 
+      sku.size === selectedSize && sku.color === selectedColor
+    )
+  }
+
+  // NEW: Update display image when color changes
+  useEffect(() => {
+    if (!product) return
+    
+    const matchingSKU = getMatchingSKU()
+    
+    if (matchingSKU && matchingSKU.variant_image) {
+      // Use variant image if available
+      setCurrentDisplayImage(matchingSKU.variant_image)
+    } else {
+      // Fall back to product's main image
+      setCurrentDisplayImage(null)
+    }
+  }, [selectedSize, selectedColor, product])
+
+  // NEW: Get the image to display (variant image or product image)
+  const getDisplayImage = (imageIndex: number = selectedImageIndex) => {
+    // If we have a variant image for the selected color, use it
+    if (currentDisplayImage) {
+      return getImageUrl(currentDisplayImage)
+    }
+    
+    // Otherwise, use the product images
+    if (product?.images?.[imageIndex]?.url) {
+      return getImageUrl(product.images[imageIndex].url)
+    }
+    
+    // Final fallback
+    return "/images/black-tshirt.jpg"
+  }
+
   const handleAddToCart = async () => {
     // Validate size and color selection
     if (!selectedSize) {
@@ -96,17 +139,21 @@ export default function ProductDetailPage() {
     setIsAddingToCart(true)
     
     try {
+      // Find matching SKU to get variant image and correct price
+      const matchingSKU = getMatchingSKU()
+      
       // Prepare cart item
       const cartItem = {
         id: product.id,
         name: product.title,
-        price: product.price_min,
-        originalPrice: product.original_price_min,
+        price: matchingSKU?.price || product.price_min,
+        originalPrice: matchingSKU?.original_price || product.original_price_min,
         brand: product.brand?.name || 'MARQUE',
-        image: product.images?.[0]?.url || '/images/black-tshirt.jpg',
+        // Use variant image if available, otherwise fall back to product images
+        image: matchingSKU?.variant_image || product.images?.[0]?.url || '/images/black-tshirt.jpg',
         size: selectedSize,
         color: selectedColor,
-        sku_id: product.selected_sku_id // You might need to determine this based on size/color
+        sku_id: matchingSKU?.id // Use the actual SKU ID
       }
       
       // Add to cart using the hook
@@ -256,11 +303,7 @@ export default function ProductDetailPage() {
             <div className="lg:hidden relative">
               <div className="aspect-square bg-white overflow-hidden">
                 <img
-                  src={
-                    product.images?.[selectedImageIndex]?.url 
-                      ? getImageUrl(product.images[selectedImageIndex].url)
-                      : "/images/black-tshirt.jpg"
-                  }
+                  src={getDisplayImage(selectedImageIndex)}
                   alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
                   className="w-full h-full object-cover"
                 />
@@ -287,13 +330,9 @@ export default function ProductDetailPage() {
             {/* Main Image - Desktop */}
             <div className="hidden lg:block aspect-square bg-white rounded-lg overflow-hidden">
               <img
-                src={
-                  product.images?.[selectedImageIndex]?.url 
-                    ? getImageUrl(product.images[selectedImageIndex].url)
-                    : "/images/black-tshirt.jpg"
-                }
+                src={getDisplayImage(selectedImageIndex)}
                 alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-opacity duration-300"
               />
             </div>
 
@@ -378,19 +417,34 @@ export default function ProductDetailPage() {
                   <span className="text-sm text-gray-600 capitalize">{selectedColor || 'Выберите цвет'}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {product.available_colors.map((color: string) => (
-                    <button
-                      key={color}
-                      className={`px-4 py-2 border rounded-lg capitalize ${
-                        selectedColor === color
-                          ? "border-brand bg-brand-50 text-brand font-semibold"
-                          : "border-gray-300 text-gray-700 hover:border-gray-400"
-                      }`}
-                      onClick={() => setSelectedColor(color)}
-                    >
-                      {color}
-                    </button>
-                  ))}
+                  {product.available_colors.map((color: string) => {
+                    // Check if this color has a variant image
+                    const hasVariantImage = product.skus?.some((sku: any) => 
+                      sku.color === color && sku.variant_image
+                    )
+                    
+                    return (
+                      <button
+                        key={color}
+                        className={`px-4 py-2 border rounded-lg capitalize relative ${
+                          selectedColor === color
+                            ? "border-brand bg-brand-50 text-brand font-semibold"
+                            : "border-gray-300 text-gray-700 hover:border-gray-400"
+                        }`}
+                        onClick={() => {
+                          setSelectedColor(color)
+                          // Reset image index when changing color to show variant image
+                          setSelectedImageIndex(0)
+                        }}
+                      >
+                        {color}
+                        {/* Show indicator if this color has a variant image */}
+                        {hasVariantImage && (
+                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" title="Есть фото варианта"></span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}
