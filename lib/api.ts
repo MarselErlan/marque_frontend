@@ -701,6 +701,49 @@ export const profileApi = {
     }),
 }
 
+// Orders API
+export const ordersApi = {
+  create: (orderData: {
+    customer_name: string
+    customer_phone: string
+    customer_email?: string
+    delivery_address: string
+    delivery_city?: string
+    delivery_notes?: string
+    payment_method: string
+    use_cart?: boolean
+  }) =>
+    apiRequest<{
+      id: number
+      order_number: string
+      status: string
+      customer_name: string
+      customer_phone: string
+      delivery_address: string
+      subtotal: number
+      shipping_cost: number
+      total_amount: number
+      currency: string
+      order_date: string
+      items: any[]
+    }>(API_CONFIG.ENDPOINTS.ORDERS_CREATE, {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+      requiresAuth: true,
+    }),
+  
+  getAll: (params?: { status_filter?: string; limit?: number; offset?: number }) =>
+    apiRequest<any[]>(API_CONFIG.ENDPOINTS.ORDERS, {
+      requiresAuth: true,
+      params: params as any,
+    }),
+  
+  getDetail: (orderId: number) =>
+    apiRequest(`${API_CONFIG.ENDPOINTS.ORDER_DETAIL}/${orderId}`, {
+      requiresAuth: true,
+    }),
+}
+
 // Export for convenience
 export { ApiError }
 

@@ -41,6 +41,11 @@ export const API_CONFIG = {
     
     // Upload
     UPLOAD_IMAGE: '/upload/image',
+    
+    // Orders
+    ORDERS_CREATE: '/orders/create',
+    ORDERS: '/orders',
+    ORDER_DETAIL: '/orders',
   }
 } as const
 

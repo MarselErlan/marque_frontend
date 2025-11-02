@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight } from "lucide-react"
+import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useCart } from "@/hooks/useCart"
 import { getImageUrl } from "@/lib/utils"
+import { ordersApi, authApi } from "@/lib/api"
+import { toast } from "@/lib/toast"
 
 export default function CartPage() {
   const router = useRouter()
@@ -23,6 +25,9 @@ export default function CartPage() {
   const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "success" | null>(null)
   const [checkoutAddress, setCheckoutAddress] = useState("")
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
+  const [orderNumber, setOrderNumber] = useState<string>("")
+  const [orderTotal, setOrderTotal] = useState<number>(0)
   
   const deliveryDates = ["21 июл", "22 июл", "23 июл", "24 июл", "25 июл"]
   const deliveryCost = 150
@@ -52,16 +57,53 @@ export default function CartPage() {
     }
   }
 
-  const handlePaymentSubmit = () => {
-    if (checkoutPaymentMethod) {
+  const handlePaymentSubmit = async () => {
+    if (!checkoutPaymentMethod) {
+      toast.error('Пожалуйста, выберите способ оплаты')
+      return
+    }
+
+    if (!checkoutAddress) {
+      toast.error('Пожалуйста, укажите адрес доставки')
+      return
+    }
+
+    setIsSubmittingOrder(true)
+
+    try {
+      // Get user profile for customer info
+      const profile = await authApi.getProfile()
+
+      // Create order via API
+      const order = await ordersApi.create({
+        customer_name: profile.full_name || profile.name || 'Покупатель',
+        customer_phone: profile.phone,
+        delivery_address: checkoutAddress,
+        payment_method: checkoutPaymentMethod,
+        use_cart: true
+      })
+
+      // Success!
+      setOrderNumber(order.order_number)
+      setOrderTotal(order.total_amount)
       setCheckoutStep("success")
+      
+      // Clear cart from localStorage
+      clearCart()
+      
+      toast.success(`Заказ ${order.order_number} успешно создан!`)
+      
+    } catch (error: any) {
+      console.error('Order creation failed:', error)
+      toast.error(error.message || 'Ошибка при оформлении заказа. Попробуйте еще раз.')
+    } finally {
+      setIsSubmittingOrder(false)
     }
   }
 
   const handleOrderComplete = () => {
     setCheckoutStep(null)
-    clearCart()
-    router.push("/order-success")
+    router.push("/profile")
   }
 
   if (!isClient) {
@@ -374,9 +416,16 @@ export default function CartPage() {
             <Button
               className="w-full bg-brand hover:bg-brand-hover text-white"
               onClick={handlePaymentSubmit}
-              disabled={!checkoutPaymentMethod}
+              disabled={!checkoutPaymentMethod || isSubmittingOrder}
             >
-              Оформить заказ
+              {isSubmittingOrder ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Оформляем заказ...
+                </>
+              ) : (
+                'Оформить заказ'
+              )}
             </Button>
           </div>
         </DialogContent>
@@ -393,9 +442,18 @@ export default function CartPage() {
               <Check className="w-8 h-8 text-green-600" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Заказ принят к исполнению!</h3>
+            {orderNumber && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <p className="text-sm text-gray-600 mb-1">Номер заказа</p>
+                <p className="text-2xl font-bold text-brand">{orderNumber}</p>
+                {orderTotal > 0 && (
+                  <p className="text-sm text-gray-600 mt-2">Сумма: {orderTotal.toLocaleString()} сом</p>
+                )}
+              </div>
+            )}
             <p className="text-gray-600 mb-6">Мы отправили детали заказа на ваш номер телефона</p>
             <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleOrderComplete}>
-              ОК
+              Перейти в профиль
             </Button>
           </div>
         </DialogContent>
