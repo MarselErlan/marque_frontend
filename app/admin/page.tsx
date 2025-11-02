@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, ArrowLeft, Package, TrendingUp, ShoppingBag, Calendar, Settings, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,10 +13,36 @@ import { Switch } from "@/components/ui/switch"
 import { getImageUrl } from "@/lib/utils"
 import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
+import { MarketIndicator, MarketIndicatorCompact, type Market } from "@/components/admin/MarketIndicator"
 
 export default function AdminDashboard() {
   const auth = useAuth()
   const router = useRouter()
+  
+  // Market management
+  const [currentMarket, setCurrentMarket] = useState<Market>("kg")
+  
+  // Initialize market from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedMarket = localStorage.getItem("admin_market") as Market | null
+      if (savedMarket && (savedMarket === "kg" || savedMarket === "us")) {
+        setCurrentMarket(savedMarket)
+      } else {
+        // Default to KG market
+        localStorage.setItem("admin_market", "kg")
+      }
+    }
+  }, [])
+  
+  // Handle market change
+  const handleMarketChange = (newMarket: Market) => {
+    setCurrentMarket(newMarket)
+    localStorage.setItem("admin_market", newMarket)
+    console.log(`📊 Admin market switched to: ${newMarket.toUpperCase()}`)
+    // TODO: Reload orders from new market's API
+    // For now, just show a notification that data would be reloaded
+  }
   
   const [currentView, setCurrentView] = useState<
     "dashboard" | "orders" | "order-detail" | "all-orders" | "revenue" | "settings"
@@ -262,7 +288,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-lg font-semibold text-gray-900">Добро пожаловать,</h1>
               <p className="text-2xl font-bold text-black">Нуртилек</p>
@@ -270,6 +296,15 @@ export default function AdminDashboard() {
             <Button variant="ghost" size="sm" onClick={() => setCurrentView("settings")}>
               <Settings className="w-5 h-5" />
             </Button>
+          </div>
+          
+          {/* Market Indicator */}
+          <div className="mt-3">
+            <MarketIndicator
+              currentMarket={currentMarket}
+              onMarketChange={handleMarketChange}
+              showSwitcher={true}
+            />
           </div>
         </header>
 
@@ -341,7 +376,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
                 <ArrowLeft className="w-5 h-5" />
@@ -350,6 +385,7 @@ export default function AdminDashboard() {
                 <h1 className="text-lg font-semibold text-gray-900">Доходы</h1>
               </div>
             </div>
+            <MarketIndicatorCompact currentMarket={currentMarket} />
           </div>
         </header>
 
@@ -443,7 +479,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
                 <ArrowLeft className="w-5 h-5" />
@@ -453,9 +489,12 @@ export default function AdminDashboard() {
                 <p className="text-sm text-gray-500">{activeOrdersCount} заказа</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setIsDateRangeOpen(true)}>
-              <Calendar className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              <MarketIndicatorCompact currentMarket={currentMarket} />
+              <Button variant="ghost" size="sm" onClick={() => setIsDateRangeOpen(true)}>
+                <Calendar className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -579,7 +618,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
                 <ArrowLeft className="w-5 h-5" />
@@ -589,9 +628,12 @@ export default function AdminDashboard() {
                 <p className="text-sm text-gray-500">1238 заказов</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setIsDateRangeOpen(true)}>
-              <Calendar className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              <MarketIndicatorCompact currentMarket={currentMarket} />
+              <Button variant="ghost" size="sm" onClick={() => setIsDateRangeOpen(true)}>
+                <Calendar className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -715,7 +757,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Button variant="ghost" size="sm" onClick={() => setCurrentView("orders")}>
                 <ArrowLeft className="w-5 h-5" />
@@ -725,6 +767,7 @@ export default function AdminDashboard() {
                 <p className="text-sm text-gray-500">{selectedOrder.orderDate}</p>
               </div>
             </div>
+            <MarketIndicatorCompact currentMarket={currentMarket} />
           </div>
         </header>
 
@@ -868,7 +911,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
                 <ArrowLeft className="w-5 h-5" />
@@ -877,6 +920,7 @@ export default function AdminDashboard() {
                 <h1 className="text-lg font-semibold text-gray-900">Настройки</h1>
               </div>
             </div>
+            <MarketIndicatorCompact currentMarket={currentMarket} />
           </div>
         </header>
 
@@ -1016,7 +1060,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm" onClick={() => setCurrentView("dashboard")}>
               <ArrowLeft className="w-5 h-5" />
@@ -1026,6 +1070,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-500">{activeOrdersCount} заказа</p>
             </div>
           </div>
+          <MarketIndicatorCompact currentMarket={currentMarket} />
         </div>
       </header>
 
