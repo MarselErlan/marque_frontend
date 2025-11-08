@@ -5,6 +5,15 @@
 
 import { ordersApi } from '@/lib/api'
 
+const createJsonResponse = (data: any, status: number = 200, ok: boolean = true) => ({
+  ok,
+  status,
+  json: jest.fn().mockResolvedValue(data),
+  headers: {
+    get: jest.fn().mockReturnValue('application/json'),
+  },
+})
+
 // Mock fetch globally
 global.fetch = jest.fn()
 
@@ -13,13 +22,10 @@ describe('Orders API', () => {
     jest.clearAllMocks()
     // Mock authentication token
     localStorage.setItem('authToken', 'test-jwt-token')
+    localStorage.setItem('tokenType', 'Token')
     
     // Default mock implementation
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: jest.fn().mockResolvedValue({}),
-    })
+    ;(global.fetch as jest.Mock).mockResolvedValue(createJsonResponse({}) as any)
   })
 
   afterEach(() => {
@@ -63,27 +69,23 @@ describe('Orders API', () => {
         ],
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockResponse),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockResponse) as any)
 
       // Act
       const result = await ordersApi.create(mockOrderData)
 
       // Assert
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/orders/create'),
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer test-jwt-token',
-          }),
-          body: JSON.stringify(mockOrderData),
-        })
-      )
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      const [url, options] = (global.fetch as jest.Mock).mock.calls[0]
+      expect(url).toContain('/orders/create')
+      expect(options).toMatchObject({
+        method: 'POST',
+        body: JSON.stringify(mockOrderData),
+      })
+      expect((options as any).headers).toMatchObject({
+        'Content-Type': 'application/json',
+        Authorization: 'Token test-jwt-token',
+      })
       expect(result).toEqual(mockResponse)
       expect(result.order_number).toBe('#1001')
       expect(result.status).toBe('PENDING')
@@ -115,11 +117,7 @@ describe('Orders API', () => {
         items: [],
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockResponse),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockResponse) as any)
 
       // Act
       const result = await ordersApi.create(mockOrderData)
@@ -270,25 +268,16 @@ describe('Orders API', () => {
         total: 2,
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockOrders),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockOrders) as any)
 
       // Act
       const result = await ordersApi.getAll({ limit: 20, offset: 0 })
 
       // Assert
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/orders?limit=20&offset=0'),
-        expect.objectContaining({
-          method: 'GET',
-          headers: expect.objectContaining({
-            Authorization: 'Bearer test-jwt-token',
-          }),
-        })
-      )
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      const [url, options] = (global.fetch as jest.Mock).mock.calls[0]
+      expect(url).toContain('/orders?limit=20&offset=0')
+      expect((options as any).headers.Authorization).toBe('Token test-jwt-token')
       expect((result as any).orders).toHaveLength(2)
       expect((result as any).total).toBe(2)
       expect((result as any).orders[0].order_number).toBe('#1001')
@@ -312,20 +301,16 @@ describe('Orders API', () => {
         total: 25,
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockOrders),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockOrders) as any)
 
       // Act
       const result = await ordersApi.getAll({ limit: 20, offset: 20 })
 
       // Assert
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/orders?limit=20&offset=20'),
-        expect.any(Object)
-      )
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      const [url, options] = (global.fetch as jest.Mock).mock.calls[0]
+      expect(url).toContain('/orders?limit=20&offset=20')
+      expect((options as any).headers.Authorization).toBe('Token test-jwt-token')
       expect((result as any).total).toBe(25)
       expect((result as any).orders).toHaveLength(1)
     })
@@ -337,11 +322,7 @@ describe('Orders API', () => {
         total: 0,
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockOrders),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockOrders) as any)
 
       // Act
       const result = await ordersApi.getAll({ limit: 20, offset: 0 })
@@ -395,25 +376,16 @@ describe('Orders API', () => {
         ],
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockOrder),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockOrder) as any)
 
       // Act
       const result = await ordersApi.getDetail(1)
 
       // Assert
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/orders/1'),
-        expect.objectContaining({
-          method: 'GET',
-          headers: expect.objectContaining({
-            Authorization: 'Bearer test-jwt-token',
-          }),
-        })
-      )
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      const [url, options] = (global.fetch as jest.Mock).mock.calls[0]
+      expect(url).toContain('/orders/1')
+      expect((options as any).headers.Authorization).toBe('Token test-jwt-token')
       expect(result.order_number).toBe('#1001')
       expect(result.items).toHaveLength(2)
       expect(result.subtotal).toBe(5998.0)
@@ -425,12 +397,9 @@ describe('Orders API', () => {
     it('should handle order not found', async () => {
       // Arrange
       global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        json: jest.fn().mockResolvedValue({
-          detail: 'Order not found',
-        }),
-      })
+        ...createJsonResponse({ detail: 'Order not found' }, 404, false),
+        statusText: 'Not Found',
+      } as any)
 
       // Act & Assert
       await expect(ordersApi.getDetail(999)).rejects.toThrow()
@@ -439,12 +408,9 @@ describe('Orders API', () => {
     it('should handle unauthorized access', async () => {
       // Arrange
       global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: jest.fn().mockResolvedValue({
-          detail: 'Not authorized to view this order',
-        }),
-      })
+        ...createJsonResponse({ detail: 'Not authorized to view this order' }, 403, false),
+        statusText: 'Forbidden',
+      } as any)
 
       // Act & Assert
       await expect(ordersApi.getDetail(1)).rejects.toThrow()
@@ -500,11 +466,7 @@ describe('Orders API', () => {
         items: [],
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockResponse),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockResponse) as any)
 
       // Act
       const result = await ordersApi.create(mockOrderData)

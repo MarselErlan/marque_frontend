@@ -64,7 +64,8 @@ export async function apiRequest<T = any>(
     if (!token) {
       throw new ApiError(401, 'Authentication required')
     }
-    headers['Authorization'] = `Bearer ${token}`
+    const tokenType = localStorage.getItem('tokenType') || 'Token'
+    headers['Authorization'] = `${tokenType} ${token}`
   }
   
   // Make request
@@ -78,7 +79,9 @@ export async function apiRequest<T = any>(
     
     // Handle errors
     if (!response.ok) {
-      const contentType = response.headers.get('content-type')
+      const contentType = typeof response.headers?.get === 'function'
+        ? response.headers.get('content-type')
+        : undefined
       
       if (contentType?.includes('application/json')) {
         const errorData = await response.json()
@@ -105,7 +108,9 @@ export async function apiRequest<T = any>(
     }
     
     // Parse response
-    const contentType = response.headers.get('content-type')
+    const contentType = typeof response.headers?.get === 'function'
+      ? response.headers.get('content-type')
+      : undefined
     if (contentType?.includes('application/json')) {
       return await response.json()
     }

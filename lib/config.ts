@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marquebackend-production.up.railway.app/api/v1',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marquebwithd-production.up.railway.app/api/v1',
   ENDPOINTS: {
     // Authentication
     SEND_VERIFICATION: '/auth/send-verification',

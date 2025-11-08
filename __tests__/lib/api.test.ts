@@ -1,5 +1,14 @@
 import { apiRequest, productsApi, categoriesApi, bannersApi } from '@/lib/api'
 
+const createJsonResponse = (data: any, status: number = 200, ok: boolean = true) => ({
+  ok,
+  status,
+  json: jest.fn().mockResolvedValue(data),
+  headers: {
+    get: jest.fn().mockReturnValue('application/json'),
+  },
+})
+
 describe('API Functions', () => {
   beforeEach(() => {
     global.fetch = jest.fn()
@@ -13,50 +22,47 @@ describe('API Functions', () => {
   describe('apiRequest', () => {
     it('should make successful GET request', async () => {
       const mockData = { data: 'test' }
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockData),
-      })
+      const mockResponse = createJsonResponse(mockData)
+      global.fetch = jest.fn().mockResolvedValue(mockResponse as any)
 
       const result = await apiRequest('/test')
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/test'),
-        expect.objectContaining({
-          method: 'GET',
-        })
-      )
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      const [url, options] = (global.fetch as jest.Mock).mock.calls[0]
+      expect(url).toContain('/test')
+      expect(options).toMatchObject({
+        mode: 'cors',
+        credentials: 'omit',
+      })
+      expect((options as any).headers).toMatchObject({
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      })
       expect(result).toEqual(mockData)
     })
 
     it('should handle POST request with body', async () => {
       const mockData = { success: true }
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue(mockData),
-      })
+      const mockResponse = createJsonResponse(mockData)
+      global.fetch = jest.fn().mockResolvedValue(mockResponse as any)
 
       const body = { name: 'test' }
-      await apiRequest('/test', { method: 'POST', body: body as any })
+      await apiRequest('/test', { method: 'POST', body: JSON.stringify(body) })
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/test'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify(body),
-        })
-      )
+      expect(global.fetch).toHaveBeenCalledTimes(1)
+      const [url, options] = (global.fetch as jest.Mock).mock.calls[0]
+      expect(url).toContain('/test')
+      expect(options).toMatchObject({
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
     })
 
     it('should include auth token if requiresAuth is true', async () => {
-      localStorage.getItem = jest.fn().mockReturnValue('test-token')
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: jest.fn().mockResolvedValue({}),
-      })
+      localStorage.setItem('authToken', 'test-token')
+      localStorage.setItem('tokenType', 'Token')
+      const mockResponse = createJsonResponse({})
+      global.fetch = jest.fn().mockResolvedValue(mockResponse as any)
 
       await apiRequest('/test', { requiresAuth: true })
 
@@ -64,7 +70,7 @@ describe('API Functions', () => {
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
+            Authorization: 'Token test-token',
           }),
         })
       )
@@ -72,11 +78,9 @@ describe('API Functions', () => {
 
     it('should handle 401 error', async () => {
       global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
+        ...createJsonResponse({ detail: 'Not authenticated' }, 401, false),
         statusText: 'Unauthorized',
-        json: jest.fn().mockResolvedValue({ detail: 'Not authenticated' }),
-      })
+      } as any)
 
       await expect(apiRequest('/test')).rejects.toThrow()
     })
@@ -91,10 +95,7 @@ describe('API Functions', () => {
   describe('productsApi', () => {
     it('should fetch best sellers', async () => {
       const mockProducts = [{ id: 1, name: 'Test' }]
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockProducts),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockProducts) as any)
 
       const result = await productsApi.getBestSellers(10)
 
@@ -104,10 +105,7 @@ describe('API Functions', () => {
 
     it('should fetch product by slug', async () => {
       const mockProduct = { id: 1, name: 'Test Product', slug: 'test-product' }
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockProduct),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockProduct) as any)
 
       const result = await productsApi.getDetail('test-product')
 
@@ -127,10 +125,7 @@ describe('API Functions', () => {
         total_pages: 1,
         has_more: false
       }
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockResults),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockResults) as any)
 
       const result = await productsApi.search('test', { page: 1, limit: 10 })
 
@@ -146,10 +141,7 @@ describe('API Functions', () => {
           { id: 1, name: 'Category 1', slug: 'cat1' }
         ]
       }
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockCategories),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockCategories) as any)
 
       const result = await categoriesApi.getAll()
 
@@ -161,10 +153,7 @@ describe('API Functions', () => {
   describe('bannersApi', () => {
     it('should fetch all banners', async () => {
       const mockBanners = { banners: [{ id: 1, title: 'Banner 1' }] }
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockBanners),
-      })
+      global.fetch = jest.fn().mockResolvedValue(createJsonResponse(mockBanners) as any)
 
       const result = await bannersApi.getAll()
 
