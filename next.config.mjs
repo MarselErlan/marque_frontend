@@ -9,14 +9,14 @@ const nextConfig = {
   
   // Environment variables
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marquebackend-production.up.railway.app/api/v1',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://marquebwithd-production.up.railway.app/api/v1',
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://marque.website',
   },
   
   // Image optimization
   images: {
     unoptimized: true,
-    domains: ['marque.website', 'marquebackend-production.up.railway.app'],
+    domains: ['marque.website', 'marquebwithd-production.up.railway.app'],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -88,7 +88,7 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'https://marquebackend-production.up.railway.app/api/v1/:path*',
+        destination: 'https://marquebwithd-production.up.railway.app/api/v1/:path*',
       },
     ]
   },
