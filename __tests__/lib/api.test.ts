@@ -60,7 +60,6 @@ describe('API Functions', () => {
 
     it('should include auth token if requiresAuth is true', async () => {
       localStorage.setItem('authToken', 'test-token')
-      localStorage.setItem('tokenType', 'Token')
       const mockResponse = createJsonResponse({})
       global.fetch = jest.fn().mockResolvedValue(mockResponse as any)
 

@@ -160,12 +160,10 @@
 
                 showResult('oldWishlist-result', '⏳ Testing old endpoint...', 'info');
 
-                const tokenType = localStorage.getItem('tokenType') || 'Token';
-
                 const response = await fetch(`${API_BASE}/wishlist`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `${tokenType} ${token}`,
+                        'Authorization': `Token ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });

@@ -64,8 +64,7 @@ export async function apiRequest<T = any>(
     if (!token) {
       throw new ApiError(401, 'Authentication required')
     }
-    const tokenType = localStorage.getItem('tokenType') || 'Token'
-    headers['Authorization'] = `${tokenType} ${token}`
+    headers['Authorization'] = `Token ${token}`
   }
   
   // Make request

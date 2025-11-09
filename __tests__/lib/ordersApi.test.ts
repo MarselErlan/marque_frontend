@@ -22,7 +22,6 @@ describe('Orders API', () => {
     jest.clearAllMocks()
     // Mock authentication token
     localStorage.setItem('authToken', 'test-jwt-token')
-    localStorage.setItem('tokenType', 'Token')
     
     // Default mock implementation
     ;(global.fetch as jest.Mock).mockResolvedValue(createJsonResponse({}) as any)

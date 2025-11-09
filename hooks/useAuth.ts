@@ -57,7 +57,6 @@ export const useAuth = () => {
     
     // Or be specific:
     localStorage.removeItem('authToken')
-    localStorage.removeItem('tokenType')
     localStorage.removeItem('sessionId')
     localStorage.removeItem('expiresInMinutes')
     localStorage.removeItem('market')
@@ -153,11 +152,7 @@ export const useAuth = () => {
         expirationTime
       })
       
-      const rawTokenType = authData.token_type || 'Token'
-      const normalizedTokenType = rawTokenType.toLowerCase() === 'bearer' ? 'Token' : rawTokenType
-
       localStorage.setItem('authToken', authData.access_token || authData.token)
-      localStorage.setItem('tokenType', normalizedTokenType)
       localStorage.setItem('sessionId', authData.session_id || '')
       localStorage.setItem('expiresInMinutes', expiresInMinutes.toString())
       localStorage.setItem('market', authData.market || 'KG')

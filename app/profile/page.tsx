@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   Search,
   Heart,
@@ -16,7 +16,6 @@ import {
   X,
   ArrowLeft,
   Trash2,
-  Edit,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,46 +24,16 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { useWishlist } from "@/hooks/useWishlist"
+import {
+  useProfile,
+  Address as BackendAddress,
+  PaymentMethod as BackendPaymentMethod,
+  Order as BackendOrder,
+  Notification as BackendNotification,
+} from "@/hooks/useProfile"
 import { AuthModals } from "@/components/AuthModals"
 import { getImageUrl } from "@/lib/utils"
 import { toast } from "sonner"
-
-interface OrderItem {
-  id: number
-  name: string
-  image: string
-  size: string
-  color: string
-}
-
-interface Order {
-  id: string
-  date: string
-  deliveryDate: string
-  status: string
-  statusColor: string
-  total: string
-  isActive: boolean
-  items: OrderItem[]
-  canReview: boolean
-}
-
-interface Address {
-  id: number
-  label: string
-  address: string
-  city?: string
-  region?: string
-  postalCode?: string
-}
-
-interface PaymentMethod {
-  id: number
-  type: string
-  brand: string
-  lastFour: string
-  fullNumber: string
-}
 
 interface ReviewPhoto {
   id: number
@@ -72,11 +41,85 @@ interface ReviewPhoto {
   url: string
 }
 
+interface AddressFormState {
+  label: string
+  address: string
+  city: string
+  region: string
+  postalCode: string
+}
+
+interface PaymentFormState {
+  cardNumber: string
+  expiryDate: string
+  cvv: string
+  cardholderName: string
+}
+
+interface UiOrderItem {
+  id: number
+  name: string
+  image: string
+  size?: string | null
+  color?: string | null
+}
+
+interface UiOrder {
+  id: number
+  orderNumber: string
+  status: string
+  statusBadgeClass: string
+  statusTextClass: string
+  totalLabel: string
+  orderDate: string
+  deliveryDate: string | null
+  items: UiOrderItem[]
+  isActive: boolean
+  canReview: boolean
+}
+
+interface UiNotification {
+  id: number
+  type: string
+  title: string
+  message?: string | null
+  time: string
+  date: string
+  isRead: boolean
+}
+
 export default function ProfilePage() {
   const router = useRouter()
   const auth = useAuth()
   const { isLoggedIn, userData, handleLogout } = auth
   const { wishlistItemCount } = useWishlist()
+  const {
+    profile,
+    isLoadingProfile,
+    fetchProfile,
+    updateProfile,
+    addresses: backendAddresses,
+    isLoadingAddresses,
+    fetchAddresses,
+    createAddress,
+    updateAddress,
+    deleteAddress,
+    paymentMethods: backendPaymentMethods,
+    isLoadingPayments,
+    fetchPaymentMethods,
+    createPaymentMethod,
+    updatePaymentMethod,
+    deletePaymentMethod,
+    orders: backendOrders,
+    isLoadingOrders,
+    fetchOrders,
+    notifications: backendNotifications,
+    isLoadingNotifications,
+    fetchNotifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    unreadNotificationCount,
+  } = useProfile()
   
   // Handle logout with redirect
   const handleLogoutClick = async () => {
@@ -102,26 +145,14 @@ export default function ProfilePage() {
   const [isClient, setIsClient] = useState(false)
   
   // Authentication states are now managed by the useAuth hook.
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<UiOrder | null>(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState("")
   const [reviewPhotos, setReviewPhotos] = useState<ReviewPhoto[]>([])
   const [showReviewForm, setShowReviewForm] = useState(false)
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: 1,
-      label: "Адрес",
-      address: "ул.Юнусалиева, 34",
-    },
-    {
-      id: 2,
-      label: "Адрес",
-      address: "ул.Уметалиева, 11а",
-    },
-  ])
+  const [editingAddress, setEditingAddress] = useState<BackendAddress | null>(null)
   const [showAddressForm, setShowAddressForm] = useState(false)
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null)
-  const [newAddress, setNewAddress] = useState({
+  const [newAddress, setNewAddress] = useState<AddressFormState>({
     label: "",
     address: "",
     city: "",
@@ -129,25 +160,8 @@ export default function ProfilePage() {
     postalCode: "",
   })
 
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: 1,
-      type: "Банковская карта",
-      brand: "Visa",
-      lastFour: "2352",
-      fullNumber: "•••• •••• •••• 2352",
-    },
-    {
-      id: 2,
-      type: "Банковская карта",
-      brand: "Mastercard",
-      lastFour: "5256",
-      fullNumber: "•••• •••• •••• 5256",
-    },
-  ])
   const [showPaymentForm, setShowPaymentForm] = useState(false)
-  const [editingPayment, setEditingPayment] = useState<PaymentMethod | null>(null)
-  const [newPayment, setNewPayment] = useState({
+  const [newPayment, setNewPayment] = useState<PaymentFormState>({
     cardNumber: "",
     expiryDate: "",
     cvv: "",
@@ -163,48 +177,35 @@ export default function ProfilePage() {
   })
 
   // Mock notifications data
-  const notifications = [
-    {
-      id: 1,
-      type: "order" as const,
-      title: "Заказ №123 подтвержден",
-      time: "14:32",
-      date: "сегодня",
-      products: [{ image: "/black-t-shirt.png" }, { image: "/beige-t-shirt.jpg" }],
-    },
-    {
-      id: 2,
-      type: "order" as const,
-      title: "Заказ №123 передан курьеру",
-      time: "14:30",
-      date: "сегодня",
-      products: [{ image: "/black-t-shirt.png" }, { image: "/beige-t-shirt.jpg" }],
-    },
-    {
-      id: 3,
-      type: "order" as const,
-      title: "Заказ №123 доставлен",
-      time: "14:25",
-      date: "сегодня",
-      products: [{ image: "/black-t-shirt.png" }, { image: "/beige-t-shirt.jpg" }],
-    },
-    {
-      id: 4,
-      type: "sale" as const,
-      title: "Скидка 30% на летнюю коллекцию",
-      time: "10:00",
-      date: "сегодня",
-      products: [],
-    },
-    {
-      id: 5,
-      type: "sale" as const,
-      title: "Новая коллекция уже в продаже",
-      time: "09:15",
-      date: "вчера",
-      products: [],
-    },
-  ]
+  const getNotificationDateLabel = (date: Date) => {
+    const today = new Date()
+    const diffInMs = today.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0)
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
+
+    if (diffInDays === 0) return "сегодня"
+    if (diffInDays === 1) return "вчера"
+    return date.toLocaleDateString("ru-RU")
+  }
+
+  const notifications: UiNotification[] = useMemo(() => {
+    return backendNotifications.map((notification) => {
+      const createdAt = new Date(notification.created_at)
+      const time = Number.isNaN(createdAt.getTime())
+        ? ""
+        : createdAt.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
+      const dateLabel = Number.isNaN(createdAt.getTime()) ? "" : getNotificationDateLabel(new Date(createdAt))
+
+      return {
+        id: notification.id,
+        type: notification.type || "other",
+        title: notification.title || "Уведомление",
+        message: notification.message,
+        time,
+        date: dateLabel,
+        isRead: notification.is_read,
+      }
+    })
+  }, [backendNotifications])
 
   // checkAuthStatus and handleLogout are now handled by the useAuth hook.
 
@@ -226,6 +227,14 @@ export default function ProfilePage() {
     }
   }, [auth.isLoading, auth.isLoggedIn, userData, router])
 
+  useEffect(() => {
+    fetchProfile()
+    fetchAddresses()
+    fetchPaymentMethods()
+    fetchOrders()
+    fetchNotifications()
+  }, [fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications])
+
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
     if (notificationFilter === "orders") return notification.type === "order"
@@ -245,251 +254,121 @@ export default function ProfilePage() {
     {} as Record<string, typeof notifications>,
   )
 
-  const orders: Order[] = [
-    {
-      id: "23529",
-      date: "15.07.2025",
-      deliveryDate: "21.07.2025",
-      status: "ОФОРМЛЕН",
-      statusColor: "text-green-600",
-      total: "5233 сом",
-      isActive: true,
-      items: [
-        {
-          id: 1,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "M",
-          color: "Черный",
-        },
-        {
-          id: 2,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "L",
-          color: "Белый",
-        },
-      ],
-      canReview: false,
-    },
-    {
-      id: "23529",
-      date: "15.07.2025",
-      deliveryDate: "21.07.2025",
-      status: "В ПУТИ",
-      statusColor: "text-yellow-600",
-      total: "5233 сом",
-      isActive: true,
-      items: [
-        {
-          id: 3,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "S",
-          color: "Серый",
-        },
-        {
-          id: 4,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "M",
-          color: "Белый",
-        },
-        {
-          id: 5,
-          name: "Джинсы",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "32",
-          color: "Синий",
-        },
-        {
-          id: 6,
-          name: "Платье",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "M",
-          color: "Черный",
-        },
-      ],
-      canReview: false,
-    },
-    {
-      id: "23529",
-      date: "15.07.2025",
-      deliveryDate: "21.07.2025",
-      status: "ДОСТАВЛЕН",
-      statusColor: "text-brand",
-      total: "5233 сом",
-      isActive: true,
-      items: [
-        {
-          id: 7,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "XL",
-          color: "Черный",
-        },
-        {
-          id: 8,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "M",
-          color: "Белый",
-        },
-        {
-          id: 9,
-          name: "Джинсы",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "32",
-          color: "Синий",
-        },
-        {
-          id: 10,
-          name: "Платье",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "M",
-          color: "Черный",
-        },
-        {
-          id: 11,
-          name: "Платье",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "S",
-          color: "Коричневый",
-        },
-        {
-          id: 12,
-          name: "Платье",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "L",
-          color: "Коричневый",
-        },
-        {
-          id: 13,
-          name: "Платье",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "M",
-          color: "Коричневый",
-        },
-        {
-          id: 14,
-          name: "Платье",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "S",
-          color: "Коричневый",
-        },
-        {
-          id: 15,
-          name: "Платье",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "XS",
-          color: "Коричневый",
-        },
-      ],
-      canReview: true,
-    },
-    {
-      id: "23528",
-      date: "10.06.2025",
-      deliveryDate: "15.06.2025",
-      status: "ДОСТАВЛЕН",
-      statusColor: "text-green-600",
-      total: "3299 сом",
-      isActive: false,
-      items: [
-        {
-          id: 16,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "M",
-          color: "Белый",
-        },
-      ],
-      canReview: true,
-    },
-    {
-      id: "23527",
-      date: "25.05.2025",
-      deliveryDate: "30.05.2025",
-      status: "ДОСТАВЛЕН",
-      statusColor: "text-green-600",
-      total: "7899 сом",
-      isActive: false,
-      items: [
-        {
-          id: 17,
-          name: "Футболка спорт из хлопка",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "L",
-          color: "Черный",
-        },
-        {
-          id: 18,
-          name: "Джинсы",
-          image: "/placeholder.svg?height=60&width=60",
-          size: "32",
-          color: "Синий",
-        },
-      ],
-      canReview: true,
-    },
-  ]
+  const statusMeta: Record<string, { label: string; badgeClass: string; textClass: string }> = {
+    pending: { label: "В ожидании", badgeClass: "bg-yellow-100 text-yellow-700", textClass: "text-yellow-700" },
+    confirmed: { label: "Подтвержден", badgeClass: "bg-green-100 text-green-700", textClass: "text-green-700" },
+    processing: { label: "Обрабатывается", badgeClass: "bg-blue-100 text-blue-700", textClass: "text-blue-700" },
+    shipped: { label: "В пути", badgeClass: "bg-purple-100 text-purple-700", textClass: "text-purple-700" },
+    delivered: { label: "Доставлен", badgeClass: "bg-brand/10 text-brand", textClass: "text-brand" },
+    cancelled: { label: "Отменен", badgeClass: "bg-red-100 text-red-700", textClass: "text-red-700" },
+    refunded: { label: "Возврат", badgeClass: "bg-red-100 text-red-700", textClass: "text-red-700" },
+  }
+
+  const formatDate = (value?: string | null) => {
+    if (!value) return null
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return null
+    return date.toLocaleDateString("ru-RU")
+  }
+
+  const orders: UiOrder[] = useMemo(() => {
+    return backendOrders.map((order) => {
+      const status =
+        statusMeta[order.status] ?? {
+          label: order.status,
+          badgeClass: "bg-gray-100 text-gray-700",
+          textClass: "text-gray-700",
+        }
+      const totalLabel = order.total_amount
+        ? `${order.total_amount} ${order.currency ?? ""}`.trim()
+        : ""
+
+      const items: UiOrderItem[] =
+        order.items?.map((item, index) => ({
+          id: item.id ?? index,
+          name: item.product_name,
+          image: item.image_url || "/placeholder.svg?height=60&width=60",
+          size: item.size,
+          color: item.color,
+        })) ?? []
+
+      return {
+        id: order.id,
+        orderNumber: order.order_number,
+        status: status.label,
+        statusBadgeClass: status.badgeClass,
+        statusTextClass: status.textClass,
+        totalLabel,
+        orderDate: formatDate(order.order_date) ?? "",
+        deliveryDate: formatDate(order.delivery_date),
+        items,
+        isActive: !["delivered", "cancelled", "refunded"].includes(order.status),
+        canReview: order.status === "delivered",
+      }
+    })
+  }, [backendOrders])
 
   const filteredOrders = orders.filter((order) => (orderFilter === "active" ? order.isActive : !order.isActive))
 
   const activeOrdersCount = orders.filter((order) => order.isActive).length
 
-  const handleAddAddress = () => {
-    if (newAddress.address.trim()) {
-      const address: Address = {
-        id: Date.now(),
-        label: newAddress.label || "Адрес",
-        address: newAddress.address,
-        city: newAddress.city,
-        region: newAddress.region,
-        postalCode: newAddress.postalCode,
-      }
-      setAddresses([...addresses, address])
-      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
-      setShowAddressForm(false)
+  const handleAddAddress = async () => {
+    if (!newAddress.address.trim()) {
+      toast.error("Введите адрес доставки")
+      return
     }
-  }
 
-  const handleEditAddress = (address: Address) => {
-    setEditingAddress(address)
-    setNewAddress({
-      label: address.label,
-      address: address.address,
-      city: address.city || "",
-      region: address.region || "",
-      postalCode: address.postalCode || "",
+    const success = await createAddress({
+      title: newAddress.label || "Адрес",
+      full_address: newAddress.address,
+      city: newAddress.city || undefined,
+      state: newAddress.region || undefined,
+      postal_code: newAddress.postalCode || undefined,
     })
-    setShowAddressForm(true)
-  }
 
-  const handleUpdateAddress = () => {
-    if (newAddress.address.trim() && editingAddress) {
-      setAddresses(
-        addresses.map((addr) =>
-          addr.id === editingAddress.id
-            ? {
-                ...addr,
-                label: newAddress.label || "Адрес",
-                address: newAddress.address,
-                city: newAddress.city,
-                region: newAddress.region,
-                postalCode: newAddress.postalCode,
-              }
-            : addr,
-        ),
-      )
+    if (success) {
       setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
       setShowAddressForm(false)
       setEditingAddress(null)
     }
   }
 
-  const handleDeleteAddress = (addressId: number) => {
-    setAddresses(addresses.filter((addr) => addr.id !== addressId))
+  const handleEditAddress = (address: BackendAddress) => {
+    setEditingAddress(address)
+    setNewAddress({
+      label: address.title || "Адрес",
+      address: address.full_address || "",
+      city: address.city || "",
+      region: address.state || "",
+      postalCode: address.postal_code || "",
+    })
+    setShowAddressForm(true)
+  }
+
+  const handleUpdateAddress = async () => {
+    if (!editingAddress) return
+    if (!newAddress.address.trim()) {
+      toast.error("Введите адрес доставки")
+      return
+    }
+
+    const success = await updateAddress(editingAddress.id, {
+      title: newAddress.label || "Адрес",
+      full_address: newAddress.address,
+      city: newAddress.city || undefined,
+      state: newAddress.region || undefined,
+      postal_code: newAddress.postalCode || undefined,
+    })
+
+    if (success) {
+      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+      setShowAddressForm(false)
+      setEditingAddress(null)
+    }
+  }
+
+  const handleDeleteAddress = async (addressId: number) => {
+    await deleteAddress(addressId)
   }
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -522,60 +401,42 @@ export default function ProfilePage() {
     setReviewPhotos([])
   }
 
-  const handleAddPayment = () => {
-    if (newPayment.cardNumber.trim() && newPayment.expiryDate.trim() && newPayment.cvv.trim()) {
-      const lastFour = newPayment.cardNumber.slice(-4)
-      const brand = newPayment.cardNumber.startsWith("4") ? "Visa" : "Mastercard"
-
-      const payment: PaymentMethod = {
-        id: Date.now(),
-        type: "Банковская карта",
-        brand,
-        lastFour,
-        fullNumber: `•••• •••• •••• ${lastFour}`,
-      }
-      setPaymentMethods([...paymentMethods, payment])
-      setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
-      setShowPaymentForm(false)
+  const handleAddPayment = async () => {
+    if (!newPayment.cardNumber.trim() || !newPayment.expiryDate.trim() || !newPayment.cvv.trim()) {
+      toast.error("Заполните данные карты")
+      return
     }
-  }
 
-  const handleEditPayment = (payment: PaymentMethod) => {
-    setEditingPayment(payment)
-    setNewPayment({
-      cardNumber: `****${payment.lastFour}`,
-      expiryDate: "",
-      cvv: "",
-      cardholderName: "",
+    const sanitizedNumber = newPayment.cardNumber.replace(/\s/g, "")
+    if (sanitizedNumber.length < 13) {
+      toast.error("Неверный номер карты")
+      return
+    }
+
+    const [monthRaw, yearRaw] = newPayment.expiryDate.split("/")
+    if (!monthRaw || !yearRaw) {
+      toast.error("Укажите срок действия в формате MM/YY")
+      return
+    }
+
+    const expiry_month = monthRaw.padStart(2, "0")
+    const expiry_year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw
+
+    const success = await createPaymentMethod({
+      card_number: sanitizedNumber,
+      card_holder_name: newPayment.cardholderName || "Cardholder",
+      expiry_month,
+      expiry_year,
     })
-    setShowPaymentForm(true)
-  }
 
-  const handleUpdatePayment = () => {
-    if (newPayment.cardNumber.trim() && newPayment.expiryDate.trim() && newPayment.cvv.trim() && editingPayment) {
-      const lastFour = newPayment.cardNumber.slice(-4)
-      const brand = newPayment.cardNumber.startsWith("4") ? "Visa" : "Mastercard"
-
-      setPaymentMethods(
-        paymentMethods.map((payment) =>
-          payment.id === editingPayment.id
-            ? {
-                ...payment,
-                brand,
-                lastFour,
-                fullNumber: `•••• •••• •••• ${lastFour}`,
-              }
-            : payment,
-        ),
-      )
+    if (success) {
       setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
       setShowPaymentForm(false)
-      setEditingPayment(null)
     }
   }
 
-  const handleDeletePayment = (paymentId: number) => {
-    setPaymentMethods(paymentMethods.filter((payment) => payment.id !== paymentId))
+  const handleDeletePayment = async (paymentId: number) => {
+    await deletePaymentMethod(paymentId)
   }
 
   const sidebarItems = [
@@ -762,16 +623,11 @@ export default function ProfilePage() {
                       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                         <div className="flex items-center space-x-4 mb-3 md:mb-0">
                           <span className="text-lg font-semibold text-gray-900">Заказ №{order.id}</span>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            order.status === "ОФОРМЛЕН" ? "bg-green-100 text-green-700" :
-                            order.status === "В ПУТИ" ? "bg-yellow-100 text-yellow-700" :
-                            order.status === "ДОСТАВЛЕН" ? "bg-purple-100 text-purple-700" :
-                            "bg-gray-100 text-gray-700"
-                          }`}>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${order.statusBadgeClass}`}>
                             {order.status}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-500">{order.date}</div>
+                        <div className="text-sm text-gray-500">{order.orderDate}</div>
                       </div>
 
                       <div className="flex items-center space-x-3 mb-6">
@@ -793,7 +649,7 @@ export default function ProfilePage() {
                       <div className="flex flex-col md:flex-row md:items-center justify-between">
                         <div>
                           <div className="text-sm text-gray-500 mb-2">Доставка {order.deliveryDate}</div>
-                          <div className="text-xl font-semibold text-gray-900">{order.total}</div>
+                          <div className="text-xl font-semibold text-gray-900">{order.totalLabel}</div>
                         </div>
                         <div className="flex space-x-3 mt-4 md:mt-0">
                           <Button 
@@ -832,7 +688,7 @@ export default function ProfilePage() {
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                   <h2 className="text-xl font-semibold text-black">Заказ №{selectedOrder.id}</h2>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${selectedOrder.statusColor} bg-opacity-10`}>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${selectedOrder.statusBadgeClass}`}>
                     {selectedOrder.status}
                   </span>
                 </div>
@@ -856,7 +712,7 @@ export default function ProfilePage() {
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-lg font-semibold">Итого: {selectedOrder.total}</span>
+                    <span className="text-lg font-semibold">Итого: {selectedOrder.totalLabel}</span>
                     <span className="text-sm text-gray-500">Доставка {selectedOrder.deliveryDate}</span>
                   </div>
 
@@ -986,18 +842,18 @@ export default function ProfilePage() {
               <div className="bg-white rounded-lg p-6 md:p-8">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-1">Адреса доставки</h2>
-                  <p className="text-gray-600">{addresses.length} адреса</p>
+                  <p className="text-gray-600">{backendAddresses.length} адреса</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  {addresses.map((address) => (
+                  {backendAddresses.map((address) => (
                     <div
                       key={address.id}
                       className="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
                     >
                       <div>
-                        <p className="text-lg font-medium text-gray-900 mb-1">{address.label}</p>
-                        <p className="text-gray-600">{address.address}</p>
+                        <p className="text-lg font-medium text-gray-900 mb-1">{address.title || "Адрес"}</p>
+                        <p className="text-gray-600">{address.full_address}</p>
                         {address.city && <p className="text-sm text-gray-500 mt-1">{address.city}</p>}
                       </div>
                       <div className="flex items-center space-x-3">
@@ -1136,30 +992,30 @@ export default function ProfilePage() {
               <div className="bg-white rounded-lg p-6 md:p-8">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-1">Способы оплаты</h2>
-                  <p className="text-gray-600">{paymentMethods.length} способа</p>
+                  <p className="text-gray-600">{backendPaymentMethods.length} способа</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  {paymentMethods.map((payment) => (
+                  {backendPaymentMethods.map((payment) => (
                     <div
                       key={payment.id}
                       className="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
                     >
                       <div>
-                        <p className="text-lg font-medium text-gray-900 mb-1">{payment.type}</p>
-                        <p className="text-gray-600">
-                          {payment.brand} {payment.fullNumber}
+                        <p className="text-lg font-medium text-gray-900 mb-1">
+                          {payment.payment_type === "card" ? "Банковская карта" : payment.payment_type}
                         </p>
+                        <p className="text-gray-600">
+                          {payment.card_type ? payment.card_type.toUpperCase() : "Карта"}{" "}
+                          {payment.card_number_masked || ""}
+                        </p>
+                        {payment.is_default && (
+                          <span className="inline-block mt-2 text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded">
+                            Основной способ
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditPayment(payment)}
-                          className="text-gray-500 hover:text-gray-700 p-2"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1373,25 +1229,14 @@ export default function ProfilePage() {
                             key={notification.id}
                             className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors"
                           >
-                            {notification.products.length > 0 && (
-                              <div className="flex -space-x-2">
-                                {notification.products.slice(0, 2).map((product, index) => (
-                                  <img
-                                    key={index}
-                                    src={getImageUrl(product.image) || "/placeholder.svg"}
-                                    alt=""
-                                    className="w-12 h-12 rounded-lg border-2 border-white object-cover"
-                                  />
-                                ))}
-                              </div>
-                            )}
-                            {notification.products.length === 0 && (
-                              <div className="w-12 h-12 bg-brand/10 rounded-lg flex items-center justify-center">
-                                <Bell className="w-6 h-6 text-brand" />
-                              </div>
-                            )}
+                            <div className="w-12 h-12 bg-brand/10 rounded-lg flex items-center justify-center">
+                              <Bell className="w-6 h-6 text-brand" />
+                            </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-base font-medium text-gray-900">{notification.title}</p>
+                              {notification.message && (
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-3">{notification.message}</p>
+                              )}
                               <p className="text-sm text-gray-500 mt-1">{notification.time}</p>
                             </div>
                           </div>
