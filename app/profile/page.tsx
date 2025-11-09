@@ -325,6 +325,7 @@ export default function ProfilePage() {
       city: newAddress.city || undefined,
       state: newAddress.region || undefined,
       postal_code: newAddress.postalCode || undefined,
+      country: profile?.country || "Kyrgyzstan",
     })
 
     if (success) {
@@ -359,6 +360,7 @@ export default function ProfilePage() {
       city: newAddress.city || undefined,
       state: newAddress.region || undefined,
       postal_code: newAddress.postalCode || undefined,
+      country: profile?.country || "Kyrgyzstan",
     })
 
     if (success) {

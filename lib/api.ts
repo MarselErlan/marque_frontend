@@ -532,7 +532,7 @@ export const profileApi = {
       message: string
       address: any
     }>(`/profile/addresses/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       requiresAuth: true,
       body: JSON.stringify(data),
     }),
