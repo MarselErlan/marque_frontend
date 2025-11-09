@@ -493,7 +493,7 @@ export const profileApi = {
         created_at: string
       }>
       total: number
-    }>('/api/v1/profile/addresses', { requiresAuth: true }),
+    }>('/profile/addresses', { requiresAuth: true }),
   
   createAddress: (data: {
     title: string
@@ -510,7 +510,7 @@ export const profileApi = {
       success: boolean
       message: string
       address: any
-    }>('/api/v1/profile/addresses', {
+    }>('/profile/addresses', {
       method: 'POST',
       requiresAuth: true,
       body: JSON.stringify(data),
@@ -531,7 +531,7 @@ export const profileApi = {
       success: boolean
       message: string
       address: any
-    }>(`/api/v1/profile/addresses/${id}`, {
+    }>(`/profile/addresses/${id}`, {
       method: 'PUT',
       requiresAuth: true,
       body: JSON.stringify(data),
@@ -541,7 +541,7 @@ export const profileApi = {
     apiRequest<{
       success: boolean
       message: string
-    }>(`/api/v1/profile/addresses/${id}`, {
+    }>(`/profile/addresses/${id}`, {
       method: 'DELETE',
       requiresAuth: true,
     }),
@@ -560,7 +560,7 @@ export const profileApi = {
         created_at: string
       }>
       total: number
-    }>('/api/v1/profile/payment-methods', { requiresAuth: true }),
+    }>('/profile/payment-methods', { requiresAuth: true }),
   
   createPaymentMethod: (data: {
     card_number: string
@@ -573,7 +573,7 @@ export const profileApi = {
       success: boolean
       message: string
       payment_method: any
-    }>('/api/v1/profile/payment-methods', {
+    }>('/profile/payment-methods', {
       method: 'POST',
       requiresAuth: true,
       body: JSON.stringify(data),
@@ -583,7 +583,7 @@ export const profileApi = {
     apiRequest<{
       success: boolean
       message: string
-    }>(`/api/v1/profile/payment-methods/${id}`, {
+    }>(`/profile/payment-methods/${id}`, {
       method: 'PUT',
       requiresAuth: true,
       body: JSON.stringify(data),
@@ -593,7 +593,7 @@ export const profileApi = {
     apiRequest<{
       success: boolean
       message: string
-    }>(`/api/v1/profile/payment-methods/${id}`, {
+    }>(`/profile/payment-methods/${id}`, {
       method: 'DELETE',
       requiresAuth: true,
     }),
@@ -621,7 +621,7 @@ export const profileApi = {
       }>
       total: number
       has_more: boolean
-    }>('/api/v1/profile/orders', {
+    }>('/profile/orders', {
       requiresAuth: true,
       params: params as any,
     }),
@@ -652,7 +652,7 @@ export const profileApi = {
           image_url: string
         }>
       }
-    }>(`/api/v1/profile/orders/${orderId}`, { requiresAuth: true }),
+    }>(`/profile/orders/${orderId}`, { requiresAuth: true }),
   
   cancelOrder: (orderId: number) =>
     apiRequest<{
@@ -660,7 +660,7 @@ export const profileApi = {
       message: string
       order_id: number
       status: string
-    }>(`/api/v1/profile/orders/${orderId}/cancel`, {
+    }>(`/profile/orders/${orderId}/cancel`, {
       method: 'POST',
       requiresAuth: true,
     }),
@@ -680,7 +680,7 @@ export const profileApi = {
       }>
       total: number
       unread_count: number
-    }>('/api/v1/profile/notifications', {
+    }>('/profile/notifications', {
       requiresAuth: true,
       params: params as any,
     }),
@@ -689,7 +689,7 @@ export const profileApi = {
     apiRequest<{
       success: boolean
       message: string
-    }>(`/api/v1/profile/notifications/${id}/read`, {
+    }>(`/profile/notifications/${id}/read`, {
       method: 'PUT',
       requiresAuth: true,
     }),
@@ -699,7 +699,7 @@ export const profileApi = {
       success: boolean
       message: string
       count: number
-    }>('/api/v1/profile/notifications/read-all', {
+    }>('/profile/notifications/read-all', {
       method: 'PUT',
       requiresAuth: true,
     }),
