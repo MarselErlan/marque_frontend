@@ -288,7 +288,7 @@ export default function ProfilePage() {
         order.items?.map((item, index) => ({
           id: item.id ?? index,
           name: item.product_name,
-          image: item.image_url || "/placeholder.svg?height=60&width=60",
+          image: item.image_url || "/images/product_placeholder_adobe.png",
           size: item.size,
           color: item.color,
         })) ?? []
@@ -637,7 +637,7 @@ export default function ProfilePage() {
                         {order.items.slice(0, 8).map((item, itemIndex) => (
                           <img
                             key={`${item.id}-${itemIndex}`}
-                            src={getImageUrl(item.image) || "/placeholder.svg"}
+                          src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                             alt={item.name}
                             className="w-16 h-16 object-cover rounded-lg border border-gray-200"
                           />
@@ -700,7 +700,7 @@ export default function ProfilePage() {
                   {selectedOrder.items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
                       <img
-                        src={getImageUrl(item.image) || "/placeholder.svg"}
+                        src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded"
                       />
@@ -798,7 +798,7 @@ export default function ProfilePage() {
                       {reviewPhotos.map((photo) => (
                         <div key={photo.id} className="relative">
                           <img
-                            src={getImageUrl(photo.url) || "/placeholder.svg"}
+                            src={getImageUrl(photo.url) || "/images/product_placeholder_adobe.png"}
                             alt="Review photo"
                             className="w-full h-16 object-cover rounded"
                           />
@@ -829,7 +829,7 @@ export default function ProfilePage() {
                     {selectedOrder.items.map((item) => (
                       <img
                         key={item.id}
-                        src={getImageUrl(item.image) || "/placeholder.svg"}
+                        src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                         alt={item.name}
                         className="w-full h-16 object-cover rounded"
                       />

@@ -512,11 +512,11 @@ export default function SubcategoryPage({
                         </div>
                         <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                           <img
-                            src={getImageUrl(product.main_image || product.image) || "/images/black-tshirt.jpg"}
+                            src={getImageUrl(product.main_image || product.image) || "/images/product_placeholder_adobe.png"}
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
-                              e.currentTarget.src = '/images/black-tshirt.jpg'
+                              e.currentTarget.src = '/images/product_placeholder_adobe.png'
                             }}
                           />
                         </div>

@@ -150,13 +150,13 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                         src={
                           subcat.image_url 
                             ? getImageUrl(subcat.image_url)
-                            : '/images/placeholder.png'
+                            : '/images/product_placeholder_adobe.png'
                         }
                         alt={subcat.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           // Fallback to placeholder if image fails to load
-                          e.currentTarget.src = '/images/placeholder.png'
+                          e.currentTarget.src = '/images/product_placeholder_adobe.png'
                         }}
                       />
                     </div>

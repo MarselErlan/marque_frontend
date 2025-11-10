@@ -147,11 +147,11 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 className="bg-white rounded-lg p-4 hover:shadow-lg transition-shadow group flex items-center gap-4"
               >
                 <img
-                  src={getImageUrl(subcategory.image_url) || "/images/black-tshirt.jpg"}
+                  src={getImageUrl(subcategory.image_url) || "/images/product_placeholder_adobe.png"}
                   alt={subcategory.name}
                   className="w-16 h-16 object-cover rounded-lg"
                   onError={(e) => {
-                    e.currentTarget.src = "/images/black-tshirt.jpg"
+                    e.currentTarget.src = "/images/product_placeholder_adobe.png"
                   }}
                 />
                 <div className="flex-1">
@@ -186,11 +186,11 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                     </div>
                     <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                       <img
-                        src={getImageUrl(product.image) || "/images/black-tshirt.jpg"}
+                        src={getImageUrl(product.image) || "/images/product_placeholder_adobe.png"}
                         alt={product.title || product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
-                          e.currentTarget.src = "/images/black-tshirt.jpg"
+                          e.currentTarget.src = "/images/product_placeholder_adobe.png"
                         }}
                       />
                     </div>

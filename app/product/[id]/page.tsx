@@ -122,7 +122,7 @@ export default function ProductDetailPage() {
     }
     
     // Final fallback
-    return "/images/black-tshirt.jpg"
+    return "/images/product_placeholder_adobe.png"
   }
 
   const handleAddToCart = async () => {
@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
         originalPrice: matchingSKU?.original_price || product.original_price_min,
         brand: product.brand?.name || 'MARQUE',
         // Use variant image if available, otherwise fall back to product images
-        image: matchingSKU?.variant_image || product.images?.[0]?.url || '/images/black-tshirt.jpg',
+        image: matchingSKU?.variant_image || product.images?.[0]?.url || '/images/product_placeholder_adobe.png',
         size: selectedSize,
         color: selectedColor,
         sku_id: matchingSKU?.id // Use the actual SKU ID
@@ -351,7 +351,7 @@ export default function ProductDetailPage() {
                       src={
                         image.url 
                           ? getImageUrl(image.url)
-                          : "/images/black-tshirt.jpg"
+                          : "/images/product_placeholder_adobe.png"
                       }
                       alt={image.alt_text || `${product.title} ${index + 1}`}
                       className="w-full h-full object-cover"
@@ -640,7 +640,7 @@ export default function ProductDetailPage() {
                         src={
                           similarProduct.image 
                             ? getImageUrl(similarProduct.image)
-                            : "/images/black-tshirt.jpg"
+                            : "/images/product_placeholder_adobe.png"
                         }
                         alt={similarProduct.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -556,7 +556,7 @@ export default function AdminDashboard() {
                   {order.items.slice(0, 8).map((item, index) => (
                     <img
                       key={index}
-                      src={getImageUrl(item.image) || "/placeholder.svg?height=32&width=32&query=clothing item"}
+                      src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                       alt={item.name}
                       className="w-8 h-8 object-cover rounded"
                     />
@@ -695,7 +695,7 @@ export default function AdminDashboard() {
                   {order.items.slice(0, 8).map((item, index) => (
                     <img
                       key={index}
-                      src={getImageUrl(item.image) || "/placeholder.svg?height=32&width=32&query=clothing item"}
+                      src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                       alt={item.name}
                       className="w-8 h-8 object-cover rounded"
                     />
@@ -778,7 +778,7 @@ export default function AdminDashboard() {
               {selectedOrder.items.map((item: any, index: number) => (
                 <div key={index} className="flex items-start space-x-3">
                   <img
-                    src={getImageUrl(item.image) || "/placeholder.svg?height=60&width=60&query=clothing item"}
+                    src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                     alt={item.name}
                     className="w-15 h-15 object-cover rounded"
                   />
@@ -1132,7 +1132,7 @@ export default function AdminDashboard() {
                 {order.items.slice(0, 8).map((item, index) => (
                   <img
                     key={index}
-                    src={getImageUrl(item.image) || "/placeholder.svg?height=32&width=32&query=clothing item"}
+                    src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                     alt={item.name}
                     className="w-8 h-8 object-cover rounded"
                   />

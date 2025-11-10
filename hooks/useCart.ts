@@ -48,7 +48,7 @@ export const useCart = () => {
             price: item.price,
             originalPrice: item.original_price,
             brand: item.brand || 'MARQUE',
-            image: item.image || '/images/black-tshirt.jpg',
+            image: item.image || '/images/product_placeholder_adobe.png',
             quantity: item.quantity,
             size: item.size,
             color: item.color,

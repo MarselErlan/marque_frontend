@@ -70,7 +70,7 @@ export default function WishlistPage() {
                     <Link href={`/product/${product.id}`} className="block">
                       <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
                         <img
-                          src={getImageUrl(product.image) || "/images/black-tshirt.jpg"}
+                          src={getImageUrl(product.image) || "/images/product_placeholder_adobe.png"}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

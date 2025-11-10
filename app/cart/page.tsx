@@ -142,11 +142,11 @@ export default function CartPage() {
                 <div key={item.id} className="bg-white rounded-lg p-4 flex space-x-4">
                   {/* Product Image */}
                   <img
-                    src={getImageUrl(item.image) || "/images/black-tshirt.jpg"}
+                    src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
                     alt={item.name}
                     className="w-20 h-24 object-cover rounded-lg"
                     onError={(e) => {
-                      e.currentTarget.src = '/images/black-tshirt.jpg'
+                      e.currentTarget.src = '/images/product_placeholder_adobe.png'
                     }}
                   />
 

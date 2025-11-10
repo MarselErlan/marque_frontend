@@ -372,11 +372,11 @@ export default function MarquePage() {
                       {/* Subcategory Icon/Image */}
                       <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={getImageUrl(subcat.image_url || subcat.image) || "/images/black-tshirt.jpg"}
+                          src={getImageUrl(subcat.image_url || subcat.image) || "/images/product_placeholder_adobe.png"}
                           alt={subcat.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = "/images/black-tshirt.jpg"
+                            e.currentTarget.src = "/images/product_placeholder_adobe.png"
                           }}
                         />
                       </div>
@@ -474,7 +474,7 @@ export default function MarquePage() {
       // Use product images for carousel
       const carouselData = randomProducts.slice(0, 10).map(product => ({
         id: product.id,
-        src: product.image || '/images/black-tshirt.jpg',
+        src: product.image || '/images/product_placeholder_adobe.png',
         alt: product.title || product.name || 'Product',
         category: product.category || 'all',
         brand: product.brand_name || product.brand || 'MARQUE'
@@ -608,11 +608,11 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-[24px] relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={getImageUrl(banner.image_url) || "/images/placeholder.png"} 
+                      src={getImageUrl(banner.image_url, "/images/placeholder_banner_adobe.png")} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
                       onError={(e) => { 
-                        e.currentTarget.src = "/images/placeholder.png"
+                        e.currentTarget.src = "/images/placeholder_banner_adobe.png"
                       }}
                     />
                     {/* Subtle overlay for depth */}
@@ -669,11 +669,11 @@ export default function MarquePage() {
                 <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl relative overflow-hidden">
                   <div className="relative h-full overflow-hidden">
                     <img 
-                      src={getImageUrl(banner.mobile_image_url || banner.image_url) || "/images/placeholder.png"} 
+                      src={getImageUrl(banner.mobile_image_url || banner.image_url, "/images/placeholder_banner_adobe.png")} 
                       alt={banner.title || 'Banner'} 
                       className="absolute inset-0 w-full h-full object-cover"
                       onError={(e) => { 
-                        e.currentTarget.src = "/images/placeholder.png"
+                        e.currentTarget.src = "/images/placeholder_banner_adobe.png"
                       }}
                     />
                     <div className="absolute inset-0 bg-black/10"></div>
@@ -736,12 +736,12 @@ export default function MarquePage() {
                               ? getImageUrl(product.images[0].url)
                               : product.image && product.image.trim() !== ''
                               ? getImageUrl(product.image)
-                              : '/images/black-tshirt.jpg'
+                              : '/images/product_placeholder_adobe.png'
                           }
                           alt={product.title || product.name || 'Product'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
-                            e.currentTarget.src = "/images/black-tshirt.jpg"
+                            e.currentTarget.src = "/images/product_placeholder_adobe.png"
                           }}
                         />
                       </div>

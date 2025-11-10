@@ -11,8 +11,11 @@ export function cn(...inputs: ClassValue[]) {
  * If the URL starts with http/https, return as-is (external URL)
  * Otherwise, prepend the backend base URL
  */
-export function getImageUrl(imagePath: string | null | undefined): string {
-  if (!imagePath) return '/images/placeholder.png'
+export function getImageUrl(
+  imagePath: string | null | undefined,
+  fallback: string = '/images/product_placeholder_adobe.png',
+): string {
+  if (!imagePath) return fallback
   
   // If it's already a full URL (http:// or https://), return as-is
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
