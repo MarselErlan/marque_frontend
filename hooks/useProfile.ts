@@ -10,6 +10,7 @@ export interface Address {
   building: string | null
   apartment: string | null
   city: string | null
+  state: string | null
   postal_code: string | null
   country: string | null
   is_default: boolean
@@ -55,16 +56,20 @@ export interface Notification {
 }
 
 export interface Profile {
-  id: number
+  id: number | string
   phone: string
+  name?: string | null
   full_name: string | null
-  profile_image_url: string | null
+  profile_image: string | null
   is_active: boolean
   is_verified: boolean
   last_login: string | null
-  market: string
+  location: string
+  market?: string
   language: string
   country: string
+  currency?: string
+  currency_code?: string
   created_at: string
 }
 
@@ -88,7 +93,11 @@ export const useProfile = () => {
     setIsLoadingProfile(true)
     try {
       const data = await profileApi.getProfile()
-      setProfile(data)
+      setProfile({
+        ...data,
+        profile_image: data.profile_image ?? (data as any).profile_image_url ?? null,
+        location: (data.location || (data as any).market || 'KG').toUpperCase(),
+      })
     } catch (error) {
       console.error('Error fetching profile:', error)
       toast.error('Failed to load profile')
@@ -98,7 +107,7 @@ export const useProfile = () => {
   }, [])
 
   // Update Profile
-  const updateProfile = useCallback(async (data: { full_name?: string; profile_image_url?: string }) => {
+  const updateProfile = useCallback(async (data: { full_name?: string; profile_image?: string }) => {
     try {
       const response = await profileApi.updateProfile(data)
       if (response.success) {
@@ -135,6 +144,7 @@ export const useProfile = () => {
     title: string
     full_address: string
     street?: string
+    state?: string
     building?: string
     apartment?: string
     city?: string
@@ -162,6 +172,7 @@ export const useProfile = () => {
     title?: string
     full_address?: string
     street?: string
+    state?: string
     building?: string
     apartment?: string
     city?: string

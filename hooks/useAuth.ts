@@ -9,6 +9,8 @@ export interface UserData {
   full_name?: string
   phone?: string
   email?: string
+  location?: string
+  market?: string
 }
 
 export interface AuthState {
@@ -60,6 +62,7 @@ export const useAuth = () => {
     localStorage.removeItem('sessionId')
     localStorage.removeItem('expiresInMinutes')
     localStorage.removeItem('market')
+    localStorage.removeItem('location')
     localStorage.removeItem('userData')
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('tokenExpiration')
@@ -155,7 +158,9 @@ export const useAuth = () => {
       localStorage.setItem('authToken', authData.access_token || authData.token)
       localStorage.setItem('sessionId', authData.session_id || '')
       localStorage.setItem('expiresInMinutes', expiresInMinutes.toString())
-      localStorage.setItem('market', authData.market || 'KG')
+      const resolvedLocation = authData.location || authData.market || 'KG'
+      localStorage.setItem('market', resolvedLocation)
+      localStorage.setItem('location', resolvedLocation)
       localStorage.setItem('userData', JSON.stringify(userData))
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('tokenExpiration', expirationTime.toString())
@@ -289,7 +294,9 @@ export const useAuth = () => {
             name: data.user.name || data.user.full_name,
             full_name: data.user.full_name,
             is_active: data.user.is_active,
-            is_verified: data.user.is_verified
+            is_verified: data.user.is_verified,
+            location: data.location || data.market || 'KG',
+            market: data.market,
           }
           
           console.log("🔐 User data:", userData)

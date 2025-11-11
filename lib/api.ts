@@ -137,7 +137,7 @@ export const authApi = {
       success: boolean
       message: string
       phone: string
-      market: string
+      location: string
       language: string
       expires_in_minutes: number
     }>(
@@ -159,7 +159,7 @@ export const authApi = {
         is_active: boolean
         is_verified: boolean
       }
-      market: string
+      location: string
       is_new_user: boolean
     }>(API_CONFIG.ENDPOINTS.VERIFY_CODE, {
       method: 'POST',
@@ -173,10 +173,11 @@ export const authApi = {
       formatted_phone: string
       name: string
       full_name: string | null
-      profile_image_url: string | null
+      profile_image: string | null
       is_active: boolean
       is_verified: boolean
-      market: string
+      location: string
+      market?: string
       language: string
       country: string
       currency: string
@@ -451,20 +452,25 @@ export const profileApi = {
   // Profile Management
   getProfile: () =>
     apiRequest<{
-      id: number
+      id: number | string
       phone: string
+      formatted_phone: string
+      name: string | null
       full_name: string | null
-      profile_image_url: string | null
+      profile_image: string | null
       is_active: boolean
       is_verified: boolean
       last_login: string | null
-      market: string
+      location: string
+      market?: string
       language: string
       country: string
+      currency: string
+      currency_code: string
       created_at: string
     }>(API_CONFIG.ENDPOINTS.USER_PROFILE, { requiresAuth: true }),
   
-  updateProfile: (data: { full_name?: string; profile_image_url?: string }) =>
+  updateProfile: (data: { full_name?: string; profile_image?: string }) =>
     apiRequest<{
       success: boolean
       message: string
@@ -484,6 +490,7 @@ export const profileApi = {
         title: string
         full_address: string
         street: string | null
+        state: string | null
         building: string | null
         apartment: string | null
         city: string | null
@@ -499,6 +506,7 @@ export const profileApi = {
     title: string
     full_address: string
     street?: string
+    state?: string
     building?: string
     apartment?: string
     city?: string
@@ -520,6 +528,7 @@ export const profileApi = {
     title?: string
     full_address?: string
     street?: string
+    state?: string
     building?: string
     apartment?: string
     city?: string

@@ -44,10 +44,14 @@ interface ReviewPhoto {
 
 interface AddressFormState {
   label: string
-  address: string
+  fullAddress: string
+  street: string
   city: string
-  region: string
+  state: string
   postalCode: string
+  building: string
+  apartment: string
+  isDefault: boolean
 }
 
 interface PaymentFormState {
@@ -153,13 +157,19 @@ export default function ProfilePage() {
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [editingAddress, setEditingAddress] = useState<BackendAddress | null>(null)
   const [showAddressForm, setShowAddressForm] = useState(false)
-  const [newAddress, setNewAddress] = useState<AddressFormState>({
+  const createEmptyAddress = (): AddressFormState => ({
     label: "",
-    address: "",
+    fullAddress: "",
+    street: "",
     city: "",
-    region: "",
+    state: "",
     postalCode: "",
+    building: "",
+    apartment: "",
+    isDefault: false,
   })
+  const [newAddress, setNewAddress] = useState<AddressFormState>(createEmptyAddress())
+  const resetAddressForm = () => setNewAddress(createEmptyAddress())
 
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [newPayment, setNewPayment] = useState<PaymentFormState>({
@@ -177,6 +187,15 @@ export default function ProfilePage() {
     pushNotifications: false,
   })
 
+  const userLocation = (
+    profile?.location ||
+    profile?.market ||
+    userData?.location ||
+    userData?.market ||
+    'KG'
+  ).toUpperCase()
+  const isUSLocation = userLocation === 'US'
+
   // Mock notifications data
   const getNotificationDateLabel = (date: Date) => {
     const today = new Date()
@@ -186,6 +205,17 @@ export default function ProfilePage() {
     if (diffInDays === 0) return "сегодня"
     if (diffInDays === 1) return "вчера"
     return date.toLocaleDateString("ru-RU")
+  }
+
+  const composeFullAddress = (address: AddressFormState) => {
+    const parts = [
+      address.street?.trim(),
+      address.city?.trim(),
+      address.state?.trim(),
+      address.postalCode?.trim(),
+    ].filter(Boolean)
+
+    return parts.join(", ")
   }
 
   const notifications: UiNotification[] = useMemo(() => {
@@ -314,22 +344,53 @@ export default function ProfilePage() {
   const activeOrdersCount = orders.filter((order) => order.isActive).length
 
   const handleAddAddress = async () => {
-    if (!newAddress.address.trim()) {
+    if (!isUSLocation && !newAddress.fullAddress.trim()) {
       toast.error("Введите адрес доставки")
+      return
+    }
+
+    if (!newAddress.city.trim()) {
+      toast.error("Введите город")
+      return
+    }
+
+    if (isUSLocation) {
+      if (!newAddress.street.trim()) {
+        toast.error("Введите улицу")
+        return
+      }
+      if (!newAddress.state.trim()) {
+        toast.error("Укажите штат/регион")
+        return
+      }
+      if (!newAddress.postalCode.trim()) {
+        toast.error("Укажите почтовый индекс")
+        return
+      }
+    }
+
+    const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
+
+    if (!fullAddressValue) {
+      toast.error("Введите полный адрес")
       return
     }
 
     const success = await createAddress({
       title: newAddress.label || "Адрес",
-      full_address: newAddress.address,
+      full_address: fullAddressValue,
+      street: newAddress.street || undefined,
       city: newAddress.city || undefined,
-      state: newAddress.region || undefined,
+      state: isUSLocation ? newAddress.state || undefined : undefined,
       postal_code: newAddress.postalCode || undefined,
-      country: profile?.country || "Kyrgyzstan",
+      country:
+        profile?.country ||
+        (isUSLocation ? "United States" : "Kyrgyzstan"),
+      is_default: newAddress.isDefault || undefined,
     })
 
     if (success) {
-      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+      resetAddressForm()
       setShowAddressForm(false)
       setEditingAddress(null)
     }
@@ -339,32 +400,67 @@ export default function ProfilePage() {
     setEditingAddress(address)
     setNewAddress({
       label: address.title || "Адрес",
-      address: address.full_address || "",
+      fullAddress: address.full_address || "",
+      street: address.street || "",
       city: address.city || "",
-      region: address.state || "",
+      state: address.state || "",
       postalCode: address.postal_code || "",
+      building: address.building || "",
+      apartment: address.apartment || "",
+      isDefault: address.is_default || false,
     })
     setShowAddressForm(true)
   }
 
   const handleUpdateAddress = async () => {
     if (!editingAddress) return
-    if (!newAddress.address.trim()) {
+    if (!isUSLocation && !newAddress.fullAddress.trim()) {
       toast.error("Введите адрес доставки")
+      return
+    }
+
+    if (!newAddress.city.trim()) {
+      toast.error("Введите город")
+      return
+    }
+
+    if (isUSLocation) {
+      if (!newAddress.street.trim()) {
+        toast.error("Введите улицу")
+        return
+      }
+      if (!newAddress.state.trim()) {
+        toast.error("Укажите штат/регион")
+        return
+      }
+      if (!newAddress.postalCode.trim()) {
+        toast.error("Укажите почтовый индекс")
+        return
+      }
+    }
+
+    const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
+
+    if (!fullAddressValue) {
+      toast.error("Введите полный адрес")
       return
     }
 
     const success = await updateAddress(editingAddress.id, {
       title: newAddress.label || "Адрес",
-      full_address: newAddress.address,
+      full_address: fullAddressValue,
+      street: newAddress.street || undefined,
       city: newAddress.city || undefined,
-      state: newAddress.region || undefined,
+      state: isUSLocation ? newAddress.state || undefined : undefined,
       postal_code: newAddress.postalCode || undefined,
-      country: profile?.country || "Kyrgyzstan",
+      country:
+        profile?.country ||
+        (isUSLocation ? "United States" : "Kyrgyzstan"),
+      is_default: newAddress.isDefault || undefined,
     })
 
     if (success) {
-      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+      resetAddressForm()
       setShowAddressForm(false)
       setEditingAddress(null)
     }
@@ -857,7 +953,11 @@ export default function ProfilePage() {
                       <div>
                         <p className="text-lg font-medium text-gray-900 mb-1">{address.title || "Адрес"}</p>
                         <p className="text-gray-600">{address.full_address}</p>
-                        {address.city && <p className="text-sm text-gray-500 mt-1">{address.city}</p>}
+                        {(address.city || address.state || address.postal_code) && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            {[address.city, address.state, address.postal_code].filter(Boolean).join(", ")}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center space-x-3">
                         <Button
@@ -899,7 +999,7 @@ export default function ProfilePage() {
                     onClick={() => {
                       setShowAddressForm(false)
                       setEditingAddress(null)
-                      setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+                    resetAddressForm()
                     }}
                     className="p-0"
                   >
@@ -922,48 +1022,81 @@ export default function ProfilePage() {
                     />
                   </div>
 
+                  {isUSLocation ? (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Street address *</label>
+                        <Input
+                          type="text"
+                          value={newAddress.street}
+                          onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                          placeholder="123 Main St"
+                          className="w-full"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Full address (optional)</label>
+                        <Input
+                          type="text"
+                          value={newAddress.fullAddress}
+                          onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
+                          placeholder="123 Main St, Suite 5"
+                          className="w-full"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Адрес *</label>
+                      <Input
+                        type="text"
+                        value={newAddress.fullAddress}
+                        onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
+                        placeholder="ул. Название, дом 123, кв. 45"
+                        className="w-full"
+                        required
+                      />
+                    </div>
+                  )}
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Адрес *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
                     <Input
                       type="text"
-                      value={newAddress.address}
-                      onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
-                      placeholder="ул. Название, дом 123, кв. 45"
+                      value={newAddress.city}
+                      onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                      placeholder={isUSLocation ? "Chicago" : "Бишкек"}
                       className="w-full"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Город</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {isUSLocation ? "Штат / Регион *" : "Регион"}
+                    </label>
                     <Input
                       type="text"
-                      value={newAddress.city}
-                      onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                      placeholder="Бишкек"
+                      value={newAddress.state}
+                      onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                      placeholder={isUSLocation ? "IL" : "Чуйская область"}
                       className="w-full"
+                      required={isUSLocation}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Регион</label>
-                    <Input
-                      type="text"
-                      value={newAddress.region}
-                      onChange={(e) => setNewAddress({ ...newAddress, region: e.target.value })}
-                      placeholder="Чуйская область"
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Почтовый индекс</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {isUSLocation ? "ZIP / Почтовый индекс *" : "Почтовый индекс"}
+                    </label>
                     <Input
                       type="text"
                       value={newAddress.postalCode}
                       onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
-                      placeholder="720000"
+                      placeholder={isUSLocation ? "60074" : "720000"}
                       className="w-full"
+                      required={isUSLocation}
                     />
                   </div>
 
@@ -971,7 +1104,14 @@ export default function ProfilePage() {
                     <Button
                       onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
                       className="flex-1 bg-brand hover:bg-brand-hover text-white"
-                      disabled={!newAddress.address.trim()}
+                      disabled={
+                        (!isUSLocation && !newAddress.fullAddress.trim()) ||
+                        !newAddress.city.trim() ||
+                        (isUSLocation &&
+                          (!newAddress.street.trim() ||
+                            !newAddress.state.trim() ||
+                            !newAddress.postalCode.trim()))
+                      }
                     >
                       {editingAddress ? "Сохранить изменения" : "Добавить адрес"}
                     </Button>
@@ -980,7 +1120,7 @@ export default function ProfilePage() {
                       onClick={() => {
                         setShowAddressForm(false)
                         setEditingAddress(null)
-                        setNewAddress({ label: "", address: "", city: "", region: "", postalCode: "" })
+                        resetAddressForm()
                       }}
                       className="flex-1"
                     >
