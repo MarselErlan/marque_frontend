@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef, ChangeEvent } from "react"
 import {
   Search,
   Heart,
@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Trash2,
   Edit,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -124,6 +125,12 @@ export default function ProfilePage() {
     markNotificationRead,
     markAllNotificationsRead,
     unreadNotificationCount,
+    phoneNumbers,
+    isLoadingPhones,
+    fetchPhoneNumbers,
+    createPhoneNumber,
+    updatePhoneNumber,
+    deletePhoneNumber,
   } = useProfile()
   
   // Handle logout with redirect
@@ -147,7 +154,10 @@ export default function ProfilePage() {
   const [userName, setUserName] = useState("Анна Ахматова")
   const [phoneNumber, setPhoneNumber] = useState("+996 505 32 53 11")
   const [additionalPhone, setAdditionalPhone] = useState("")
-  const [isClient, setIsClient] = useState(false)
+  const [additionalPhoneId, setAdditionalPhoneId] = useState<number | null>(null)
+  const [isSavingAdditionalPhone, setIsSavingAdditionalPhone] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   
   // Authentication states are now managed by the useAuth hook.
   const [selectedOrder, setSelectedOrder] = useState<UiOrder | null>(null)
@@ -195,6 +205,8 @@ export default function ProfilePage() {
     'KG'
   ).toUpperCase()
   const isUSLocation = userLocation === 'US'
+  const additionalPhonePlaceholder = isUSLocation ? "+1 555 123 4567" : "+996 505 32 53 11"
+  const profileImageUrl = profile?.profile_image ? getImageUrl(profile.profile_image) : null
 
   // Mock notifications data
   const getNotificationDateLabel = (date: Date) => {
@@ -242,8 +254,6 @@ export default function ProfilePage() {
 
   // Check auth status on component mount
   useEffect(() => {
-    setIsClient(true)
-    
     // If loading is finished and user is not logged in, redirect to home
     if (!auth.isLoading && !auth.isLoggedIn) {
       console.log('🔴 Profile: User not logged in, redirecting to home...')
@@ -259,12 +269,34 @@ export default function ProfilePage() {
   }, [auth.isLoading, auth.isLoggedIn, userData, router])
 
   useEffect(() => {
+    if (isLoadingPhones) {
+      return
+    }
+    if (phoneNumbers.length > 0) {
+      const primary = phoneNumbers.find((number) => number.is_primary) ?? phoneNumbers[0]
+      setAdditionalPhone(primary.phone)
+      setAdditionalPhoneId(primary.id)
+    } else {
+      setAdditionalPhone("")
+      setAdditionalPhoneId(null)
+    }
+  }, [phoneNumbers, isLoadingPhones])
+
+  useEffect(() => {
+    if (profile) {
+      setUserName(profile.full_name || profile.name || "")
+      setPhoneNumber(profile.phone)
+    }
+  }, [profile])
+
+  useEffect(() => {
     fetchProfile()
     fetchAddresses()
     fetchPaymentMethods()
     fetchOrders()
     fetchNotifications()
-  }, [fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications])
+    fetchPhoneNumbers()
+  }, [fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications, fetchPhoneNumbers])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
@@ -342,6 +374,64 @@ export default function ProfilePage() {
   const filteredOrders = orders.filter((order) => (orderFilter === "active" ? order.isActive : !order.isActive))
 
   const activeOrdersCount = orders.filter((order) => order.isActive).length
+
+  const handleProfileImageButtonClick = () => {
+    if (isUploadingImage) return
+    fileInputRef.current?.click()
+  }
+
+  const handleProfileImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setIsUploadingImage(true)
+    try {
+      await updateProfile({ profile_image: file })
+    } catch (error) {
+      console.error('Profile image upload failed', error)
+      toast.error('Не удалось загрузить фото профиля')
+    } finally {
+      setIsUploadingImage(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleSaveAdditionalPhone = async () => {
+    const trimmed = additionalPhone.trim()
+    if (!trimmed) {
+      toast.error("Введите дополнительный номер телефона")
+      return
+    }
+    if (!trimmed.startsWith('+')) {
+      toast.error("Добавьте код страны, например +996...")
+      return
+    }
+    setIsSavingAdditionalPhone(true)
+    try {
+      const payload = { phone: trimmed, label: 'Additional', is_primary: true }
+      const success = additionalPhoneId
+        ? await updatePhoneNumber(additionalPhoneId, payload)
+        : await createPhoneNumber(payload)
+      if (success) {
+        setAdditionalPhone(trimmed)
+      }
+    } finally {
+      setIsSavingAdditionalPhone(false)
+    }
+  }
+
+  const handleRemoveAdditionalPhone = async () => {
+    if (!additionalPhoneId) return
+    setIsSavingAdditionalPhone(true)
+    try {
+      const success = await deletePhoneNumber(additionalPhoneId)
+      if (success) {
+        setAdditionalPhone("")
+        setAdditionalPhoneId(null)
+      }
+    } finally {
+      setIsSavingAdditionalPhone(false)
+    }
+  }
 
   const handleAddAddress = async () => {
     if (!isUSLocation && !newAddress.fullAddress.trim()) {
@@ -616,22 +706,48 @@ export default function ProfilePage() {
                 {/* Profile Header */}
                 <div className="flex items-center space-x-6 mb-8">
                   <div className="relative">
-                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
-                      <User className="w-12 h-12 text-gray-400" />
+                    <div className="w-24 h-24 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center border border-gray-200">
+                      {profileImageUrl ? (
+                        <img
+                          src={profileImageUrl}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-12 h-12 text-gray-400" />
+                      )}
                     </div>
-                    <button className="absolute bottom-0 right-0 w-8 h-8 bg-brand rounded-full flex items-center justify-center hover:bg-brand-hover transition-colors">
-                      <Camera className="w-4 h-4 text-white" />
+                    <button
+                      type="button"
+                      onClick={handleProfileImageButtonClick}
+                      disabled={isUploadingImage}
+                      className="absolute bottom-0 right-0 w-9 h-9 bg-brand rounded-full flex items-center justify-center hover:bg-brand-hover transition-colors disabled:opacity-70"
+                    >
+                      {isUploadingImage ? (
+                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4 text-white" />
+                      )}
                     </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleProfileImageChange}
+                    />
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-semibold text-gray-900 mb-1">{userName}</h2>
                     <p className="text-gray-600 text-lg mb-3">{phoneNumber}</p>
                     <Button 
-                      variant="outline" 
+                      variant="outline"
                       size="sm"
+                      onClick={handleProfileImageButtonClick}
                       className="text-brand border-brand hover:bg-brand hover:text-white transition-colors"
+                      disabled={isUploadingImage}
                     >
-                      Редактировать фото
+                      {isUploadingImage ? 'Загрузка...' : 'Редактировать фото'}
                     </Button>
                   </div>
                 </div>
@@ -664,13 +780,59 @@ export default function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       Дополнительный номер телефона
                     </label>
-                    <Input
-                      type="tel"
-                      value={additionalPhone}
-                      onChange={(e) => setAdditionalPhone(e.target.value)}
-                      placeholder="+996 505 32 53 11"
-                      className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
-                    />
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <Input
+                        type="tel"
+                        value={additionalPhone}
+                        onChange={(e) => setAdditionalPhone(e.target.value)}
+                        placeholder={additionalPhonePlaceholder}
+                        className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={handleSaveAdditionalPhone}
+                          disabled={isSavingAdditionalPhone || isLoadingPhones || !additionalPhone.trim()}
+                          className="px-4 sm:px-6"
+                        >
+                          {isSavingAdditionalPhone ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Сохраняем...
+                            </span>
+                          ) : (
+                            additionalPhoneId ? "Обновить" : "Добавить"
+                          )}
+                        </Button>
+                        {additionalPhoneId && (
+                          <Button
+                            variant="outline"
+                            onClick={handleRemoveAdditionalPhone}
+                            disabled={isSavingAdditionalPhone || isLoadingPhones}
+                            className="px-4 sm:px-6"
+                          >
+                            Удалить
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {isLoadingPhones && (
+                      <p className="text-sm text-gray-500 mt-2">Загружаем дополнительные номера...</p>
+                    )}
+                    {!isLoadingPhones && phoneNumbers.length > 1 && (
+                      <div className="mt-3">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">Другие номера</p>
+                        <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                          {phoneNumbers
+                            .filter((number) => number.id !== additionalPhoneId)
+                            .map((number) => (
+                              <li key={number.id}>
+                                {number.phone}
+                                {number.label ? ` • ${number.label}` : ""}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
 
                   {/* Logout Button */}

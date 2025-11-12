@@ -49,8 +49,13 @@ export async function apiRequest<T = any>(
   
   // Set default headers
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     'Accept': 'application/json',
+  }
+
+  const isFormData = fetchOptions.body instanceof FormData
+
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json'
   }
   
   // Add any custom headers from options
@@ -182,7 +187,7 @@ export const authApi = {
       country: string
       currency: string
       currency_code: string
-      last_login: string
+      last_login: string | null
       created_at: string
     }>(API_CONFIG.ENDPOINTS.USER_PROFILE, { requiresAuth: true }),
   
@@ -470,16 +475,29 @@ export const profileApi = {
       created_at: string
     }>(API_CONFIG.ENDPOINTS.USER_PROFILE, { requiresAuth: true }),
   
-  updateProfile: (data: { full_name?: string; profile_image?: string }) =>
-    apiRequest<{
+  updateProfile: (data: { full_name?: string; profile_image?: File | Blob | null }) => {
+    const formData = new FormData()
+    if (typeof data.full_name === 'string') {
+      formData.append('full_name', data.full_name)
+    }
+    if (data.profile_image !== undefined) {
+      if (data.profile_image) {
+        formData.append('profile_image', data.profile_image)
+      } else {
+        formData.append('profile_image', '')
+      }
+    }
+
+    return apiRequest<{
       success: boolean
       message: string
       user: any
     }>(API_CONFIG.ENDPOINTS.USER_PROFILE, {
       method: 'PUT',
       requiresAuth: true,
-      body: JSON.stringify(data),
-    }),
+      body: formData,
+    })
+  },
   
   // Addresses
   getAddresses: () =>
@@ -551,6 +569,60 @@ export const profileApi = {
       success: boolean
       message: string
     }>(`/profile/addresses/${id}`, {
+      method: 'DELETE',
+      requiresAuth: true,
+    }),
+
+  // Phone Numbers
+  getPhoneNumbers: () =>
+    apiRequest<{
+      success: boolean
+      phone_numbers: Array<{
+        id: number
+        label: string | null
+        phone: string
+        is_primary: boolean
+        created_at: string
+        updated_at: string
+      }>
+      total: number
+    }>('/profile/phones', { requiresAuth: true }),
+  
+  createPhoneNumber: (data: {
+    label?: string
+    phone: string
+    is_primary?: boolean
+  }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      phone_number: any
+    }>('/profile/phones', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
+  
+  updatePhoneNumber: (id: number, data: {
+    label?: string
+    phone?: string
+    is_primary?: boolean
+  }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      phone_number: any
+    }>(`/profile/phones/${id}`, {
+      method: 'PATCH',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
+  
+  deletePhoneNumber: (id: number) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(`/profile/phones/${id}`, {
       method: 'DELETE',
       requiresAuth: true,
     }),

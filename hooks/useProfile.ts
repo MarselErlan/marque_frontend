@@ -55,6 +55,15 @@ export interface Notification {
   created_at: string
 }
 
+export interface PhoneNumber {
+  id: number
+  label: string | null
+  phone: string
+  is_primary: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Profile {
   id: number | string
   phone: string
@@ -79,12 +88,14 @@ export const useProfile = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([])
   
   const [isLoadingProfile, setIsLoadingProfile] = useState(false)
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false)
   const [isLoadingPayments, setIsLoadingPayments] = useState(false)
   const [isLoadingOrders, setIsLoadingOrders] = useState(false)
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false)
+  const [isLoadingPhones, setIsLoadingPhones] = useState(false)
   
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
 
@@ -107,7 +118,7 @@ export const useProfile = () => {
   }, [])
 
   // Update Profile
-  const updateProfile = useCallback(async (data: { full_name?: string; profile_image?: string }) => {
+  const updateProfile = useCallback(async (data: { full_name?: string; profile_image?: File | null }) => {
     try {
       const response = await profileApi.updateProfile(data)
       if (response.success) {
@@ -367,6 +378,94 @@ export const useProfile = () => {
     }
   }, [fetchNotifications])
 
+  // Phone Numbers
+  const fetchPhoneNumbers = useCallback(async () => {
+    setIsLoadingPhones(true)
+    try {
+      const data = await profileApi.getPhoneNumbers()
+      if (data.success) {
+        setPhoneNumbers(data.phone_numbers)
+      }
+    } catch (error) {
+      console.error('Error fetching phone numbers:', error)
+      toast.error('Failed to load phone numbers')
+    } finally {
+      setIsLoadingPhones(false)
+    }
+  }, [])
+
+  const createPhoneNumber = useCallback(async (phoneData: {
+    label?: string
+    phone: string
+    is_primary?: boolean
+  }) => {
+    try {
+      const response = await profileApi.createPhoneNumber(phoneData)
+      if (response.success) {
+        toast.success('Phone number added successfully')
+        await fetchPhoneNumbers()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error creating phone number:', error)
+      toast.error('Failed to add phone number')
+      return false
+    }
+  }, [fetchPhoneNumbers])
+
+  const updatePhoneNumber = useCallback(async (id: number, phoneData: {
+    label?: string
+    phone?: string
+    is_primary?: boolean
+  }) => {
+    try {
+      const response = await profileApi.updatePhoneNumber(id, phoneData)
+      if (response.success) {
+        toast.success('Phone number updated successfully')
+        await fetchPhoneNumbers()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error updating phone number:', error)
+      toast.error('Failed to update phone number')
+      return false
+    }
+  }, [fetchPhoneNumbers])
+
+  const deletePhoneNumber = useCallback(async (id: number) => {
+    try {
+      const response = await profileApi.deletePhoneNumber(id)
+      if (response.success) {
+        toast.success('Phone number deleted successfully')
+        await fetchPhoneNumbers()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error deleting phone number:', error)
+      toast.error('Failed to delete phone number')
+      return false
+    }
+  }, [fetchPhoneNumbers])
+
+  useEffect(() => {
+    fetchProfile()
+    fetchAddresses()
+    fetchPaymentMethods()
+    fetchOrders()
+    fetchNotifications()
+    fetchPhoneNumbers()
+  }, [
+    fetchProfile,
+    fetchAddresses,
+    fetchPaymentMethods,
+    fetchOrders,
+    fetchNotifications,
+    fetchPhoneNumbers,
+  ])
+
   return {
     // Profile
     profile,
@@ -403,6 +502,14 @@ export const useProfile = () => {
     fetchNotifications,
     markNotificationRead,
     markAllNotificationsRead,
+    
+    // Phone Numbers
+    phoneNumbers,
+    isLoadingPhones,
+    fetchPhoneNumbers,
+    createPhoneNumber,
+    updatePhoneNumber,
+    deletePhoneNumber,
   }
 }
 
