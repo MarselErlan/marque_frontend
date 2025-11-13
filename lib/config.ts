@@ -46,6 +46,15 @@ export const API_CONFIG = {
     ORDERS_CREATE: '/orders/create',
     ORDERS: '/orders',
     ORDER_DETAIL: '/orders',
+    
+    // Store Manager
+    STORE_MANAGER_DASHBOARD_STATS: '/store-manager/dashboard/stats',
+    STORE_MANAGER_ORDERS: '/store-manager/orders',
+    STORE_MANAGER_ORDER_DETAIL: '/store-manager/orders',
+    STORE_MANAGER_ORDER_STATUS: '/store-manager/orders',
+    STORE_MANAGER_ORDER_CANCEL: '/store-manager/orders',
+    STORE_MANAGER_ORDER_RESUME: '/store-manager/orders',
+    STORE_MANAGER_REVENUE_ANALYTICS: '/store-manager/revenue/analytics',
   }
 } as const
 

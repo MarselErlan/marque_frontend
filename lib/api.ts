@@ -832,6 +832,189 @@ export const ordersApi = {
     }),
 }
 
+// Store Manager API
+export const storeManagerApi = {
+  // Dashboard Stats
+  getDashboardStats: (market?: string) =>
+    apiRequest<{
+      success: boolean
+      today_orders_count: number
+      all_orders_count: number
+      active_orders_count: number
+      market: string
+    }>(API_CONFIG.ENDPOINTS.STORE_MANAGER_DASHBOARD_STATS, {
+      requiresAuth: true,
+      params: market ? { market } : undefined,
+    }),
+  
+  // Orders List
+  getOrders: (params?: {
+    market?: string
+    status?: string
+    search?: string
+    limit?: number
+    offset?: number
+  }) =>
+    apiRequest<{
+      success: boolean
+      orders: Array<{
+        id: number
+        order_number: string
+        status: string
+        status_display: string
+        status_color: string
+        customer_name: string
+        customer_phone: string
+        delivery_address: string
+        delivery_city: string | null
+        total_amount: number
+        currency: string
+        amount: string
+        order_date: string
+        date: string
+        order_date_formatted: string
+        items_count: number
+        items: Array<{
+          id: number
+          product_name: string
+          product_brand: string
+          size: string
+          color: string
+          price: number
+          quantity: number
+          subtotal: number
+          image_url: string | null
+        }>
+      }>
+      total: number
+      limit: number
+      offset: number
+      has_more: boolean
+    }>(API_CONFIG.ENDPOINTS.STORE_MANAGER_ORDERS, {
+      requiresAuth: true,
+      params: params as any,
+    }),
+  
+  // Order Detail
+  getOrderDetail: (orderId: number, market?: string) =>
+    apiRequest<{
+      success: boolean
+      order: {
+        id: number
+        order_number: string
+        status: string
+        status_display: string
+        status_color: string
+        customer_name: string
+        customer_phone: string
+        customer_email: string | null
+        delivery_address: string
+        delivery_city: string | null
+        delivery_state: string | null
+        delivery_postal_code: string | null
+        delivery_country: string
+        delivery_notes: string | null
+        payment_method: string
+        payment_status: string
+        card_type: string | null
+        card_last_four: string | null
+        subtotal: number
+        shipping_cost: number
+        tax: number
+        total_amount: number
+        currency: string
+        currency_code: string
+        amount: string
+        order_date: string
+        order_date_formatted: string
+        confirmed_date: string | null
+        shipped_date: string | null
+        delivered_date: string | null
+        items_count: number
+        items: Array<{
+          id: number
+          product_name: string
+          product_brand: string
+          size: string
+          color: string
+          price: number
+          quantity: number
+          subtotal: number
+          image_url: string | null
+        }>
+      }
+    }>(`${API_CONFIG.ENDPOINTS.STORE_MANAGER_ORDER_DETAIL}/${orderId}`, {
+      requiresAuth: true,
+      params: market ? { market } : undefined,
+    }),
+  
+  // Update Order Status
+  updateOrderStatus: (orderId: number, status: string) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      order: any
+    }>(`${API_CONFIG.ENDPOINTS.STORE_MANAGER_ORDER_STATUS}/${orderId}/status`, {
+      method: 'PATCH',
+      requiresAuth: true,
+      body: JSON.stringify({ status }),
+    }),
+  
+  // Cancel Order
+  cancelOrder: (orderId: number) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(`${API_CONFIG.ENDPOINTS.STORE_MANAGER_ORDER_CANCEL}/${orderId}/cancel`, {
+      method: 'POST',
+      requiresAuth: true,
+    }),
+  
+  // Resume Order
+  resumeOrder: (orderId: number) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(`${API_CONFIG.ENDPOINTS.STORE_MANAGER_ORDER_RESUME}/${orderId}/resume`, {
+      method: 'POST',
+      requiresAuth: true,
+    }),
+  
+  // Revenue Analytics
+  getRevenueAnalytics: (market?: string) =>
+    apiRequest<{
+      success: boolean
+      total_revenue: string
+      revenue_change: string
+      total_orders: number
+      orders_change: string
+      average_order: string
+      average_change: string
+      currency: string
+      currency_code: string
+      hourly_revenue: Array<{
+        time: string
+        amount: string
+        is_highlighted?: boolean
+      }>
+      recent_orders: Array<{
+        id: string
+        order_number: string
+        status: string
+        status_color: string
+        phone: string
+        address: string
+        amount: string
+        created_at: string
+        time: string
+        date: string
+      }>
+    }>(API_CONFIG.ENDPOINTS.STORE_MANAGER_REVENUE_ANALYTICS, {
+      requiresAuth: true,
+      params: market ? { market } : undefined,
+    }),
+}
+
 // Export for convenience
 export { ApiError }
 
