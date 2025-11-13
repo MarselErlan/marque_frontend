@@ -141,10 +141,13 @@ export const useProfile = () => {
       const data = await profileApi.getAddresses()
       if (data.success) {
         setAddresses(data.addresses)
+        return data.addresses
       }
+      return []
     } catch (error) {
       console.error('Error fetching addresses:', error)
       toast.error('Failed to load addresses')
+      return []
     } finally {
       setIsLoadingAddresses(false)
     }

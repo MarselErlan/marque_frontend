@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2 } from "lucide-react"
+import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useCart } from "@/hooks/useCart"
+import { useProfile, Address } from "@/hooks/useProfile"
 import { getImageUrl } from "@/lib/utils"
 import { ordersApi, authApi } from "@/lib/api"
 import { toast } from "@/lib/toast"
@@ -17,15 +18,30 @@ export default function CartPage() {
   const router = useRouter()
   const auth = useAuth()
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart()
+  const { addresses, fetchAddresses, createAddress, isLoadingAddresses } = useProfile()
 
   const [isClient, setIsClient] = useState(false)
 
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState("21 июл")
   
   const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "success" | null>(null)
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
   const [checkoutAddress, setCheckoutAddress] = useState("")
+  const [showAddressForm, setShowAddressForm] = useState(false)
+  const [newAddress, setNewAddress] = useState({
+    title: "",
+    full_address: "",
+    street: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    building: "",
+    apartment: "",
+    is_default: false,
+  })
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
+  const [isCreatingAddress, setIsCreatingAddress] = useState(false)
   const [orderNumber, setOrderNumber] = useState<string>("")
   const [orderTotal, setOrderTotal] = useState<number>(0)
   
@@ -45,15 +61,71 @@ export default function CartPage() {
   }, 0)
   const total = subtotal + deliveryCost
 
-  const handleCheckout = () => {
-    auth.requireAuth(() => {
+  const handleCheckout = async () => {
+    auth.requireAuth(async () => {
+      // Fetch addresses when checkout starts
+      const fetchedAddresses = await fetchAddresses()
+      // Auto-select default address if available
+      if (fetchedAddresses && fetchedAddresses.length > 0) {
+        const defaultAddress = fetchedAddresses.find(addr => addr.is_default) || fetchedAddresses[0]
+        setSelectedAddressId(defaultAddress.id)
+        setCheckoutAddress(defaultAddress.full_address)
+      }
       setCheckoutStep("address")
     })
   }
 
+  const handleAddressSelect = (address: Address) => {
+    setSelectedAddressId(address.id)
+    setCheckoutAddress(address.full_address)
+    setShowAddressForm(false)
+  }
+
+  const handleCreateAddress = async () => {
+    if (!newAddress.full_address.trim()) {
+      toast.error('Введите адрес доставки')
+      return
+    }
+    if (!newAddress.city.trim()) {
+      toast.error('Введите город')
+      return
+    }
+
+    setIsCreatingAddress(true)
+    try {
+      const success = await createAddress({
+        title: newAddress.title || 'Дом',
+        full_address: newAddress.full_address,
+        street: newAddress.street || undefined,
+        city: newAddress.city,
+        state: newAddress.state || undefined,
+        postal_code: newAddress.postal_code || undefined,
+        building: newAddress.building || undefined,
+        apartment: newAddress.apartment || undefined,
+        is_default: newAddress.is_default,
+      })
+
+      if (success) {
+        const updatedAddresses = await fetchAddresses()
+        setShowAddressForm(false)
+        // Select the newly created address (last one in the list)
+        if (updatedAddresses && updatedAddresses.length > 0) {
+          const latest = updatedAddresses[updatedAddresses.length - 1]
+          handleAddressSelect(latest)
+        }
+      }
+    } catch (error) {
+      console.error('Error creating address:', error)
+    } finally {
+      setIsCreatingAddress(false)
+    }
+  }
+
   const handleAddressSubmit = () => {
-    if (checkoutAddress) {
+    if (selectedAddressId && checkoutAddress) {
       setCheckoutStep("payment")
+    } else if (!addresses || addresses.length === 0) {
+      toast.error('Пожалуйста, выберите или создайте адрес доставки')
     }
   }
 
@@ -74,11 +146,18 @@ export default function CartPage() {
       // Get user profile for customer info
       const profile = await authApi.getProfile()
 
+      // Get selected address details
+      const selectedAddress = addresses.find(addr => addr.id === selectedAddressId)
+
       // Create order via API
       const order = await ordersApi.create({
         customer_name: profile.full_name || profile.name || 'Покупатель',
         customer_phone: profile.phone,
         delivery_address: checkoutAddress,
+        delivery_city: selectedAddress?.city || undefined,
+        delivery_state: selectedAddress?.state || undefined,
+        delivery_postal_code: selectedAddress?.postal_code || undefined,
+        shipping_address_id: selectedAddressId || undefined,
         payment_method: checkoutPaymentMethod,
         use_cart: true
       })
@@ -327,36 +406,259 @@ export default function CartPage() {
       </footer>
 
       {/* Address Selection Modal */}
-      <Dialog open={checkoutStep === "address"} onOpenChange={() => setCheckoutStep(null)}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={checkoutStep === "address"} onOpenChange={() => {
+        setCheckoutStep(null)
+        setShowAddressForm(false)
+        setSelectedAddressId(null)
+        setCheckoutAddress("")
+      }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-lg font-semibold">Выберите адрес доставки</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Input
-                placeholder="Введите адрес"
-                value={checkoutAddress}
-                onChange={(e) => setCheckoutAddress(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Input placeholder="Квартира, офис" className="w-full" />
-            </div>
-            <div>
-              <Input placeholder="Подъезд" className="w-full" />
-            </div>
-            <div>
-              <Input placeholder="Этаж" className="w-full" />
-            </div>
-            <Button
-              className="w-full bg-brand hover:bg-brand-hover text-white"
-              onClick={handleAddressSubmit}
-              disabled={!checkoutAddress}
-            >
-              Продолжить
-            </Button>
+            {isLoadingAddresses ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-brand" />
+              </div>
+            ) : showAddressForm ? (
+              // Address Creation Form
+              <div className="space-y-4">
+                <Input
+                  placeholder="Название (например: Дом, Работа)"
+                  value={newAddress.title}
+                  onChange={(e) => setNewAddress({ ...newAddress, title: e.target.value })}
+                  className="w-full"
+                />
+                <Input
+                  placeholder="Полный адрес *"
+                  value={newAddress.full_address}
+                  onChange={(e) => setNewAddress({ ...newAddress, full_address: e.target.value })}
+                  className="w-full"
+                  required
+                />
+                <Input
+                  placeholder="Город *"
+                  value={newAddress.city}
+                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                  className="w-full"
+                  required
+                />
+                <Input
+                  placeholder="Улица (опционально)"
+                  value={newAddress.street}
+                  onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                  className="w-full"
+                />
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Дом/Здание"
+                    value={newAddress.building}
+                    onChange={(e) => setNewAddress({ ...newAddress, building: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Input
+                    placeholder="Квартира/Офис"
+                    value={newAddress.apartment}
+                    onChange={(e) => setNewAddress({ ...newAddress, apartment: e.target.value })}
+                    className="flex-1"
+                  />
+                </div>
+                <Input
+                  placeholder="Штат/Регион (опционально)"
+                  value={newAddress.state}
+                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                  className="w-full"
+                />
+                <Input
+                  placeholder="Почтовый индекс (опционально)"
+                  value={newAddress.postal_code}
+                  onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })}
+                  className="w-full"
+                />
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_default"
+                    checked={newAddress.is_default}
+                    onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
+                    className="w-4 h-4 text-brand"
+                  />
+                  <label htmlFor="is_default" className="text-sm text-gray-600">
+                    Сделать адресом по умолчанию
+                  </label>
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setShowAddressForm(false)
+                      setNewAddress({
+                        title: "",
+                        full_address: "",
+                        street: "",
+                        city: "",
+                        state: "",
+                        postal_code: "",
+                        building: "",
+                        apartment: "",
+                        is_default: false,
+                      })
+                    }}
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    className="flex-1 bg-brand hover:bg-brand-hover text-white"
+                    onClick={handleCreateAddress}
+                    disabled={isCreatingAddress || !newAddress.full_address.trim() || !newAddress.city.trim()}
+                  >
+                    {isCreatingAddress ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Создание...
+                      </>
+                    ) : (
+                      'Создать адрес'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : addresses && addresses.length > 0 ? (
+              // Address Selection List
+              <div className="space-y-3">
+                {addresses.map((address) => (
+                  <button
+                    key={address.id}
+                    onClick={() => handleAddressSelect(address)}
+                    className={`w-full text-left p-4 border-2 rounded-lg transition-colors ${
+                      selectedAddressId === address.id
+                        ? 'border-brand bg-brand-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <MapPin className="w-4 h-4 text-gray-500" />
+                          <span className="font-semibold text-gray-900">{address.title}</span>
+                          {address.is_default && (
+                            <span className="text-xs bg-brand-100 text-brand px-2 py-0.5 rounded">По умолчанию</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600">{address.full_address}</p>
+                        {address.city && (
+                          <p className="text-xs text-gray-500 mt-1">{address.city}</p>
+                        )}
+                      </div>
+                      {selectedAddressId === address.id && (
+                        <Check className="w-5 h-5 text-brand" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowAddressForm(true)}
+                >
+                  + Добавить новый адрес
+                </Button>
+                <Button
+                  className="w-full bg-brand hover:bg-brand-hover text-white"
+                  onClick={handleAddressSubmit}
+                  disabled={!selectedAddressId}
+                >
+                  Продолжить
+                </Button>
+              </div>
+            ) : (
+              // No addresses - show creation form
+              <div className="space-y-4">
+                <p className="text-center text-gray-600 text-sm">
+                  У вас нет сохраненных адресов. Создайте адрес для доставки.
+                </p>
+                <Input
+                  placeholder="Название (например: Дом, Работа)"
+                  value={newAddress.title}
+                  onChange={(e) => setNewAddress({ ...newAddress, title: e.target.value })}
+                  className="w-full"
+                />
+                <Input
+                  placeholder="Полный адрес *"
+                  value={newAddress.full_address}
+                  onChange={(e) => setNewAddress({ ...newAddress, full_address: e.target.value })}
+                  className="w-full"
+                  required
+                />
+                <Input
+                  placeholder="Город *"
+                  value={newAddress.city}
+                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                  className="w-full"
+                  required
+                />
+                <Input
+                  placeholder="Улица (опционально)"
+                  value={newAddress.street}
+                  onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                  className="w-full"
+                />
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Дом/Здание"
+                    value={newAddress.building}
+                    onChange={(e) => setNewAddress({ ...newAddress, building: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Input
+                    placeholder="Квартира/Офис"
+                    value={newAddress.apartment}
+                    onChange={(e) => setNewAddress({ ...newAddress, apartment: e.target.value })}
+                    className="flex-1"
+                  />
+                </div>
+                <Input
+                  placeholder="Штат/Регион (опционально)"
+                  value={newAddress.state}
+                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                  className="w-full"
+                />
+                <Input
+                  placeholder="Почтовый индекс (опционально)"
+                  value={newAddress.postal_code}
+                  onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })}
+                  className="w-full"
+                />
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_default_new"
+                    checked={newAddress.is_default}
+                    onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
+                    className="w-4 h-4 text-brand"
+                  />
+                  <label htmlFor="is_default_new" className="text-sm text-gray-600">
+                    Сделать адресом по умолчанию
+                  </label>
+                </div>
+                <Button
+                  className="w-full bg-brand hover:bg-brand-hover text-white"
+                  onClick={handleCreateAddress}
+                  disabled={isCreatingAddress || !newAddress.full_address.trim() || !newAddress.city.trim()}
+                >
+                  {isCreatingAddress ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Создание...
+                    </>
+                  ) : (
+                    'Создать адрес и продолжить'
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

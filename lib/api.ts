@@ -794,7 +794,10 @@ export const ordersApi = {
     customer_email?: string
     delivery_address: string
     delivery_city?: string
+    delivery_state?: string
+    delivery_postal_code?: string
     delivery_notes?: string
+    shipping_address_id?: number
     payment_method: string
     use_cart?: boolean
   }) =>
