@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-const removeTrailingSlash = (value: string) => value.replace(/\/+$, '')
+const removeTrailingSlash = (value: string) => value.replace(/\/+$/, '')
 
 const ensureSecureProtocol = (url: string) => {
   if (!url) return url
