@@ -193,7 +193,7 @@ export default function AdminDashboard() {
     dailyReport: true,
     deliveryErrors: false,
   })
-  
+
   // Real-time updates (polling)
   const [enablePolling, setEnablePolling] = useState(true)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -219,6 +219,7 @@ export default function AdminDashboard() {
   // Track last checked auth state to prevent redundant checks
   const lastCheckedAuthStateRef = useRef<{ isLoading: boolean; isLoggedIn: boolean } | null>(null)
   const authStateRef = useRef({ isLoading: auth.isLoading, isLoggedIn: auth.isLoggedIn })
+  const hasCheckedOnceRef = useRef(false)
   
   // Update auth state ref whenever it changes
   useEffect(() => {
@@ -238,6 +239,7 @@ export default function AdminDashboard() {
     if (!isLoggedIn || isLoading) {
       setIsCheckingManagerStatus(false)
       setManagerStatus(null)
+      hasCheckedOnceRef.current = false
       return
     }
     
@@ -253,6 +255,9 @@ export default function AdminDashboard() {
       } else if (!data.is_active) {
         setManagerStatusError('Ваш аккаунт менеджера неактивен')
       }
+      
+      // Only mark as checked after successful completion
+      hasCheckedOnceRef.current = true
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Ошибка проверки статуса менеджера'
       setManagerStatusError(errorMessage)
@@ -261,16 +266,18 @@ export default function AdminDashboard() {
       if (error instanceof ApiError && error.message.includes('Authentication')) {
         setManagerStatus(null)
       }
+      // Don't mark as checked if there was an error - allow retry
+      hasCheckedOnceRef.current = false
     } finally {
       setIsCheckingManagerStatus(false)
       isCheckingManagerRef.current = false
     }
   }, []) // No dependencies - reads from ref
   
-  // Check manager status on mount and when auth changes
+  // Check manager status on mount and when auth changes - ONLY ONCE per auth state change
   useEffect(() => {
-    // Skip if already checking
-    if (isCheckingManagerRef.current) {
+    // Skip if already checking or if checking status
+    if (isCheckingManagerRef.current || isCheckingManagerStatus) {
       return
     }
     
@@ -282,24 +289,27 @@ export default function AdminDashboard() {
       lastState.isLoading !== currentAuthState.isLoading || 
       lastState.isLoggedIn !== currentAuthState.isLoggedIn
     
-    // Only check if:
-    // 1. Auth is loaded
-    // 2. User is logged in
-    // 3. Auth state has actually changed
-    if (
-      !auth.isLoading && 
-      auth.isLoggedIn && 
-      authStateChanged
-    ) {
-      lastCheckedAuthStateRef.current = currentAuthState
-      checkManagerStatus()
-    } else if (!auth.isLoading && !auth.isLoggedIn && lastState?.isLoggedIn) {
-      // Reset manager status if user logged out (only if they were previously logged in)
+    // If auth state hasn't changed, do nothing
+    if (!authStateChanged) {
+      return
+    }
+    
+    // Update the last checked state
+    lastCheckedAuthStateRef.current = currentAuthState
+    
+    // Handle logout case
+    if (!auth.isLoading && !auth.isLoggedIn) {
       setManagerStatus(null)
-      lastCheckedAuthStateRef.current = currentAuthState
+      hasCheckedOnceRef.current = false
+      return
+    }
+    
+    // Handle login case - only check if auth is loaded and user is logged in and we haven't checked yet
+    if (!auth.isLoading && auth.isLoggedIn && !hasCheckedOnceRef.current) {
+      checkManagerStatus()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.isLoading, auth.isLoggedIn]) // checkManagerStatus intentionally omitted - it's stable
+  }, [auth.isLoading, auth.isLoggedIn]) // isCheckingManagerStatus and checkManagerStatus intentionally omitted
   
   // Fetch dashboard stats
   const fetchDashboardStats = useCallback(async () => {
@@ -525,7 +535,7 @@ export default function AdminDashboard() {
       // selectedOrderStatus is already a backend status value (pending, confirmed, etc.)
       await storeManagerApi.updateOrderStatus(selectedOrder.id, selectedOrderStatus)
       toast.success('Статус заказа обновлен')
-      setIsStatusModalOpen(false)
+    setIsStatusModalOpen(false)
       // Reload order detail
       await fetchOrderDetail(selectedOrder.id)
       // Reload orders list if we're on that view
@@ -553,7 +563,7 @@ export default function AdminDashboard() {
     try {
       await storeManagerApi.cancelOrder(selectedOrder.id)
       toast.success('Заказ отменен')
-      setIsCancelConfirmOpen(false)
+    setIsCancelConfirmOpen(false)
       // Reload order detail
       await fetchOrderDetail(selectedOrder.id)
       // Reload orders list if we're on that view
@@ -581,7 +591,7 @@ export default function AdminDashboard() {
     try {
       await storeManagerApi.resumeOrder(selectedOrder.id)
       toast.success('Заказ возобновлен')
-      setIsResumeConfirmOpen(false)
+    setIsResumeConfirmOpen(false)
       // Reload order detail
       await fetchOrderDetail(selectedOrder.id)
       // Reload orders list if we're on that view
@@ -615,7 +625,7 @@ export default function AdminDashboard() {
     setIsLogoutConfirmOpen(false)
     router.push('/')
   }
-  
+
   // Handle notification toggle
   const handleNotificationToggle = (setting: string, value: boolean) => {
     setNotificationSettings((prev) => ({
@@ -761,64 +771,64 @@ export default function AdminDashboard() {
             </Card>
           ) : (
             <>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView("orders")}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <ShoppingBag className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Сегодняшние заказы</h3>
-                        <p className="text-sm text-gray-500">Список заказов на последние 24 часа</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView("orders")}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Сегодняшние заказы</h3>
+                    <p className="text-sm text-gray-500">Список заказов на последние 24 часа</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                         {dashboardStats?.active_orders_count || 0}
-                      </div>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setCurrentView("all-orders")}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Package className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Управление заказами</h3>
-                        <p className="text-sm text-gray-500">Список всех заказов за все время</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
+          <Card
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setCurrentView("all-orders")}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Package className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Управление заказами</h3>
+                    <p className="text-sm text-gray-500">Список всех заказов за все время</p>
+                  </div>
+                </div>
+                <div className="text-right">
                       <div className="text-lg font-bold text-gray-900">{dashboardStats?.all_orders_count || 0}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView("revenue")}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Доходы</h3>
-                        <p className="text-sm text-gray-500">Информация о доходах за все время</p>
-                      </div>
-                    </div>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView("revenue")}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Доходы</h3>
+                    <p className="text-sm text-gray-500">Информация о доходах за все время</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
             </>
           )}
         </div>
@@ -860,92 +870,92 @@ export default function AdminDashboard() {
             </Card>
           ) : revenueData ? (
             <>
-              <div className="space-y-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
                         <h3 className="text-2xl font-bold text-gray-900">{revenueData.total_revenue}</h3>
                         <p className={`text-sm ${revenueData.revenue_change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                           {revenueData.revenue_change}
                         </p>
-                        <p className="text-sm text-gray-500">Доход за сегодня</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    <p className="text-sm text-gray-500">Доход за сегодня</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
                         <h3 className="text-2xl font-bold text-gray-900">{revenueData.total_orders}</h3>
                         <p className={`text-sm ${revenueData.orders_change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                           {revenueData.orders_change}
                         </p>
-                        <p className="text-sm text-gray-500">Кол-во заказов</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    <p className="text-sm text-gray-500">Кол-во заказов</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
                         <h3 className="text-2xl font-bold text-gray-900">{revenueData.average_order}</h3>
                         <p className={`text-sm ${revenueData.average_change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                           {revenueData.average_change}
                         </p>
-                        <p className="text-sm text-gray-500">Средний чек</p>
+                    <p className="text-sm text-gray-500">Средний чек</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4">Сегодняшний доход по часам</h3>
+            <div className="space-y-2">
+                  {revenueData.hourly_revenue.map((hour, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                        hour.is_highlighted ? "bg-purple-500 text-white" : "bg-white"
+                  }`}
+                >
+                  <span className="font-medium">{hour.time}</span>
+                  <span className="font-semibold">{hour.amount}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4">Последние заказы</h3>
+            <div className="space-y-3">
+                  {revenueData.recent_orders.map((order, index) => (
+                <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h4 className="font-semibold text-gray-900">Заказ {order.id}</h4>
+                              <Badge className={`${order.status_color} text-xs`}>{order.status}</Badge>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                              {order.time} • {order.phone} • {order.address}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-gray-900">{order.amount}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Сегодняшний доход по часам</h3>
-                <div className="space-y-2">
-                  {revenueData.hourly_revenue.map((hour, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        hour.is_highlighted ? "bg-purple-500 text-white" : "bg-white"
-                      }`}
-                    >
-                      <span className="font-medium">{hour.time}</span>
-                      <span className="font-semibold">{hour.amount}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Последние заказы</h3>
-                <div className="space-y-3">
-                  {revenueData.recent_orders.map((order, index) => (
-                    <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h4 className="font-semibold text-gray-900">Заказ {order.id}</h4>
-                              <Badge className={`${order.status_color} text-xs`}>{order.status}</Badge>
-                            </div>
-                            <p className="text-sm text-gray-500">
-                              {order.time} • {order.phone} • {order.address}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-gray-900">{order.amount}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+              ))}
+            </div>
+          </div>
             </>
           ) : null}
         </div>
@@ -1030,48 +1040,48 @@ export default function AdminDashboard() {
             </Card>
           ) : (
             <>
-              {filteredOrders.map((order) => (
-                <Card
-                  key={order.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => handleOrderClick(order)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-1">
+          {filteredOrders.map((order) => (
+            <Card
+              key={order.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleOrderClick(order)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-1">
                           <h3 className="font-semibold text-gray-900">Заказ {order.order_number}</h3>
                           <Badge className={`${order.status_color} text-xs`}>{order.status_display}</Badge>
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {order.date} • {order.customer_phone}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">{order.amount}</p>
-                      </div>
                     </div>
+                    <p className="text-sm text-gray-500">
+                          {order.date} • {order.customer_phone}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">{order.amount}</p>
+                  </div>
+                </div>
 
-                    <div className="flex items-center space-x-2 mb-3">
-                      {order.items.slice(0, 8).map((item, index) => (
-                        <img
-                          key={index}
+                <div className="flex items-center space-x-2 mb-3">
+                  {order.items.slice(0, 8).map((item, index) => (
+                    <img
+                      key={index}
                           src={getImageUrl(item.image_url || "") || "/images/product_placeholder_adobe.png"}
                           alt={item.product_name}
-                          className="w-8 h-8 object-cover rounded"
-                        />
-                      ))}
-                      {order.items.length > 8 && (
-                        <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                          <span className="text-xs text-gray-500">+{order.items.length - 8}</span>
-                        </div>
-                      )}
+                      className="w-8 h-8 object-cover rounded"
+                    />
+                  ))}
+                  {order.items.length > 8 && (
+                    <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                      <span className="text-xs text-gray-500">+{order.items.length - 8}</span>
                     </div>
+                  )}
+                </div>
 
                     <p className="text-sm text-gray-500">{order.delivery_address}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              </CardContent>
+            </Card>
+          ))}
               
               {ordersHasMore && (
                 <Button
@@ -1211,48 +1221,48 @@ export default function AdminDashboard() {
             </Card>
           ) : (
             <>
-              {filteredOrders.map((order) => (
-                <Card
-                  key={order.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => handleOrderClick(order)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-1">
+          {filteredOrders.map((order) => (
+            <Card
+              key={order.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleOrderClick(order)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-1">
                           <h3 className="font-semibold text-gray-900">Заказ {order.order_number}</h3>
                           <Badge className={`${order.status_color} text-xs`}>{order.status_display}</Badge>
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {order.date} • {order.customer_phone}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">{order.amount}</p>
-                      </div>
                     </div>
+                    <p className="text-sm text-gray-500">
+                          {order.date} • {order.customer_phone}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">{order.amount}</p>
+                  </div>
+                </div>
 
-                    <div className="flex items-center space-x-2 mb-3">
-                      {order.items.slice(0, 8).map((item, index) => (
-                        <img
-                          key={index}
+                <div className="flex items-center space-x-2 mb-3">
+                  {order.items.slice(0, 8).map((item, index) => (
+                    <img
+                      key={index}
                           src={getImageUrl(item.image_url || "") || "/images/product_placeholder_adobe.png"}
                           alt={item.product_name}
-                          className="w-8 h-8 object-cover rounded"
-                        />
-                      ))}
-                      {order.items.length > 8 && (
-                        <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                          <span className="text-xs text-gray-500">+{order.items.length - 8}</span>
-                        </div>
-                      )}
+                      className="w-8 h-8 object-cover rounded"
+                    />
+                  ))}
+                  {order.items.length > 8 && (
+                    <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                      <span className="text-xs text-gray-500">+{order.items.length - 8}</span>
                     </div>
+                  )}
+                </div>
 
                     <p className="text-sm text-gray-500">{order.delivery_address}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              </CardContent>
+            </Card>
+          ))}
               
               {ordersHasMore && (
                 <Button
@@ -1341,62 +1351,62 @@ export default function AdminDashboard() {
             </div>
           ) : selectedOrder ? (
             <>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Состав заказа</h3>
-                <div className="space-y-4">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4">Состав заказа</h3>
+            <div className="space-y-4">
                   {selectedOrder.items?.map((item: any, index: number) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <img
+                <div key={index} className="flex items-start space-x-3">
+                  <img
                         src={getImageUrl(item.image_url || "") || "/images/product_placeholder_adobe.png"}
                         alt={item.product_name}
-                        className="w-15 h-15 object-cover rounded"
-                      />
-                      <div className="flex-1">
+                    className="w-15 h-15 object-cover rounded"
+                  />
+                  <div className="flex-1">
                         <h4 className="font-medium text-gray-900">{item.product_name}</h4>
-                        {item.size && <p className="text-sm text-gray-500">Размер {item.size}</p>}
-                        {item.color && <p className="text-sm text-gray-500">Цвет {item.color}</p>}
+                    {item.size && <p className="text-sm text-gray-500">Размер {item.size}</p>}
+                    {item.color && <p className="text-sm text-gray-500">Цвет {item.color}</p>}
                         <p className="text-sm font-medium text-gray-900">
                           {item.price} {selectedOrder.currency} x {item.quantity} = {item.subtotal} {selectedOrder.currency}
                         </p>
-                      </div>
-                    </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Телефон</span>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Телефон</span>
                   <span className="font-medium">{selectedOrder.customer_phone}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Адрес</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Адрес</span>
                   <span className="font-medium">{selectedOrder.delivery_address}</span>
-                </div>
+            </div>
                 {selectedOrder.delivery_city && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Город</span>
                     <span className="font-medium">{selectedOrder.delivery_city}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Дата и время</span>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Дата и время</span>
                   <span className="font-medium">{selectedOrder.order_date_formatted || selectedOrder.order_date}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Статус</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Статус</span>
                   <Badge className={`${selectedOrder.status_color} text-xs`}>{selectedOrder.status_display}</Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Сумма</span>
                   <span className="font-medium">{selectedOrder.amount || `${selectedOrder.total_amount} ${selectedOrder.currency}`}</span>
-                </div>
-              </div>
+            </div>
+          </div>
 
-              <div className="space-y-3 pt-4">
-                <Button
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
-                  onClick={() => setIsStatusModalOpen(true)}
+          <div className="space-y-3 pt-4">
+            <Button
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              onClick={() => setIsStatusModalOpen(true)}
                   disabled={isUpdatingStatus}
                 >
                   {isUpdatingStatus ? (
@@ -1407,13 +1417,13 @@ export default function AdminDashboard() {
                   ) : (
                     'Изменить статус'
                   )}
-                </Button>
+            </Button>
 
                 {(selectedOrder.status === "cancelled" || selectedOrder.status_display === "ОТМЕНЕН") ? (
-                  <Button
-                    variant="outline"
-                    className="w-full text-purple-600 border-purple-600 hover:bg-purple-50 bg-transparent"
-                    onClick={() => setIsResumeConfirmOpen(true)}
+              <Button
+                variant="outline"
+                className="w-full text-purple-600 border-purple-600 hover:bg-purple-50 bg-transparent"
+                onClick={() => setIsResumeConfirmOpen(true)}
                     disabled={isResumingOrder}
                   >
                     {isResumingOrder ? (
@@ -1424,12 +1434,12 @@ export default function AdminDashboard() {
                     ) : (
                       'Возобновить заказ'
                     )}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="w-full text-red-600 border-red-600 hover:bg-red-50 bg-transparent"
-                    onClick={() => setIsCancelConfirmOpen(true)}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full text-red-600 border-red-600 hover:bg-red-50 bg-transparent"
+                onClick={() => setIsCancelConfirmOpen(true)}
                     disabled={isCancellingOrder || selectedOrder.status === "delivered"}
                   >
                     {isCancellingOrder ? (
@@ -1440,9 +1450,9 @@ export default function AdminDashboard() {
                     ) : (
                       'Отменить заказ'
                     )}
-                  </Button>
-                )}
-              </div>
+              </Button>
+            )}
+          </div>
             </>
           ) : null}
         </div>
