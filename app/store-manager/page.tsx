@@ -738,7 +738,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!auth.isLoading && !auth.isLoggedIn && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true
-      router.push('/admin/login')
+      router.push('/store-manager/login')
     }
     // Reset redirect flag if user logs in
     if (auth.isLoggedIn) {
@@ -774,7 +774,7 @@ export default function AdminDashboard() {
                 className="w-full bg-purple-500 hover:bg-purple-600 text-white"
                 onClick={async () => {
                   await auth.handleLogout()
-                  router.push('/admin/login')
+                  router.push('/store-manager/login')
                 }}
               >
                 Выйти и войти с другим аккаунтом

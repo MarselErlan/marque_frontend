@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
           const managerStatus = await storeManagerApi.checkManagerStatus()
           if (managerStatus.is_manager && managerStatus.is_active) {
             // Already logged in and is manager, redirect to dashboard
-            router.push('/admin')
+            router.push('/store-manager')
           } else {
             // Logged in but not a manager
             setLoginError('Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.')
@@ -139,7 +139,7 @@ export default function AdminLoginPage() {
           // Success! Redirect to admin dashboard
           toast.success('Вход выполнен успешно')
           // Use window.location for a hard redirect to ensure clean state
-          window.location.href = '/admin'
+          window.location.href = '/store-manager'
         } else {
           // User is not a manager
           setLoginError('Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.')
