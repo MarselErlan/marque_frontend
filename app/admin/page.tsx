@@ -73,7 +73,7 @@ export default function AdminDashboard() {
     can_manage_us: boolean
     is_active: boolean
   } | null>(null)
-  const [isCheckingManagerStatus, setIsCheckingManagerStatus] = useState(true)
+  const [isCheckingManagerStatus, setIsCheckingManagerStatus] = useState(false)
   const [managerStatusError, setManagerStatusError] = useState<string | null>(null)
   
   // Market management
