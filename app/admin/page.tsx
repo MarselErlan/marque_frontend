@@ -267,13 +267,17 @@ export default function AdminDashboard() {
       clearTimeout(timeoutId)
       console.log('✅ checkManagerStatus: API response received', data)
       
-      setManagerStatus(data)
-      
-      if (!data.is_manager) {
-        setManagerStatusError('Вы не являетесь менеджером магазина')
-      } else if (!data.is_active) {
-        setManagerStatusError('Ваш аккаунт менеджера неактивен')
-      }
+      // Use setTimeout to defer state update and avoid React error #300
+      // This ensures the state update happens after the current render cycle
+      setTimeout(() => {
+        setManagerStatus(data)
+        
+        if (!data.is_manager) {
+          setManagerStatusError('Вы не являетесь менеджером магазина')
+        } else if (!data.is_active) {
+          setManagerStatusError('Ваш аккаунт менеджера неактивен')
+        }
+      }, 0)
       
       // Only mark as checked after successful completion
       hasCheckedOnceRef.current = true
@@ -470,25 +474,32 @@ export default function AdminDashboard() {
     }
   }, [auth.isLoggedIn, marketUpper, managerStatus])
   
-  // Load data when view changes
+  // Load data when view changes or manager status becomes available
   useEffect(() => {
-    if (!auth.isLoggedIn || !managerStatus?.is_manager || isCheckingManagerStatus) {
+    // Skip if checking manager status or manager status not available
+    if (isCheckingManagerStatus || !managerStatus?.is_manager || !auth.isLoggedIn) {
       return
     }
     
-    if (currentView === "dashboard") {
-      fetchDashboardStats()
-    } else if (currentView === "orders") {
-      // For "today's orders", fetch active orders only
-      fetchOrders(true)
-    } else if (currentView === "all-orders") {
-      // For "all orders", fetch all orders
-      fetchOrders(true)
-    } else if (currentView === "revenue") {
-      fetchRevenueAnalytics()
-    }
+    // Use setTimeout to defer data fetching and avoid React error #300
+    // This ensures data fetching happens after state updates are complete
+    const timeoutId = setTimeout(() => {
+      if (currentView === "dashboard") {
+        fetchDashboardStats()
+      } else if (currentView === "orders") {
+        // For "today's orders", fetch active orders only
+        fetchOrders(true)
+      } else if (currentView === "all-orders") {
+        // For "all orders", fetch all orders
+        fetchOrders(true)
+      } else if (currentView === "revenue") {
+        fetchRevenueAnalytics()
+      }
+    }, 0)
+    
+    return () => clearTimeout(timeoutId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentView, auth.isLoggedIn])
+  }, [currentView, auth.isLoggedIn, managerStatus?.is_manager])
   
   // Reload data when market changes
   useEffect(() => {
