@@ -608,23 +608,21 @@ export default function AdminDashboard() {
     )
   }
   
-  // Show login prompt if not logged in
+  // Redirect to login page if not logged in
+  useEffect(() => {
+    if (!auth.isLoading && !auth.isLoggedIn) {
+      router.push('/admin/login')
+    }
+  }, [auth.isLoading, auth.isLoggedIn, router])
+  
+  // Show loading state while redirecting
   if (!auth.isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-6 text-center">
-            <AlertCircle className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Требуется авторизация</h2>
-            <p className="text-gray-600 mb-6">Войдите в систему, чтобы получить доступ к панели администратора</p>
-            <Button
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
-              onClick={() => router.push('/')}
-            >
-              Перейти на главную страницу
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600">Перенаправление на страницу входа...</p>
+        </div>
       </div>
     )
   }
@@ -640,12 +638,24 @@ export default function AdminDashboard() {
             <p className="text-gray-600 mb-6">
               {managerStatusError || 'Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.'}
             </p>
-            <Button
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
-              onClick={() => router.push('/')}
-            >
-              Перейти на главную страницу
-            </Button>
+            <div className="space-y-3">
+              <Button
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                onClick={async () => {
+                  await auth.handleLogout()
+                  router.push('/admin/login')
+                }}
+              >
+                Выйти и войти с другим аккаунтом
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-gray-600 hover:text-gray-900"
+                onClick={() => router.push('/')}
+              >
+                Перейти на главную страницу
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
