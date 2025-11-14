@@ -137,6 +137,10 @@ export default function AdminDashboard() {
   const ordersOffsetRef = useRef(0)
   const ordersLimit = 20
   
+  // Refs to prevent infinite loops
+  const hasRedirectedRef = useRef(false)
+  const isCheckingManagerRef = useRef(false)
+  
   const [revenueData, setRevenueData] = useState<{
     total_revenue: string
     revenue_change: string
@@ -213,12 +217,18 @@ export default function AdminDashboard() {
   
   // Check manager status
   const checkManagerStatus = useCallback(async () => {
-    if (!auth.isLoggedIn) {
+    // Prevent multiple simultaneous checks
+    if (isCheckingManagerRef.current) {
+      return
+    }
+    
+    if (!auth.isLoggedIn || auth.isLoading) {
       setIsCheckingManagerStatus(false)
       setManagerStatus(null)
       return
     }
     
+    isCheckingManagerRef.current = true
     setIsCheckingManagerStatus(true)
     setManagerStatusError(null)
     try {
@@ -240,13 +250,34 @@ export default function AdminDashboard() {
       }
     } finally {
       setIsCheckingManagerStatus(false)
+      isCheckingManagerRef.current = false
     }
-  }, [auth.isLoggedIn])
+  }, [auth.isLoggedIn, auth.isLoading])
+  
+  // Track last checked auth state to prevent redundant checks
+  const lastCheckedAuthStateRef = useRef<{ isLoading: boolean; isLoggedIn: boolean } | null>(null)
   
   // Check manager status on mount and when auth changes
   useEffect(() => {
-    checkManagerStatus()
-  }, [checkManagerStatus])
+    const currentAuthState = { isLoading: auth.isLoading, isLoggedIn: auth.isLoggedIn }
+    const lastState = lastCheckedAuthStateRef.current
+    
+    // Only check if:
+    // 1. Auth is loaded
+    // 2. User is logged in
+    // 3. Not already checking
+    // 4. Auth state has actually changed
+    if (
+      !auth.isLoading && 
+      auth.isLoggedIn && 
+      !isCheckingManagerRef.current &&
+      (!lastState || lastState.isLoading !== currentAuthState.isLoading || lastState.isLoggedIn !== currentAuthState.isLoggedIn)
+    ) {
+      lastCheckedAuthStateRef.current = currentAuthState
+      checkManagerStatus()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.isLoading, auth.isLoggedIn]) // checkManagerStatus intentionally omitted to prevent infinite loop
   
   // Fetch dashboard stats
   const fetchDashboardStats = useCallback(async () => {
@@ -608,12 +639,17 @@ export default function AdminDashboard() {
     )
   }
   
-  // Redirect to login page if not logged in
+  // Redirect to login page if not logged in (only once)
   useEffect(() => {
-    if (!auth.isLoading && !auth.isLoggedIn) {
+    if (!auth.isLoading && !auth.isLoggedIn && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true
       router.push('/admin/login')
     }
-  }, [auth.isLoading, auth.isLoggedIn, router])
+    // Reset redirect flag if user logs in
+    if (auth.isLoggedIn) {
+      hasRedirectedRef.current = false
+    }
+  }, [auth.isLoading, auth.isLoggedIn]) // Removed router from deps to prevent loop
   
   // Show loading state while redirecting
   if (!auth.isLoggedIn) {
