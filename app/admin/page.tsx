@@ -230,6 +230,7 @@ export default function AdminDashboard() {
   const checkManagerStatus = useCallback(async () => {
     // Prevent multiple simultaneous checks
     if (isCheckingManagerRef.current) {
+      console.log('⚠️ checkManagerStatus: Already checking, skipping...')
       return
     }
     
@@ -237,17 +238,35 @@ export default function AdminDashboard() {
     const { isLoggedIn, isLoading } = authStateRef.current
     
     if (!isLoggedIn || isLoading) {
+      console.log('⚠️ checkManagerStatus: User not logged in or still loading, skipping...', { isLoggedIn, isLoading })
       setIsCheckingManagerStatus(false)
       setManagerStatus(null)
       hasCheckedOnceRef.current = false
       return
     }
     
+    console.log('✅ checkManagerStatus: Starting manager status check...')
     isCheckingManagerRef.current = true
     setIsCheckingManagerStatus(true)
     setManagerStatusError(null)
+    
+    // Add timeout to prevent hanging
+    const timeoutId = setTimeout(() => {
+      if (isCheckingManagerRef.current) {
+        console.error('❌ checkManagerStatus: Timeout after 10 seconds')
+        setIsCheckingManagerStatus(false)
+        isCheckingManagerRef.current = false
+        setManagerStatusError('Таймаут проверки статуса. Попробуйте обновить страницу.')
+        hasCheckedOnceRef.current = false
+      }
+    }, 10000) // 10 second timeout
+    
     try {
+      console.log('📡 checkManagerStatus: Calling API...')
       const data = await storeManagerApi.checkManagerStatus()
+      clearTimeout(timeoutId)
+      console.log('✅ checkManagerStatus: API response received', data)
+      
       setManagerStatus(data)
       
       if (!data.is_manager) {
@@ -259,9 +278,10 @@ export default function AdminDashboard() {
       // Only mark as checked after successful completion
       hasCheckedOnceRef.current = true
     } catch (error) {
+      clearTimeout(timeoutId)
       const errorMessage = error instanceof ApiError ? error.message : 'Ошибка проверки статуса менеджера'
       setManagerStatusError(errorMessage)
-      console.error('Error checking manager status:', error)
+      console.error('❌ checkManagerStatus: Error occurred', error)
       // If error is "Authentication required", user is not logged in
       if (error instanceof ApiError && error.message.includes('Authentication')) {
         setManagerStatus(null)
@@ -269,6 +289,7 @@ export default function AdminDashboard() {
       // Don't mark as checked if there was an error - allow retry
       hasCheckedOnceRef.current = false
     } finally {
+      console.log('🏁 checkManagerStatus: Finished, clearing flags')
       setIsCheckingManagerStatus(false)
       isCheckingManagerRef.current = false
     }
@@ -276,8 +297,17 @@ export default function AdminDashboard() {
   
   // Check manager status on mount and when auth changes - ONLY ONCE per auth state change
   useEffect(() => {
+    console.log('🔄 useEffect: Manager status check effect running', {
+      isCheckingManagerRef: isCheckingManagerRef.current,
+      isCheckingManagerStatus,
+      authIsLoading: auth.isLoading,
+      authIsLoggedIn: auth.isLoggedIn,
+      hasCheckedOnce: hasCheckedOnceRef.current
+    })
+    
     // Skip if already checking or if checking status
     if (isCheckingManagerRef.current || isCheckingManagerStatus) {
+      console.log('⏭️ useEffect: Skipping - already checking')
       return
     }
     
@@ -289,8 +319,15 @@ export default function AdminDashboard() {
       lastState.isLoading !== currentAuthState.isLoading || 
       lastState.isLoggedIn !== currentAuthState.isLoggedIn
     
+    console.log('🔍 useEffect: Auth state check', {
+      authStateChanged,
+      lastState,
+      currentAuthState
+    })
+    
     // If auth state hasn't changed, do nothing
     if (!authStateChanged) {
+      console.log('⏭️ useEffect: Skipping - auth state unchanged')
       return
     }
     
@@ -299,6 +336,7 @@ export default function AdminDashboard() {
     
     // Handle logout case
     if (!auth.isLoading && !auth.isLoggedIn) {
+      console.log('👋 useEffect: User logged out, resetting state')
       setManagerStatus(null)
       hasCheckedOnceRef.current = false
       return
@@ -306,7 +344,14 @@ export default function AdminDashboard() {
     
     // Handle login case - only check if auth is loaded and user is logged in and we haven't checked yet
     if (!auth.isLoading && auth.isLoggedIn && !hasCheckedOnceRef.current) {
+      console.log('✅ useEffect: Conditions met, calling checkManagerStatus')
       checkManagerStatus()
+    } else {
+      console.log('⏭️ useEffect: Conditions not met', {
+        isLoading: auth.isLoading,
+        isLoggedIn: auth.isLoggedIn,
+        hasCheckedOnce: hasCheckedOnceRef.current
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.isLoading, auth.isLoggedIn]) // isCheckingManagerStatus and checkManagerStatus intentionally omitted
