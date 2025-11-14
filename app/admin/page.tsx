@@ -140,6 +140,7 @@ export default function AdminDashboard() {
   // Refs to prevent infinite loops
   const hasRedirectedRef = useRef(false)
   const isCheckingManagerRef = useRef(false)
+  const hasCheckedOnMountRef = useRef(false)
   
   const [revenueData, setRevenueData] = useState<{
     total_revenue: string
@@ -215,14 +216,21 @@ export default function AdminDashboard() {
     ordersOffsetRef.current = ordersOffset
   }, [ordersOffset])
   
-  // Check manager status
+  // Track last checked auth state to prevent redundant checks
+  const lastCheckedAuthStateRef = useRef<{ isLoading: boolean; isLoggedIn: boolean } | null>(null)
+  
+  // Check manager status - defined as a function that reads from current auth state
   const checkManagerStatus = useCallback(async () => {
     // Prevent multiple simultaneous checks
     if (isCheckingManagerRef.current) {
       return
     }
     
-    if (!auth.isLoggedIn || auth.isLoading) {
+    // Read current auth state
+    const isLoggedIn = auth.isLoggedIn
+    const isLoading = auth.isLoading
+    
+    if (!isLoggedIn || isLoading) {
       setIsCheckingManagerStatus(false)
       setManagerStatus(null)
       return
@@ -254,30 +262,39 @@ export default function AdminDashboard() {
     }
   }, [auth.isLoggedIn, auth.isLoading])
   
-  // Track last checked auth state to prevent redundant checks
-  const lastCheckedAuthStateRef = useRef<{ isLoading: boolean; isLoggedIn: boolean } | null>(null)
-  
   // Check manager status on mount and when auth changes
   useEffect(() => {
+    // Skip if already checking
+    if (isCheckingManagerRef.current) {
+      return
+    }
+    
     const currentAuthState = { isLoading: auth.isLoading, isLoggedIn: auth.isLoggedIn }
     const lastState = lastCheckedAuthStateRef.current
+    
+    // Check if auth state has changed
+    const authStateChanged = !lastState || 
+      lastState.isLoading !== currentAuthState.isLoading || 
+      lastState.isLoggedIn !== currentAuthState.isLoggedIn
     
     // Only check if:
     // 1. Auth is loaded
     // 2. User is logged in
-    // 3. Not already checking
-    // 4. Auth state has actually changed
+    // 3. Auth state has actually changed
     if (
       !auth.isLoading && 
       auth.isLoggedIn && 
-      !isCheckingManagerRef.current &&
-      (!lastState || lastState.isLoading !== currentAuthState.isLoading || lastState.isLoggedIn !== currentAuthState.isLoggedIn)
+      authStateChanged
     ) {
       lastCheckedAuthStateRef.current = currentAuthState
       checkManagerStatus()
+    } else if (!auth.isLoading && !auth.isLoggedIn) {
+      // Reset manager status if user logged out
+      setManagerStatus(null)
+      lastCheckedAuthStateRef.current = currentAuthState
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.isLoading, auth.isLoggedIn]) // checkManagerStatus intentionally omitted to prevent infinite loop
+  }, [auth.isLoading, auth.isLoggedIn]) // checkManagerStatus intentionally omitted - it's stable based on auth state
   
   // Fetch dashboard stats
   const fetchDashboardStats = useCallback(async () => {

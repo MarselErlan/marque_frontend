@@ -127,21 +127,37 @@ export default function AdminLoginPage() {
       // Trigger auth state update event
       window.dispatchEvent(new CustomEvent('auth:login'))
 
+      // Wait for auth hook to update (give it time to read from localStorage)
+      await new Promise(resolve => setTimeout(resolve, 800))
+
       // Login successful, now check manager status
       setIsCheckingManager(true)
-      const managerStatus = await storeManagerApi.checkManagerStatus()
-      
-      if (managerStatus.is_manager && managerStatus.is_active) {
-        // Success! Redirect to admin dashboard
-        toast.success('Вход выполнен успешно')
-        router.push('/admin')
-      } else {
-        // User is not a manager
-        setLoginError('Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.')
-        await auth.handleLogout()
-        setShowSmsForm(false)
-        setSmsCode("")
+      try {
+        const managerStatus = await storeManagerApi.checkManagerStatus()
+        
+        if (managerStatus.is_manager && managerStatus.is_active) {
+          // Success! Redirect to admin dashboard
+          toast.success('Вход выполнен успешно')
+          // Use window.location for a hard redirect to ensure clean state
+          window.location.href = '/admin'
+        } else {
+          // User is not a manager
+          setLoginError('Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.')
+          await auth.handleLogout()
+          setShowSmsForm(false)
+          setSmsCode("")
+          setIsCheckingManager(false)
+        }
+      } catch (managerError) {
+        // If manager check fails, it might be an auth issue
+        console.error('Manager status check error:', managerError)
+        if (managerError instanceof ApiError && managerError.message.includes('Authentication')) {
+          setLoginError('Ошибка аутентификации. Попробуйте войти еще раз.')
+        } else {
+          setLoginError('Ошибка проверки статуса менеджера. Попробуйте еще раз.')
+        }
         setIsCheckingManager(false)
+        setIsVerifyingCode(false)
       }
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Неверный код подтверждения'
