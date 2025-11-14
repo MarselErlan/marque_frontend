@@ -268,15 +268,18 @@ export default function AdminDashboard() {
       clearTimeout(timeoutId)
       console.log('✅ checkManagerStatus: API response received', data)
       
-      // Set manager status directly - this is safe after async operation
-      setManagerStatus(data)
-      managerStatusSetRef.current = true
-      
-      if (!data.is_manager) {
-        setManagerStatusError('Вы не являетесь менеджером магазина')
-      } else if (!data.is_active) {
-        setManagerStatusError('Ваш аккаунт менеджера неактивен')
-      }
+      // Use startTransition or setTimeout to batch state updates and avoid React error #300
+      // This ensures state updates happen after the current render cycle
+      Promise.resolve().then(() => {
+        setManagerStatus(data)
+        managerStatusSetRef.current = true
+        
+        if (!data.is_manager) {
+          setManagerStatusError('Вы не являетесь менеджером магазина')
+        } else if (!data.is_active) {
+          setManagerStatusError('Ваш аккаунт менеджера неактивен')
+        }
+      })
       
       // Only mark as checked after successful completion
       hasCheckedOnceRef.current = true
@@ -480,32 +483,27 @@ export default function AdminDashboard() {
       return
     }
     
-    // Use double requestAnimationFrame to defer to after render completes
-    // This prevents React error #300 (updating component during render)
+    // Use Promise.resolve().then() to defer to next microtask
+    // This ensures the effect runs after state updates are batched
     let cancelled = false
-    const frameId1 = requestAnimationFrame(() => {
-      const frameId2 = requestAnimationFrame(() => {
-        if (cancelled) return
-        
-        if (currentView === "dashboard") {
-          fetchDashboardStats()
-        } else if (currentView === "orders") {
-          // For "today's orders", fetch active orders only
-          fetchOrders(true)
-        } else if (currentView === "all-orders") {
-          // For "all orders", fetch all orders
-          fetchOrders(true)
-        } else if (currentView === "revenue") {
-          fetchRevenueAnalytics()
-        }
-      })
+    Promise.resolve().then(() => {
+      if (cancelled) return
       
-      return () => cancelAnimationFrame(frameId2)
+      if (currentView === "dashboard") {
+        fetchDashboardStats()
+      } else if (currentView === "orders") {
+        // For "today's orders", fetch active orders only
+        fetchOrders(true)
+      } else if (currentView === "all-orders") {
+        // For "all orders", fetch all orders
+        fetchOrders(true)
+      } else if (currentView === "revenue") {
+        fetchRevenueAnalytics()
+      }
     })
     
     return () => {
       cancelled = true
-      cancelAnimationFrame(frameId1)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentView, auth.isLoggedIn, managerStatus?.is_manager])
