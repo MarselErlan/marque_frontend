@@ -50,25 +50,34 @@ interface MarketIndicatorProps {
   currentMarket: Market
   onMarketChange: (market: Market) => void
   showSwitcher?: boolean
+  accessibleMarkets?: Market[]
 }
 
 export function MarketIndicator({
   currentMarket,
   onMarketChange,
   showSwitcher = true,
+  accessibleMarkets,
 }: MarketIndicatorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedMarket, setSelectedMarket] = useState<Market>(currentMarket)
   const config = marketConfigs[currentMarket]
+  const isMarketEnabled = (market: Market) =>
+    !accessibleMarkets || accessibleMarkets.includes(market)
 
   useEffect(() => {
     setSelectedMarket(currentMarket)
   }, [currentMarket])
 
   const handleMarketChange = () => {
+    if (!isMarketEnabled(selectedMarket)) {
+      return
+    }
     onMarketChange(selectedMarket)
     setIsOpen(false)
   }
+  const kgEnabled = isMarketEnabled("kg")
+  const usEnabled = isMarketEnabled("us")
 
   return (
     <>
@@ -127,14 +136,14 @@ export function MarketIndicator({
               <RadioGroup value={selectedMarket} onValueChange={(value) => setSelectedMarket(value as Market)}>
                 {/* KG Market Option */}
                 <div
-                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all ${
                     selectedMarket === "kg"
                       ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => setSelectedMarket("kg")}
+                      : "border-gray-200 hover-border-gray-300"
+                  } ${kgEnabled ? "cursor-pointer" : "opacity-60 cursor-not-allowed"}`}
+                  onClick={() => kgEnabled && setSelectedMarket("kg")}
                 >
-                  <RadioGroupItem value="kg" id="kg" />
+                  <RadioGroupItem value="kg" id="kg" disabled={!kgEnabled} />
                   <Label htmlFor="kg" className="flex items-center space-x-3 cursor-pointer flex-1">
                     <span className="text-2xl">{marketConfigs.kg.flag}</span>
                     <div className="flex-1">
@@ -143,22 +152,27 @@ export function MarketIndicator({
                         {marketConfigs.kg.currency} • {marketConfigs.kg.language}
                       </div>
                     </div>
-                    <div className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">
-                      {marketConfigs.kg.dbLabel}
+                    <div className="flex flex-col items-end space-y-1">
+                      <div className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">
+                        {marketConfigs.kg.dbLabel}
+                      </div>
+                      {!kgEnabled && (
+                        <span className="text-xs text-red-500 font-semibold">Нет доступа</span>
+                      )}
                     </div>
                   </Label>
                 </div>
 
                 {/* US Market Option */}
                 <div
-                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all ${
                     selectedMarket === "us"
                       ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => setSelectedMarket("us")}
+                      : "border-gray-200 hover-border-gray-300"
+                  } ${usEnabled ? "cursor-pointer" : "opacity-60 cursor-not-allowed"}`}
+                  onClick={() => usEnabled && setSelectedMarket("us")}
                 >
-                  <RadioGroupItem value="us" id="us" />
+                  <RadioGroupItem value="us" id="us" disabled={!usEnabled} />
                   <Label htmlFor="us" className="flex items-center space-x-3 cursor-pointer flex-1">
                     <span className="text-2xl">{marketConfigs.us.flag}</span>
                     <div className="flex-1">
@@ -167,11 +181,17 @@ export function MarketIndicator({
                         {marketConfigs.us.currency} • {marketConfigs.us.language}
                       </div>
                     </div>
-                    <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">
-                      {marketConfigs.us.dbLabel}
+                    <div className="flex flex-col items-end space-y-1">
+                      <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                        {marketConfigs.us.dbLabel}
+                      </div>
+                      {!usEnabled && (
+                        <span className="text-xs text-red-500 font-semibold">Нет доступа</span>
+                      )}
                     </div>
                   </Label>
                 </div>
+
               </RadioGroup>
 
               <div className="pt-2 space-y-2">

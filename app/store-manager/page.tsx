@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { Search, ArrowLeft, Package, TrendingUp, ShoppingBag, Calendar, Settings, Moon, Sun, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -200,6 +200,19 @@ export default function AdminDashboard() {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const POLLING_INTERVAL = 30000 // 30 seconds
   
+  const accessibleMarkets = useMemo<Market[] | undefined>(() => {
+    if (!managerStatus?.accessible_markets) {
+      return undefined
+    }
+    const normalized = managerStatus.accessible_markets
+      .map((market) => {
+        const lower = market?.toLowerCase()
+        return lower === "kg" || lower === "us" ? (lower as Market) : undefined
+      })
+      .filter((market): market is Market => Boolean(market))
+    return normalized.length ? normalized : undefined
+  }, [managerStatus?.accessible_markets])
+  
   // Redirect unauthenticated users before conditional returns
   useEffect(() => {
     if (!auth.isLoading && !auth.isLoggedIn && !hasRedirectedRef.current) {
@@ -221,6 +234,18 @@ export default function AdminDashboard() {
       }
     }
   }, [])
+  
+  useEffect(() => {
+    if (!accessibleMarkets || accessibleMarkets.length === 0) {
+      return
+    }
+    if (!accessibleMarkets.includes(currentMarket)) {
+      const fallbackMarket = accessibleMarkets[0]
+      setCurrentMarket(fallbackMarket)
+      localStorage.setItem("admin_market", fallbackMarket)
+      toast.info(`Переключено на рынок ${fallbackMarket.toUpperCase()} — нет доступа к выбранному рынку`)
+    }
+  }, [accessibleMarkets, currentMarket])
   
   // Sync ref with state when ordersOffset changes
   useEffect(() => {
@@ -587,6 +612,10 @@ export default function AdminDashboard() {
   
   // Handle market change
   const handleMarketChange = (newMarket: Market) => {
+    if (accessibleMarkets && !accessibleMarkets.includes(newMarket)) {
+      toast.error('У вас нет доступа к этому рынку')
+      return
+    }
     setCurrentMarket(newMarket)
     localStorage.setItem("admin_market", newMarket)
     console.log(`📊 Admin market switched to: ${newMarket.toUpperCase()}`)
@@ -812,6 +841,7 @@ export default function AdminDashboard() {
               currentMarket={currentMarket}
               onMarketChange={handleMarketChange}
               showSwitcher={true}
+              accessibleMarkets={accessibleMarkets}
             />
           </div>
         </header>
