@@ -141,6 +141,7 @@ export default function AdminDashboard() {
   const hasRedirectedRef = useRef(false)
   const isCheckingManagerRef = useRef(false)
   const hasCheckedOnMountRef = useRef(false)
+  const managerStatusSetRef = useRef(false)
   
   const [revenueData, setRevenueData] = useState<{
     total_revenue: string
@@ -267,17 +268,15 @@ export default function AdminDashboard() {
       clearTimeout(timeoutId)
       console.log('✅ checkManagerStatus: API response received', data)
       
-      // Use setTimeout to defer state update and avoid React error #300
-      // This ensures the state update happens after the current render cycle
-      setTimeout(() => {
-        setManagerStatus(data)
-        
-        if (!data.is_manager) {
-          setManagerStatusError('Вы не являетесь менеджером магазина')
-        } else if (!data.is_active) {
-          setManagerStatusError('Ваш аккаунт менеджера неактивен')
-        }
-      }, 0)
+      // Set manager status directly - this is safe after async operation
+      setManagerStatus(data)
+      managerStatusSetRef.current = true
+      
+      if (!data.is_manager) {
+        setManagerStatusError('Вы не являетесь менеджером магазина')
+      } else if (!data.is_active) {
+        setManagerStatusError('Ваш аккаунт менеджера неактивен')
+      }
       
       // Only mark as checked after successful completion
       hasCheckedOnceRef.current = true
@@ -481,23 +480,33 @@ export default function AdminDashboard() {
       return
     }
     
-    // Use setTimeout to defer data fetching and avoid React error #300
-    // This ensures data fetching happens after state updates are complete
-    const timeoutId = setTimeout(() => {
-      if (currentView === "dashboard") {
-        fetchDashboardStats()
-      } else if (currentView === "orders") {
-        // For "today's orders", fetch active orders only
-        fetchOrders(true)
-      } else if (currentView === "all-orders") {
-        // For "all orders", fetch all orders
-        fetchOrders(true)
-      } else if (currentView === "revenue") {
-        fetchRevenueAnalytics()
-      }
-    }, 0)
+    // Use double requestAnimationFrame to defer to after render completes
+    // This prevents React error #300 (updating component during render)
+    let cancelled = false
+    const frameId1 = requestAnimationFrame(() => {
+      const frameId2 = requestAnimationFrame(() => {
+        if (cancelled) return
+        
+        if (currentView === "dashboard") {
+          fetchDashboardStats()
+        } else if (currentView === "orders") {
+          // For "today's orders", fetch active orders only
+          fetchOrders(true)
+        } else if (currentView === "all-orders") {
+          // For "all orders", fetch all orders
+          fetchOrders(true)
+        } else if (currentView === "revenue") {
+          fetchRevenueAnalytics()
+        }
+      })
+      
+      return () => cancelAnimationFrame(frameId2)
+    })
     
-    return () => clearTimeout(timeoutId)
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(frameId1)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentView, auth.isLoggedIn, managerStatus?.is_manager])
   
