@@ -290,13 +290,18 @@ export default function ProfilePage() {
   }, [profile])
 
   useEffect(() => {
+    // Only fetch data if user is logged in
+    if (!auth.isLoggedIn || auth.isLoading) {
+      return
+    }
+    
     fetchProfile()
     fetchAddresses()
     fetchPaymentMethods()
     fetchOrders()
     fetchNotifications()
     fetchPhoneNumbers()
-  }, [fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications, fetchPhoneNumbers])
+  }, [auth.isLoggedIn, auth.isLoading, fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications, fetchPhoneNumbers])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
