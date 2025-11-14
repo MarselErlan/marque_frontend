@@ -16,8 +16,6 @@ import { useRouter } from "next/navigation"
 import { MarketIndicator, MarketIndicatorCompact, type Market } from "@/components/admin/MarketIndicator"
 import { storeManagerApi, ApiError } from "@/lib/api"
 import { toast } from "@/lib/toast"
-import { useProfile } from "@/hooks/useProfile"
-
 // Map backend status to frontend display status
 const mapBackendStatusToFrontend = (status: string): string => {
   const statusMap: Record<string, string> = {
@@ -64,7 +62,19 @@ const mapBackendStatusForModal = (status: string): string => {
 export default function AdminDashboard() {
   const auth = useAuth()
   const router = useRouter()
-  const { profile } = useProfile()
+  
+  // Manager status
+  const [managerStatus, setManagerStatus] = useState<{
+    is_manager: boolean
+    manager_id: number | null
+    role: string | null
+    accessible_markets: string[]
+    can_manage_kg: boolean
+    can_manage_us: boolean
+    is_active: boolean
+  } | null>(null)
+  const [isCheckingManagerStatus, setIsCheckingManagerStatus] = useState(true)
+  const [managerStatusError, setManagerStatusError] = useState<string | null>(null)
   
   // Market management
   const [currentMarket, setCurrentMarket] = useState<Market>("kg")
@@ -201,9 +211,46 @@ export default function AdminDashboard() {
     ordersOffsetRef.current = ordersOffset
   }, [ordersOffset])
   
+  // Check manager status
+  const checkManagerStatus = useCallback(async () => {
+    if (!auth.isLoggedIn) {
+      setIsCheckingManagerStatus(false)
+      setManagerStatus(null)
+      return
+    }
+    
+    setIsCheckingManagerStatus(true)
+    setManagerStatusError(null)
+    try {
+      const data = await storeManagerApi.checkManagerStatus()
+      setManagerStatus(data)
+      
+      if (!data.is_manager) {
+        setManagerStatusError('Вы не являетесь менеджером магазина')
+      } else if (!data.is_active) {
+        setManagerStatusError('Ваш аккаунт менеджера неактивен')
+      }
+    } catch (error) {
+      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка проверки статуса менеджера'
+      setManagerStatusError(errorMessage)
+      console.error('Error checking manager status:', error)
+      // If error is "Authentication required", user is not logged in
+      if (error instanceof ApiError && error.message.includes('Authentication')) {
+        setManagerStatus(null)
+      }
+    } finally {
+      setIsCheckingManagerStatus(false)
+    }
+  }, [auth.isLoggedIn])
+  
+  // Check manager status on mount and when auth changes
+  useEffect(() => {
+    checkManagerStatus()
+  }, [checkManagerStatus])
+  
   // Fetch dashboard stats
   const fetchDashboardStats = useCallback(async () => {
-    if (!auth.isLoggedIn) return
+    if (!auth.isLoggedIn || !managerStatus?.is_manager) return
     
     setIsLoadingDashboard(true)
     setDashboardError(null)
@@ -222,11 +269,11 @@ export default function AdminDashboard() {
     } finally {
       setIsLoadingDashboard(false)
     }
-  }, [auth.isLoggedIn, marketUpper])
+  }, [auth.isLoggedIn, marketUpper, managerStatus])
   
   // Fetch orders
   const fetchOrders = useCallback(async (reset = false, statusOverride?: string) => {
-    if (!auth.isLoggedIn) return
+    if (!auth.isLoggedIn || !managerStatus?.is_manager) return
     
     setIsLoadingOrders(true)
     setOrdersError(null)
@@ -275,11 +322,11 @@ export default function AdminDashboard() {
     } finally {
       setIsLoadingOrders(false)
     }
-  }, [auth.isLoggedIn, marketUpper, orderFilter, searchQuery, ordersLimit, currentView])
+  }, [auth.isLoggedIn, marketUpper, orderFilter, searchQuery, ordersLimit, currentView, managerStatus])
   
   // Fetch order detail
   const fetchOrderDetail = useCallback(async (orderId: number) => {
-    if (!auth.isLoggedIn) return
+    if (!auth.isLoggedIn || !managerStatus?.is_manager) return
     
     setIsLoadingOrderDetail(true)
     try {
@@ -294,11 +341,11 @@ export default function AdminDashboard() {
     } finally {
       setIsLoadingOrderDetail(false)
     }
-  }, [auth.isLoggedIn, marketUpper])
+  }, [auth.isLoggedIn, marketUpper, managerStatus])
   
   // Fetch revenue analytics
   const fetchRevenueAnalytics = useCallback(async () => {
-    if (!auth.isLoggedIn) return
+    if (!auth.isLoggedIn || !managerStatus?.is_manager) return
     
     setIsLoadingRevenue(true)
     setRevenueError(null)
@@ -313,13 +360,11 @@ export default function AdminDashboard() {
     } finally {
       setIsLoadingRevenue(false)
     }
-  }, [auth.isLoggedIn, marketUpper])
+  }, [auth.isLoggedIn, marketUpper, managerStatus])
   
   // Load data when view changes
   useEffect(() => {
-    if (!auth.isLoggedIn) {
-      // Redirect to home if not logged in
-      router.push('/')
+    if (!auth.isLoggedIn || !managerStatus?.is_manager || isCheckingManagerStatus) {
       return
     }
     
@@ -551,6 +596,62 @@ export default function AdminDashboard() {
     return matchesSearch
   })
   
+  // Show loading state while checking manager status
+  if (isCheckingManagerStatus) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600">Проверка статуса менеджера...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Show login prompt if not logged in
+  if (!auth.isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Требуется авторизация</h2>
+            <p className="text-gray-600 mb-6">Войдите в систему, чтобы получить доступ к панели администратора</p>
+            <Button
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              onClick={() => router.push('/')}
+            >
+              Перейти на главную страницу
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+  
+  // Show error if not a manager
+  if (!managerStatus?.is_manager || managerStatusError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Доступ запрещен</h2>
+            <p className="text-gray-600 mb-6">
+              {managerStatusError || 'Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.'}
+            </p>
+            <Button
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              onClick={() => router.push('/')}
+            >
+              Перейти на главную страницу
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+  
   // Dashboard View
   if (currentView === "dashboard") {
     return (
@@ -559,7 +660,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-lg font-semibold text-gray-900">Добро пожаловать,</h1>
-              <p className="text-2xl font-bold text-black">{profile?.full_name || profile?.phone || "Администратор"}</p>
+              <p className="text-2xl font-bold text-black">Администратор</p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => setCurrentView("settings")}>
               <Settings className="w-5 h-5" />
@@ -1157,8 +1258,8 @@ export default function AdminDashboard() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Заказ {selectedOrder.order_number}</h1>
-                <p className="text-sm text-gray-500">{selectedOrder.order_date_formatted || selectedOrder.order_date}</p>
+                <h1 className="text-lg font-semibold text-gray-900">Заказ {selectedOrder?.order_number}</h1>
+                <p className="text-sm text-gray-500">{selectedOrder?.order_date_formatted || selectedOrder?.order_date}</p>
               </div>
             </div>
             <MarketIndicatorCompact currentMarket={currentMarket} />
@@ -1170,7 +1271,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
             </div>
-          ) : (
+          ) : selectedOrder ? (
             <>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-4">Состав заказа</h3>
@@ -1275,7 +1376,7 @@ export default function AdminDashboard() {
                 )}
               </div>
             </>
-          )}
+          ) : null}
         </div>
 
         <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>
@@ -1418,8 +1519,10 @@ export default function AdminDashboard() {
           <Card>
             <CardContent className="p-4">
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900">{profile?.full_name || "Администратор"}</h3>
-                <p className="text-sm text-gray-500">{profile?.phone || ""}</p>
+                <h3 className="font-semibold text-gray-900">Администратор</h3>
+                <p className="text-sm text-gray-500">
+                  {managerStatus?.role === 'admin' ? 'Администратор' : managerStatus?.role === 'manager' ? 'Менеджер' : 'Просмотр'}
+                </p>
               </div>
             </CardContent>
           </Card>

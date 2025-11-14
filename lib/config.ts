@@ -48,6 +48,7 @@ export const API_CONFIG = {
     ORDER_DETAIL: '/orders',
     
     // Store Manager
+    STORE_MANAGER_CHECK_STATUS: '/store-manager/check-status',
     STORE_MANAGER_DASHBOARD_STATS: '/store-manager/dashboard/stats',
     STORE_MANAGER_ORDERS: '/store-manager/orders',
     STORE_MANAGER_ORDER_DETAIL: '/store-manager/orders',

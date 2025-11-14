@@ -834,6 +834,20 @@ export const ordersApi = {
 
 // Store Manager API
 export const storeManagerApi = {
+  // Check Manager Status
+  checkManagerStatus: () =>
+    apiRequest<{
+      is_manager: boolean
+      manager_id: number | null
+      role: string | null
+      accessible_markets: string[]
+      can_manage_kg: boolean
+      can_manage_us: boolean
+      is_active: boolean
+    }>(API_CONFIG.ENDPOINTS.STORE_MANAGER_CHECK_STATUS, {
+      requiresAuth: true,
+    }),
+  
   // Dashboard Stats
   getDashboardStats: (market?: string) =>
     apiRequest<{
