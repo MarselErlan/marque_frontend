@@ -200,6 +200,16 @@ export default function AdminDashboard() {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const POLLING_INTERVAL = 30000 // 30 seconds
   
+  // Redirect unauthenticated users before conditional returns
+  useEffect(() => {
+    if (!auth.isLoading && !auth.isLoggedIn && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true
+      router.push('/store-manager/login')
+    } else if (auth.isLoggedIn) {
+      hasRedirectedRef.current = false
+    }
+  }, [auth.isLoading, auth.isLoggedIn, router])
+  
   // Initialize market from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -733,18 +743,6 @@ export default function AdminDashboard() {
       </div>
     )
   }
-  
-  // Redirect to login page if not logged in (only once)
-  useEffect(() => {
-    if (!auth.isLoading && !auth.isLoggedIn && !hasRedirectedRef.current) {
-      hasRedirectedRef.current = true
-      router.push('/store-manager/login')
-    }
-    // Reset redirect flag if user logs in
-    if (auth.isLoggedIn) {
-      hasRedirectedRef.current = false
-    }
-  }, [auth.isLoading, auth.isLoggedIn]) // Removed router from deps to prevent loop
   
   // Show loading state while redirecting
   if (!auth.isLoggedIn) {
