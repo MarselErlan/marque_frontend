@@ -103,11 +103,29 @@ export default function AdminLoginPage() {
     try {
       const response = await authApi.verifyCode(fullPhoneNumber, smsCode)
 
-      // Wait a bit for auth state to update
-      await new Promise(resolve => setTimeout(resolve, 300))
+      // Store auth token and user data in localStorage (similar to useAuth hook)
+      const userData = {
+        id: response.user.id,
+        phone: response.user.phone,
+        name: response.user.name,
+        full_name: (response.user as any).full_name || response.user.name,
+        is_active: response.user.is_active,
+        is_verified: response.user.is_verified,
+        location: response.location || 'KG',
+      }
       
-      // Check auth status to ensure token is stored
-      auth.checkAuthStatus()
+      const expiresInSeconds = 43200 * 60 // 30 days default
+      const expirationTime = new Date().getTime() + expiresInSeconds * 1000
+      
+      localStorage.setItem('authToken', response.access_token)
+      localStorage.setItem('location', response.location || 'KG')
+      localStorage.setItem('market', response.location || 'KG')
+      localStorage.setItem('userData', JSON.stringify(userData))
+      localStorage.setItem('isLoggedIn', 'true')
+      localStorage.setItem('tokenExpiration', expirationTime.toString())
+      
+      // Trigger auth state update event
+      window.dispatchEvent(new CustomEvent('auth:login'))
 
       // Login successful, now check manager status
       setIsCheckingManager(true)
