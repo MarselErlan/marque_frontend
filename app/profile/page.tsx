@@ -156,6 +156,7 @@ export default function ProfilePage() {
   const [additionalPhone, setAdditionalPhone] = useState("")
   const [additionalPhoneId, setAdditionalPhoneId] = useState<number | null>(null)
   const [isSavingAdditionalPhone, setIsSavingAdditionalPhone] = useState(false)
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   
@@ -397,6 +398,20 @@ export default function ProfilePage() {
     } finally {
       setIsUploadingImage(false)
       event.target.value = ''
+    }
+  }
+
+  const handleSaveProfileName = async () => {
+    const trimmed = userName.trim()
+    if (!trimmed) {
+      toast.error("Введите имя")
+      return
+    }
+    setIsSavingProfile(true)
+    try {
+      await updateProfile({ full_name: trimmed })
+    } finally {
+      setIsSavingProfile(false)
     }
   }
 
@@ -761,12 +776,28 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">ФИО</label>
-                    <Input
-                      type="text"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
-                    />
+                    <div className="flex flex-col sm:flex-row gap-3 items-start">
+                      <Input
+                        type="text"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
+                      />
+                      <Button
+                        onClick={handleSaveProfileName}
+                        disabled={isSavingProfile || !userName.trim()}
+                        className="sm:w-auto w-full"
+                      >
+                        {isSavingProfile ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Сохраняем...
+                          </span>
+                        ) : (
+                          "Сохранить"
+                        )}
+                      </Button>
+                    </div>
                   </div>
 
                   <div>
@@ -1356,7 +1387,6 @@ export default function ProfilePage() {
                     size="sm"
                     onClick={() => {
                       setShowPaymentForm(false)
-                      setEditingPayment(null)
                       setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
                     }}
                     className="p-0"
@@ -1364,7 +1394,7 @@ export default function ProfilePage() {
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                   <h2 className="text-xl font-semibold text-black">
-                    {editingPayment ? "Редактировать карту" : "Добавить способ оплаты"}
+                    Добавить способ оплаты
                   </h2>
                 </div>
 
@@ -1434,19 +1464,18 @@ export default function ProfilePage() {
 
                   <div className="flex space-x-4 pt-4">
                     <Button
-                      onClick={editingPayment ? handleUpdatePayment : handleAddPayment}
+                      onClick={handleAddPayment}
                       className="flex-1 bg-brand hover:bg-brand-hover text-white"
                       disabled={
                         !newPayment.cardNumber.trim() || !newPayment.expiryDate.trim() || !newPayment.cvv.trim()
                       }
                     >
-                      {editingPayment ? "Сохранить изменения" : "Добавить карту"}
+                      Добавить карту
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => {
                         setShowPaymentForm(false)
-                        setEditingPayment(null)
                         setNewPayment({ cardNumber: "", expiryDate: "", cvv: "", cardholderName: "" })
                       }}
                       className="flex-1"

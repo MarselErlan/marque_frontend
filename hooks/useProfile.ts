@@ -38,10 +38,13 @@ export interface Order {
   delivery_address: string
   items_count: number
   items: Array<{
+    id?: number
     product_name: string
     quantity: number
     price: number
     image_url: string
+    size?: string | null
+    color?: string | null
   }>
 }
 
