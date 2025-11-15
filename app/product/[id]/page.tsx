@@ -107,23 +107,38 @@ export default function ProductDetailPage() {
   }
 
   const colorsForSelectedSize = useMemo(() => {
-    if (!product || !product.skus) {
-      return product?.available_colors || []
+    if (!product) {
+      return []
     }
-    if (!selectedSize) {
-      return product.available_colors || []
+
+    const colorMap = new Map<string, string | null | undefined>()
+
+    if (product.skus?.length) {
+      product.skus.forEach((sku: any) => {
+        if (!sku.color) {
+          return
+        }
+
+        if (!selectedSize || sku.size === selectedSize) {
+          if (!colorMap.has(sku.color)) {
+            colorMap.set(sku.color, sku.color_hex)
+          }
+        }
+      })
     }
-    const matchingColors = Array.from(
-      new Set(
-        product.skus
-          .filter((sku: any) => sku.size === selectedSize && !!sku.color)
-          .map((sku: any) => sku.color)
-      )
-    )
-    if (matchingColors.length) {
-      return matchingColors
+
+    if (!colorMap.size && product.available_colors?.length) {
+      product.available_colors.forEach((color: string) => {
+        if (!colorMap.has(color)) {
+          colorMap.set(color, null)
+        }
+      })
     }
-    return product.available_colors || []
+
+    return Array.from(colorMap.entries()).map(([name, hex]) => ({
+      name,
+      hex,
+    }))
   }, [product, selectedSize])
 
   useEffect(() => {
@@ -134,9 +149,9 @@ export default function ProductDetailPage() {
       setSelectedColor("")
       return
     }
-
-    if (!colorsForSelectedSize.includes(selectedColor)) {
-      setSelectedColor(colorsForSelectedSize[0])
+    const availableNames = colorsForSelectedSize.map((color) => color.name)
+    if (!availableNames.includes(selectedColor)) {
+      setSelectedColor(availableNames[0])
     }
   }, [product, selectedSize, colorsForSelectedSize, selectedColor])
 
@@ -463,31 +478,40 @@ export default function ProductDetailPage() {
                   <h3 className="text-base lg:text-lg font-semibold text-black">Цвет</h3>
                   <span className="text-sm text-gray-600 capitalize">{selectedColor || 'Выберите цвет'}</span>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {colorsForSelectedSize.map((color: string) => {
-                    // Check if this color has a variant image
-                    const hasVariantImage = product.skus?.some((sku: any) => 
-                      sku.color === color && sku.size === selectedSize && sku.variant_image
+                <div className="flex flex-wrap gap-3">
+                  {colorsForSelectedSize.map(({ name: colorName, hex }) => {
+                    const hasVariantImage = product.skus?.some(
+                      (sku: any) =>
+                        sku.color === colorName &&
+                        sku.size === selectedSize &&
+                        sku.variant_image
                     )
-                    
+
+                    const backgroundColor = hex || "#f3f4f6"
+
                     return (
                       <button
-                        key={color}
-                        className={`px-4 py-2 border rounded-lg capitalize relative ${
-                          selectedColor === color
-                            ? "border-brand bg-brand-50 text-brand font-semibold"
-                            : "border-gray-300 text-gray-700 hover:border-gray-400"
+                        key={colorName}
+                        className={`relative w-12 h-12 rounded-full border-2 transition-colors duration-150 ${
+                          selectedColor === colorName
+                            ? "border-brand ring-2 ring-brand/30"
+                            : "border-gray-200 hover:border-gray-400"
                         }`}
                         onClick={() => {
-                          setSelectedColor(color)
-                          // Reset image index when changing color to show variant image
+                          setSelectedColor(colorName)
                           setSelectedImageIndex(0)
                         }}
                       >
-                        {color}
-                        {/* Show indicator if this color has a variant image */}
+                        <span className="sr-only capitalize">{colorName}</span>
+                        <span
+                          className="absolute inset-1 rounded-full border border-black/5"
+                          style={{ backgroundColor }}
+                        />
                         {hasVariantImage && (
-                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" title="Есть фото варианта"></span>
+                          <span
+                            className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"
+                            title="Есть фото варианта"
+                          />
                         )}
                       </button>
                     )
