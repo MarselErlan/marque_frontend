@@ -14,6 +14,15 @@ import { toast } from "@/lib/toast"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
 
+type GalleryImage = {
+  src: string
+  alt: string
+  id: string
+  type: "main" | "gallery" | "variant"
+  size?: string | null
+  color?: string | null
+}
+
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -28,7 +37,6 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [currentDisplayImage, setCurrentDisplayImage] = useState<string | null>(null) // NEW: For variant images
   
   const [isClient, setIsClient] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -106,6 +114,58 @@ export default function ProductDetailPage() {
     )
   }
 
+  const galleryImages = useMemo<GalleryImage[]>(() => {
+    if (!product) return []
+
+    const images: GalleryImage[] = []
+
+    if (product.image) {
+      images.push({
+        src: getImageUrl(product.image),
+        alt: product.title,
+        id: "main-image",
+        type: "main",
+      })
+    }
+
+    if (product.images?.length) {
+      product.images.forEach((image: any, index: number) => {
+        if (!image?.url) return
+        images.push({
+          src: getImageUrl(image.url),
+          alt: image.alt_text || `${product.title} ${index + 1}`,
+          id: `gallery-${image.id || index}`,
+          type: "gallery",
+        })
+      })
+    }
+
+    if (product.skus?.length) {
+      product.skus.forEach((sku: any, index: number) => {
+        if (!sku.variant_image) return
+        images.push({
+          src: getImageUrl(sku.variant_image),
+          alt: `${product.title} ${sku.size || ""} ${sku.color || ""}`.trim(),
+          id: `variant-${sku.id || index}`,
+          type: "variant",
+          size: sku.size,
+          color: sku.color,
+        })
+      })
+    }
+
+    if (!images.length) {
+      images.push({
+        src: "/images/product_placeholder_adobe.png",
+        alt: product.title,
+        id: "placeholder",
+        type: "main",
+      })
+    }
+
+    return images
+  }, [product])
+
   const colorsForSelectedSize = useMemo(() => {
     if (!product) {
       return []
@@ -151,40 +211,47 @@ export default function ProductDetailPage() {
     }
     const availableNames = colorsForSelectedSize.map((color) => color.name)
     if (!availableNames.includes(selectedColor)) {
-      setSelectedColor(availableNames[0])
+      setSelectedColor(availableNames[0] || "")
     }
   }, [product, selectedSize, colorsForSelectedSize, selectedColor])
 
 
   // NEW: Update display image when color changes
-  useEffect(() => {
-    if (!product) return
-    
-    const matchingSKU = getMatchingSKU()
-    
-    if (matchingSKU && matchingSKU.variant_image) {
-      // Use variant image if available
-      setCurrentDisplayImage(matchingSKU.variant_image)
-    } else {
-      // Fall back to product's main image
-      setCurrentDisplayImage(null)
-    }
-  }, [selectedSize, selectedColor, product])
+  const findVariantImageIndex = (size?: string, color?: string) => {
+    if (!size || !color) return -1
+    return galleryImages.findIndex(
+      (image) =>
+        image.type === "variant" &&
+        image.size === size &&
+        image.color === color
+    )
+  }
 
-  // NEW: Get the image to display (variant image or product image)
+  useEffect(() => {
+    if (!galleryImages.length) {
+      setSelectedImageIndex(0)
+      return
+    }
+    if (selectedImageIndex >= galleryImages.length) {
+      setSelectedImageIndex(0)
+    }
+  }, [galleryImages, selectedImageIndex])
+
+  useEffect(() => {
+    const matchingSKU = getMatchingSKU()
+    if (!matchingSKU) return
+
+    const variantIndex = findVariantImageIndex(
+      matchingSKU.size,
+      matchingSKU.color
+    )
+    if (variantIndex !== -1) {
+      setSelectedImageIndex(variantIndex)
+    }
+  }, [selectedSize, selectedColor, galleryImages])
+
   const getDisplayImage = (imageIndex: number = selectedImageIndex) => {
-    // If we have a variant image for the selected color, use it
-    if (currentDisplayImage) {
-      return getImageUrl(currentDisplayImage)
-    }
-    
-    // Otherwise, use the product images
-    if (product?.images?.[imageIndex]?.url) {
-      return getImageUrl(product.images[imageIndex].url)
-    }
-    
-    // Final fallback
-    return "/images/product_placeholder_adobe.png"
+    return galleryImages[imageIndex]?.src || "/images/product_placeholder_adobe.png"
   }
 
   const handleAddToCart = async () => {
@@ -204,6 +271,21 @@ export default function ProductDetailPage() {
       // Find matching SKU to get variant image and correct price
       const matchingSKU = getMatchingSKU()
       
+      const fallbackImage =
+        galleryImages[selectedImageIndex]?.src ||
+        galleryImages[0]?.src ||
+        "/images/product_placeholder_adobe.png"
+
+      const variantIndex = findVariantImageIndex(
+        matchingSKU?.size,
+        matchingSKU?.color
+      )
+
+      const imageForCart =
+        variantIndex !== -1
+          ? galleryImages[variantIndex]?.src
+          : fallbackImage
+
       // Prepare cart item
       const cartItem = {
         id: product.id,
@@ -211,8 +293,7 @@ export default function ProductDetailPage() {
         price: matchingSKU?.price || product.price_min,
         originalPrice: matchingSKU?.original_price || product.original_price_min,
         brand: product.brand?.name || 'MARQUE',
-        // Use variant image if available, otherwise fall back to product images
-        image: matchingSKU?.variant_image || product.images?.[0]?.url || '/images/product_placeholder_adobe.png',
+        image: imageForCart,
         size: selectedSize,
         color: selectedColor,
         sku_id: matchingSKU?.id // Use the actual SKU ID
@@ -366,15 +447,15 @@ export default function ProductDetailPage() {
               <div className="aspect-square bg-white overflow-hidden">
                 <img
                   src={getDisplayImage(selectedImageIndex)}
-                  alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
+                  alt={galleryImages[selectedImageIndex]?.alt || product.title}
                   className="w-full h-full object-cover"
                 />
               </div>
-              {product.images && product.images.length > 1 && (
+              {galleryImages.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                  {product.images.map((_: any, index: number) => (
+                  {galleryImages.map((image, index) => (
                     <button
-                      key={index}
+                      key={image.id}
                       className={`w-2 h-2 rounded-full ${selectedImageIndex === index ? 'bg-brand' : 'bg-gray-300'}`}
                       onClick={() => setSelectedImageIndex(index)}
                     />
@@ -389,39 +470,38 @@ export default function ProductDetailPage() {
               </button>
             </div>
             
-            {/* Main Image - Desktop */}
-            <div className="hidden lg:block aspect-square bg-white rounded-lg overflow-hidden">
-              <img
-                src={getDisplayImage(selectedImageIndex)}
-                alt={product.images?.[selectedImageIndex]?.alt_text || product.title}
-                className="w-full h-full object-cover transition-opacity duration-300"
-              />
-            </div>
-
-            {/* Thumbnail Images - Desktop */}
-            {product.images && product.images.length > 1 && (
-              <div className="hidden lg:flex space-x-2 px-4 lg:px-0">
-                {product.images.map((image: any, index: number) => (
+            {/* Desktop Gallery */}
+            <div className="hidden lg:flex gap-4">
+              <div className="flex flex-col space-y-3 w-20">
+                {galleryImages.map((image, index) => (
                   <button
-                    key={image.id || index}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      selectedImageIndex === index ? "border-brand" : "border-gray-200"
+                  key={image.id}
+                    className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+                      selectedImageIndex === index ? "border-brand ring-2 ring-brand/20" : "border-transparent hover:border-gray-200"
                     }`}
                     onClick={() => setSelectedImageIndex(index)}
                   >
                     <img
-                      src={
-                        image.url 
-                          ? getImageUrl(image.url)
-                          : "/images/product_placeholder_adobe.png"
-                      }
-                      alt={image.alt_text || `${product.title} ${index + 1}`}
+                      src={image.src}
+                      alt={image.alt}
                       className="w-full h-full object-cover"
                     />
+                    {image.type === "variant" && (
+                      <span className="absolute bottom-1 right-1 text-[10px] px-1.5 py-0.5 rounded-full bg-white/80 text-gray-700 capitalize">
+                        {image.color}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
-            )}
+              <div className="flex-1 aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center">
+                <img
+                  src={getDisplayImage(selectedImageIndex)}
+                  alt={galleryImages[selectedImageIndex]?.alt || product.title}
+                  className="w-full h-full object-cover transition-opacity duration-300"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Product Info */}
@@ -462,7 +542,13 @@ export default function ProductDetailPage() {
                           ? "border-brand bg-brand-50 text-brand font-semibold"
                           : "border-gray-300 text-gray-700 hover:border-gray-400"
                       }`}
-                      onClick={() => setSelectedSize(size)}
+                      onClick={() => {
+                        setSelectedSize(size)
+                        const idx = findVariantImageIndex(size, selectedColor)
+                        if (idx !== -1) {
+                          setSelectedImageIndex(idx)
+                        }
+                      }}
                     >
                       {size}
                     </button>
@@ -499,7 +585,10 @@ export default function ProductDetailPage() {
                         }`}
                         onClick={() => {
                           setSelectedColor(colorName)
-                          setSelectedImageIndex(0)
+                          const idx = findVariantImageIndex(selectedSize, colorName)
+                          if (idx !== -1) {
+                            setSelectedImageIndex(idx)
+                          }
                         }}
                       >
                         <span className="sr-only capitalize">{colorName}</span>
