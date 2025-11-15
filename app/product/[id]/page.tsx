@@ -486,11 +486,6 @@ export default function ProductDetailPage() {
                       alt={image.alt}
                       className="w-full h-full object-cover"
                     />
-                    {image.type === "variant" && (
-                      <span className="absolute bottom-1 right-1 text-[10px] px-1.5 py-0.5 rounded-full bg-white/80 text-gray-700 capitalize">
-                        {image.color}
-                      </span>
-                    )}
                   </button>
                 ))}
               </div>
