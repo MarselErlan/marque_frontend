@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Star, ArrowRight, Check, Heart, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -46,24 +46,36 @@ export default function ProductDetailPage() {
       try {
         setIsLoading(true)
         setError(null)
-        
-        // Get product slug from params (could be slug or id)
+
         const slug = params.id as string
-        
         const productData = await productsApi.getDetail(slug)
         setProduct(productData)
-        
-        // Set similar products
         if (productData.similar_products) {
           setSimilarProducts(productData.similar_products)
         }
-        
-        // Set default size and color
-        if (productData.available_sizes && productData.available_sizes.length > 0) {
-          setSelectedSize(productData.available_sizes[0])
-        }
-        if (productData.available_colors && productData.available_colors.length > 0) {
-          setSelectedColor(productData.available_colors[0])
+
+        if (productData?.skus?.length) {
+          const firstSkuWithOptions = productData.skus.find(
+            (sku: any) => sku.size && sku.color
+          )
+          if (firstSkuWithOptions) {
+            setSelectedSize(firstSkuWithOptions.size)
+            setSelectedColor(firstSkuWithOptions.color)
+          } else {
+            if (productData.available_sizes?.length) {
+              setSelectedSize(productData.available_sizes[0])
+            }
+            if (productData.available_colors?.length) {
+              setSelectedColor(productData.available_colors[0])
+            }
+          }
+        } else {
+          if (productData.available_sizes?.length) {
+            setSelectedSize(productData.available_sizes[0])
+          }
+          if (productData.available_colors?.length) {
+            setSelectedColor(productData.available_colors[0])
+          }
         }
       } catch (err: any) {
         console.error('Failed to load product:', err)
@@ -72,7 +84,7 @@ export default function ProductDetailPage() {
         setIsLoading(false)
       }
     }
-    
+
     if (params.id) {
       loadProduct()
     }
@@ -93,6 +105,41 @@ export default function ProductDetailPage() {
       sku.size === selectedSize && sku.color === selectedColor
     )
   }
+
+  const colorsForSelectedSize = useMemo(() => {
+    if (!product || !product.skus) {
+      return product?.available_colors || []
+    }
+    if (!selectedSize) {
+      return product.available_colors || []
+    }
+    const matchingColors = Array.from(
+      new Set(
+        product.skus
+          .filter((sku: any) => sku.size === selectedSize && !!sku.color)
+          .map((sku: any) => sku.color)
+      )
+    )
+    if (matchingColors.length) {
+      return matchingColors
+    }
+    return product.available_colors || []
+  }, [product, selectedSize])
+
+  useEffect(() => {
+    if (!product) return
+    if (!selectedSize) return
+
+    if (!colorsForSelectedSize.length) {
+      setSelectedColor("")
+      return
+    }
+
+    if (!colorsForSelectedSize.includes(selectedColor)) {
+      setSelectedColor(colorsForSelectedSize[0])
+    }
+  }, [product, selectedSize, colorsForSelectedSize, selectedColor])
+
 
   // NEW: Update display image when color changes
   useEffect(() => {
@@ -410,17 +457,17 @@ export default function ProductDetailPage() {
             )}
 
             {/* Color Selection */}
-            {product.available_colors && product.available_colors.length > 0 && (
+            {colorsForSelectedSize && colorsForSelectedSize.length > 0 && (
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-base lg:text-lg font-semibold text-black">Цвет</h3>
                   <span className="text-sm text-gray-600 capitalize">{selectedColor || 'Выберите цвет'}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {product.available_colors.map((color: string) => {
+                  {colorsForSelectedSize.map((color: string) => {
                     // Check if this color has a variant image
                     const hasVariantImage = product.skus?.some((sku: any) => 
-                      sku.color === color && sku.variant_image
+                      sku.color === color && sku.size === selectedSize && sku.variant_image
                     )
                     
                     return (
