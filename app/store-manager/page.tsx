@@ -30,6 +30,23 @@ const mapBackendStatusToFrontend = (status: string): string => {
   return statusMap[status] || status
 }
 
+// Helper to format date string (YYYY-MM-DD) as local date (avoids timezone issues)
+const formatDateString = (dateString: string | null | undefined, format: 'short' | 'long' = 'short'): string => {
+  if (!dateString) return ''
+  // Parse YYYY-MM-DD as local date to avoid timezone shift
+  const [year, month, day] = dateString.split('-').map(Number)
+  const date = new Date(year, month - 1, day) // month is 0-indexed in JS Date
+  
+  if (format === 'long') {
+    return date.toLocaleDateString('ru-RU', { 
+      day: 'numeric', 
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+  return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+}
+
 // Map frontend display status to backend status
 const mapFrontendStatusToBackend = (status: string): string => {
   const statusMap: Record<string, string> = {
@@ -1150,7 +1167,7 @@ export default function AdminDashboard() {
                     </p>
                     {order.requested_delivery_date && (
                       <p className="text-sm text-purple-600 font-medium mt-1">
-                        📅 Доставка: {new Date(order.requested_delivery_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                        📅 Доставка: {formatDateString(order.requested_delivery_date, 'short')}
                       </p>
                     )}
                   </div>
@@ -1336,7 +1353,7 @@ export default function AdminDashboard() {
                     </p>
                     {order.requested_delivery_date && (
                       <p className="text-sm text-purple-600 font-medium mt-1">
-                        📅 Доставка: {new Date(order.requested_delivery_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                        📅 Доставка: {formatDateString(order.requested_delivery_date, 'short')}
                       </p>
                     )}
                   </div>
@@ -1499,11 +1516,7 @@ export default function AdminDashboard() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Дата доставки</span>
                 <span className="font-medium text-purple-600">
-                  {new Date(selectedOrder.requested_delivery_date).toLocaleDateString('ru-RU', { 
-                    day: 'numeric', 
-                    month: 'long',
-                    year: 'numeric'
-                  })}
+                  {formatDateString(selectedOrder.requested_delivery_date, 'long')}
                 </span>
               </div>
             )}
