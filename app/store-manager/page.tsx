@@ -117,6 +117,7 @@ export default function AdminDashboard() {
     order_date: string
     date: string
     order_date_formatted: string
+    requested_delivery_date?: string | null
     items_count: number
     items: Array<{
       id: number
@@ -1147,6 +1148,11 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500">
                           {order.date} • {order.customer_phone}
                     </p>
+                    {order.requested_delivery_date && (
+                      <p className="text-sm text-purple-600 font-medium mt-1">
+                        📅 Доставка: {new Date(order.requested_delivery_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-gray-900">{order.amount}</p>
@@ -1328,6 +1334,11 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500">
                           {order.date} • {order.customer_phone}
                     </p>
+                    {order.requested_delivery_date && (
+                      <p className="text-sm text-purple-600 font-medium mt-1">
+                        📅 Доставка: {new Date(order.requested_delivery_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-gray-900">{order.amount}</p>
@@ -1484,6 +1495,18 @@ export default function AdminDashboard() {
               <span className="text-gray-600">Дата и время</span>
                   <span className="font-medium">{selectedOrder.order_date_formatted || selectedOrder.order_date}</span>
             </div>
+            {selectedOrder.requested_delivery_date && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Дата доставки</span>
+                <span className="font-medium text-purple-600">
+                  {new Date(selectedOrder.requested_delivery_date).toLocaleDateString('ru-RU', { 
+                    day: 'numeric', 
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-gray-600">Статус</span>
                   <Badge className={`${selectedOrder.status_color} text-xs`}>{selectedOrder.status_display}</Badge>
