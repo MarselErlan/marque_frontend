@@ -369,7 +369,7 @@ export default function ProfilePage() {
         statusTextClass: status.textClass,
         totalLabel,
         orderDate: formatDate(order.order_date) ?? "",
-        deliveryDate: formatDate(order.delivery_date),
+        deliveryDate: formatDate(order.requested_delivery_date || order.delivery_date),
         items,
         isActive: !["delivered", "cancelled", "refunded"].includes(order.status),
         canReview: order.status === "delivered",

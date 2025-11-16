@@ -22,7 +22,31 @@ export default function CartPage() {
 
   const [isClient, setIsClient] = useState(false)
 
-  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState("21 июл")
+  // Generate delivery dates (tomorrow + next 4 days)
+  const generateDeliveryDates = () => {
+    const dates = []
+    const today = new Date()
+    for (let i = 1; i <= 5; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      dates.push(date)
+    }
+    return dates
+  }
+
+  const deliveryDates = generateDeliveryDates()
+  const [selectedDeliveryDateIndex, setSelectedDeliveryDateIndex] = useState(0)
+  const selectedDeliveryDateObj = deliveryDates[selectedDeliveryDateIndex]
+  
+  // Format date for display (e.g., "21 июл")
+  const formatDeliveryDate = (date: Date) => {
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+  }
+
+  // Format date for API (ISO format YYYY-MM-DD)
+  const formatDeliveryDateForAPI = (date: Date) => {
+    return date.toISOString().split('T')[0]
+  }
   
   const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "success" | null>(null)
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
@@ -45,7 +69,6 @@ export default function CartPage() {
   const [orderNumber, setOrderNumber] = useState<string>("")
   const [orderTotal, setOrderTotal] = useState<number>(0)
   
-  const deliveryDates = ["21 июл", "22 июл", "23 июл", "24 июл", "25 июл"]
   const deliveryCost = 150
   const taxRate = 0.12
 
@@ -159,6 +182,7 @@ export default function CartPage() {
         delivery_postal_code: selectedAddress?.postal_code || undefined,
         shipping_address_id: selectedAddressId || undefined,
         payment_method: checkoutPaymentMethod,
+        requested_delivery_date: formatDeliveryDateForAPI(selectedDeliveryDateObj),
         use_cart: true
       })
 
@@ -297,18 +321,20 @@ export default function CartPage() {
                   <div>
                     <p className="text-sm font-semibold text-black mb-2">Дата доставки</p>
                     <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4">
-                      {deliveryDates.map((date: string, i: number) => (
+                      {deliveryDates.map((date: Date, i: number) => (
                         <button
-                          key={date}
+                          key={i}
                           className={`px-3 py-2 text-xs rounded-lg border flex-shrink-0 ${
-                            selectedDeliveryDate === date
+                            selectedDeliveryDateIndex === i
                               ? "bg-brand-50 text-brand border-brand-light"
                               : "bg-gray-100 text-gray-700 border-transparent"
                           }`}
-                          onClick={() => setSelectedDeliveryDate(date)}
+                          onClick={() => setSelectedDeliveryDateIndex(i)}
                         >
-                          <span className="font-semibold">{i === 0 ? 'Завтра' : i === 1 ? 'Послезавтра' : date.split(' ')[0]}</span><br/>
-                          <span className="text-gray-500">{date}</span>
+                          <span className="font-semibold">
+                            {i === 0 ? 'Завтра' : i === 1 ? 'Послезавтра' : date.getDate().toString()}
+                          </span><br/>
+                          <span className="text-gray-500">{formatDeliveryDate(date)}</span>
                         </button>
                       ))}
                     </div>
