@@ -799,6 +799,7 @@ export const ordersApi = {
     delivery_notes?: string
     requested_delivery_date?: string
     shipping_address_id?: number
+    payment_method_used_id?: number
     payment_method: string
     use_cart?: boolean
   }) =>

@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin } from "lucide-react"
+import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useCart } from "@/hooks/useCart"
-import { useProfile, Address } from "@/hooks/useProfile"
+import { useProfile, Address, PaymentMethod } from "@/hooks/useProfile"
 import { getImageUrl } from "@/lib/utils"
 import { ordersApi, authApi } from "@/lib/api"
 import { toast } from "@/lib/toast"
@@ -18,7 +18,15 @@ export default function CartPage() {
   const router = useRouter()
   const auth = useAuth()
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart()
-  const { addresses, fetchAddresses, createAddress, isLoadingAddresses } = useProfile()
+  const { 
+    addresses, 
+    fetchAddresses, 
+    createAddress, 
+    isLoadingAddresses,
+    paymentMethods,
+    fetchPaymentMethods,
+    isLoadingPayments
+  } = useProfile()
 
   const [isClient, setIsClient] = useState(false)
 
@@ -50,7 +58,9 @@ export default function CartPage() {
   
   const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "success" | null>(null)
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null)
   const [checkoutAddress, setCheckoutAddress] = useState("")
+  const [checkoutPaymentMethodDisplay, setCheckoutPaymentMethodDisplay] = useState("")
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [newAddress, setNewAddress] = useState({
     title: "",
@@ -76,6 +86,52 @@ export default function CartPage() {
     setIsClient(true)
   }, [])
 
+  // Load addresses and payment methods when user is logged in
+  useEffect(() => {
+    if (auth.isLoggedIn && !auth.isLoading) {
+      fetchAddresses()
+      fetchPaymentMethods()
+    }
+  }, [auth.isLoggedIn, auth.isLoading, fetchAddresses, fetchPaymentMethods])
+
+  // Auto-select default address when addresses are loaded
+  useEffect(() => {
+    if (addresses && addresses.length > 0 && !selectedAddressId) {
+      const defaultAddress = addresses.find(addr => addr.is_default) || addresses[0]
+      setSelectedAddressId(defaultAddress.id)
+      setCheckoutAddress(defaultAddress.full_address)
+    }
+  }, [addresses, selectedAddressId])
+
+  // Auto-select default payment method when payment methods are loaded
+  useEffect(() => {
+    if (paymentMethods && paymentMethods.length > 0 && !selectedPaymentMethodId) {
+      const defaultPayment = paymentMethods.find(pm => pm.is_default) || paymentMethods[0]
+      setSelectedPaymentMethodId(defaultPayment.id)
+      // Map payment_type to backend payment_method choices
+      const paymentTypeMap: Record<string, string> = {
+        'card': 'card',
+        'cash': 'cash',
+        'transfer': 'transfer',
+        'digital_wallet': 'digital_wallet',
+      }
+      const backendPaymentMethod = paymentTypeMap[defaultPayment.payment_type] || defaultPayment.payment_type || 'cash'
+      setCheckoutPaymentMethod(backendPaymentMethod)
+      
+      if (defaultPayment.payment_type === 'card') {
+        setCheckoutPaymentMethodDisplay(`${defaultPayment.card_type || 'Card'} ${defaultPayment.card_number_masked || ''}`)
+      } else if (defaultPayment.payment_type === 'cash') {
+        setCheckoutPaymentMethodDisplay('Наличные при получении')
+      } else {
+        setCheckoutPaymentMethodDisplay(defaultPayment.payment_type)
+      }
+    } else if (paymentMethods && paymentMethods.length === 0 && !selectedPaymentMethodId) {
+      // No payment methods saved, default to cash
+      setCheckoutPaymentMethod('cash')
+      setCheckoutPaymentMethodDisplay('Наличные при получении')
+    }
+  }, [paymentMethods, selectedPaymentMethodId])
+
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const taxes = Math.round(subtotal * taxRate)
   const discount = cartItems.reduce((sum, item) => {
@@ -86,6 +142,13 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     auth.requireAuth(async () => {
+      // If address and payment are already selected, submit order directly
+      if (checkoutAddress && checkoutPaymentMethod) {
+        await handlePaymentSubmit()
+        return
+      }
+      
+      // Otherwise, start the checkout flow
       // Fetch addresses when checkout starts
       const fetchedAddresses = await fetchAddresses()
       // Auto-select default address if available
@@ -94,7 +157,14 @@ export default function CartPage() {
         setSelectedAddressId(defaultAddress.id)
         setCheckoutAddress(defaultAddress.full_address)
       }
-      setCheckoutStep("address")
+      
+      // If address is selected but payment is not, go to payment step
+      // Otherwise start with address
+      if (checkoutAddress && !checkoutPaymentMethod) {
+        setCheckoutStep("payment")
+      } else {
+        setCheckoutStep("address")
+      }
     })
   }
 
@@ -102,6 +172,44 @@ export default function CartPage() {
     setSelectedAddressId(address.id)
     setCheckoutAddress(address.full_address)
     setShowAddressForm(false)
+    setCheckoutStep(null) // Close modal when selecting from cart page
+  }
+
+  const handleAddressButtonClick = () => {
+    auth.requireAuth(async () => {
+      await fetchAddresses()
+      setCheckoutStep("address")
+    })
+  }
+
+  const handlePaymentMethodButtonClick = () => {
+    auth.requireAuth(async () => {
+      await fetchPaymentMethods()
+      setCheckoutStep("payment")
+    })
+  }
+
+  const handlePaymentMethodSelect = (paymentMethod: PaymentMethod) => {
+    setSelectedPaymentMethodId(paymentMethod.id)
+    // Map payment_type to backend payment_method choices
+    const paymentTypeMap: Record<string, string> = {
+      'card': 'card',
+      'cash': 'cash',
+      'transfer': 'transfer',
+      'digital_wallet': 'digital_wallet',
+    }
+    const backendPaymentMethod = paymentTypeMap[paymentMethod.payment_type] || paymentMethod.payment_type || 'cash'
+    setCheckoutPaymentMethod(backendPaymentMethod)
+    
+    // Set display text
+    if (paymentMethod.payment_type === 'card') {
+      setCheckoutPaymentMethodDisplay(`${paymentMethod.card_type || 'Card'} ${paymentMethod.card_number_masked || ''}`)
+    } else if (paymentMethod.payment_type === 'cash') {
+      setCheckoutPaymentMethodDisplay('Наличные при получении')
+    } else {
+      setCheckoutPaymentMethodDisplay(paymentMethod.payment_type)
+    }
+    setCheckoutStep(null) // Close modal when selecting from cart page
   }
 
   const handleCreateAddress = async () => {
@@ -181,6 +289,7 @@ export default function CartPage() {
         delivery_state: selectedAddress?.state || undefined,
         delivery_postal_code: selectedAddress?.postal_code || undefined,
         shipping_address_id: selectedAddressId || undefined,
+        payment_method_used_id: selectedPaymentMethodId || undefined,
         payment_method: checkoutPaymentMethod,
         requested_delivery_date: formatDeliveryDateForAPI(selectedDeliveryDateObj),
         use_cart: true
@@ -342,17 +451,31 @@ export default function CartPage() {
 
                   {/* Delivery Address & Payment Method */}
                   <div className="mt-4 space-y-3">
-                    <button className="w-full flex justify-between items-center text-left bg-gray-50 p-3 rounded-lg">
-                      <div>
+                    <button 
+                      onClick={handleAddressButtonClick}
+                      className="w-full flex justify-between items-center text-left bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500">Адрес доставки</p>
-                        <p className="font-semibold">Юнусалиева, 40</p>
+                        {checkoutAddress ? (
+                          <p className="font-semibold">{checkoutAddress}</p>
+                        ) : (
+                          <p className="font-semibold text-gray-400">Выберите адрес</p>
+                        )}
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </button>
-                    <button className="w-full flex justify-between items-center text-left bg-gray-50 p-3 rounded-lg">
-                      <div>
+                    <button 
+                      onClick={handlePaymentMethodButtonClick}
+                      className="w-full flex justify-between items-center text-left bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500">Способ оплаты</p>
-                        <p className="font-semibold">Visa **** 4394</p>
+                        {checkoutPaymentMethodDisplay ? (
+                          <p className="font-semibold">{checkoutPaymentMethodDisplay}</p>
+                        ) : (
+                          <p className="font-semibold text-gray-400">Выберите способ оплаты</p>
+                        )}
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </button>
@@ -691,69 +814,101 @@ export default function CartPage() {
 
       {/* Payment Method Modal */}
       <Dialog open={checkoutStep === "payment"} onOpenChange={() => setCheckoutStep(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-lg font-semibold">Выберите способ оплаты</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-3">
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="card"
-                  checked={checkoutPaymentMethod === "card"}
-                  onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-brand"
-                />
-                <span>Банковская карта</span>
-              </label>
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="cash"
-                  checked={checkoutPaymentMethod === "cash"}
-                  onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-brand"
-                />
-                <span>Наличные при получении</span>
-              </label>
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="online"
-                  checked={checkoutPaymentMethod === "online"}
-                  onChange={(e) => setCheckoutPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-brand"
-                />
-                <span>Онлайн оплата</span>
-              </label>
-            </div>
-            {checkoutPaymentMethod === "card" && (
-              <div className="space-y-3 pt-4 border-t">
-                <Input placeholder="Номер карты" />
-                <div className="flex space-x-2">
-                  <Input placeholder="ММ/ГГ" className="flex-1" />
-                  <Input placeholder="CVC" className="flex-1" />
-                </div>
-                <Input placeholder="Имя держателя карты" />
+            {isLoadingPayments ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-brand" />
+              </div>
+            ) : paymentMethods && paymentMethods.length > 0 ? (
+              <div className="space-y-3">
+                {paymentMethods.map((paymentMethod) => (
+                  <button
+                    key={paymentMethod.id}
+                    onClick={() => handlePaymentMethodSelect(paymentMethod)}
+                    className={`w-full text-left p-4 border-2 rounded-lg transition-colors ${
+                      selectedPaymentMethodId === paymentMethod.id
+                        ? 'border-brand bg-brand-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <CreditCard className="w-4 h-4 text-gray-500" />
+                          <span className="font-semibold text-gray-900">
+                            {paymentMethod.payment_type === "card" ? "Банковская карта" : paymentMethod.payment_type === "cash" ? "Наличные при получении" : paymentMethod.payment_type}
+                          </span>
+                          {paymentMethod.is_default && (
+                            <span className="text-xs bg-brand-100 text-brand px-2 py-0.5 rounded">По умолчанию</span>
+                          )}
+                        </div>
+                        {paymentMethod.payment_type === "card" && (
+                          <p className="text-sm text-gray-600">
+                            {paymentMethod.card_type ? paymentMethod.card_type.toUpperCase() : "Card"} {paymentMethod.card_number_masked || ""}
+                          </p>
+                        )}
+                        {paymentMethod.payment_type === "cash" && (
+                          <p className="text-sm text-gray-600">Оплата при получении заказа</p>
+                        )}
+                      </div>
+                      {selectedPaymentMethodId === paymentMethod.id && (
+                        <Check className="w-5 h-5 text-brand" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-center text-gray-600 text-sm mb-4">
+                  У вас нет сохраненных способов оплаты. Выберите один из вариантов:
+                </p>
+                <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-200 rounded-lg hover:border-gray-300">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="cash"
+                    checked={checkoutPaymentMethod === "cash"}
+                    onChange={(e) => {
+                      setCheckoutPaymentMethod(e.target.value)
+                      setCheckoutPaymentMethodDisplay("Наличные при получении")
+                    }}
+                    className="w-4 h-4 text-brand"
+                  />
+                  <span>Наличные при получении</span>
+                </label>
+                <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-200 rounded-lg hover:border-gray-300">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="card"
+                    checked={checkoutPaymentMethod === "card"}
+                    onChange={(e) => {
+                      setCheckoutPaymentMethod(e.target.value)
+                      setCheckoutPaymentMethodDisplay("Банковская карта")
+                    }}
+                    className="w-4 h-4 text-brand"
+                  />
+                  <span>Банковская карта (введите данные при оформлении)</span>
+                </label>
               </div>
             )}
             <Button
               className="w-full bg-brand hover:bg-brand-hover text-white"
-              onClick={handlePaymentSubmit}
+              onClick={() => {
+                if (checkoutPaymentMethod) {
+                  setCheckoutStep(null)
+                } else {
+                  toast.error('Пожалуйста, выберите способ оплаты')
+                }
+              }}
               disabled={!checkoutPaymentMethod || isSubmittingOrder}
             >
-              {isSubmittingOrder ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Оформляем заказ...
-                </>
-              ) : (
-                'Оформить заказ'
-              )}
+              Сохранить и закрыть
             </Button>
           </div>
         </DialogContent>
