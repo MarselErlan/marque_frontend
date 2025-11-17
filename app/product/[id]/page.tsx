@@ -743,7 +743,7 @@ export default function ProductDetailPage() {
               <h2 className="text-xl lg:text-2xl font-bold text-black">
                 Отзывы ({product.rating_count || product.reviews.length})
               </h2>
-              <Link href={`#reviews`} className="text-brand hover:text-purple-700 text-sm font-medium flex items-center gap-1">
+              <Link href={`/product/${params.id}/reviews`} className="text-brand hover:text-purple-700 text-sm font-medium flex items-center gap-1">
                 ВСЕ ОТЗЫВЫ
                 <ArrowRight className="w-4 h-4" />
               </Link>
