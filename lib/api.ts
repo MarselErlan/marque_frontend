@@ -58,6 +58,20 @@ export async function apiRequest<T = any>(
     headers['Content-Type'] = 'application/json'
   }
   
+  // Add market header from localStorage if available
+  // Normalize market value: "United States" -> "US", "Kyrgyzstan" -> "KG"
+  const market = localStorage.getItem('market') || localStorage.getItem('location')
+  if (market) {
+    let normalizedMarket = market.toUpperCase()
+    // Handle full country names
+    if (normalizedMarket === 'UNITED STATES' || normalizedMarket.includes('US')) {
+      normalizedMarket = 'US'
+    } else if (normalizedMarket === 'KYRGYZSTAN' || normalizedMarket.includes('KG')) {
+      normalizedMarket = 'KG'
+    }
+    headers['X-Market'] = normalizedMarket
+  }
+  
   // Add any custom headers from options
   if (fetchOptions.headers) {
     Object.assign(headers, fetchOptions.headers)
