@@ -88,8 +88,8 @@ export default function MarquePage() {
         
         // Load products (banners are optional)
         try {
-          // Use regular products API instead of best-sellers to show all products
-          const productsData = await productsApi.getAll(25)
+          // Use best-sellers API to show products sorted by actual sales
+          const productsData = await productsApi.getBestSellers(25)
           if (productsData && productsData.length > 0) {
             setRandomProducts(productsData)
             setHasMoreProducts(productsData.length === 25)
@@ -529,8 +529,8 @@ export default function MarquePage() {
         setIsLoadingMore(true)
         
         try {
-          // Calculate offset based on current products
-          const nextBatch = await productsApi.getAll(15)
+          // Load more best-sellers products
+          const nextBatch = await productsApi.getBestSellers(15)
           
           if (nextBatch && nextBatch.length > 0) {
             setRandomProducts(prev => [...prev, ...nextBatch])
