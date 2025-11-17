@@ -704,31 +704,37 @@ export default function ProductDetailPage() {
               <h2 className="text-xl lg:text-2xl font-bold text-black">
                 Отзывы ({product.rating_count || product.reviews.length})
               </h2>
+              <Link href={`#reviews`} className="text-brand hover:text-purple-700 text-sm font-medium flex items-center gap-1">
+                ВСЕ ОТЗЫВЫ
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
             <div className="flex space-x-4 overflow-x-auto pb-4 -mx-4 px-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:mx-0 lg:px-0">
               {product.reviews.slice(0, 3).map((review: any) => (
                 <div key={review.id} className="bg-white rounded-lg p-4 flex-shrink-0 w-80 lg:w-auto">
-                  <div className="flex items-center space-x-3 mb-4">
-                    {/* User Profile Picture */}
-                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
-                      {review.user_profile_image ? (
-                        <img
-                          src={getImageUrl(review.user_profile_image)}
-                          alt={review.user_name || "Покупатель"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-brand font-bold text-lg">
-                          {review.user_name ? review.user_name.charAt(0).toUpperCase() : "П"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-black truncate">
-                        {review.user_name || "Покупатель"}
-                      </h4>
-                      <div className="flex items-center space-x-2">
+                  {/* User Info Row */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      {/* User Profile Picture */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
+                        {review.user_profile_image ? (
+                          <img
+                            src={getImageUrl(review.user_profile_image)}
+                            alt={review.user_name || "Покупатель"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-brand font-bold text-lg">
+                            {review.user_name ? review.user_name.charAt(0).toUpperCase() : "П"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-black truncate mb-1">
+                          {review.user_name || "Покупатель"}
+                        </h4>
+                        {/* Star Rating */}
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
                             <Star
@@ -739,22 +745,25 @@ export default function ProductDetailPage() {
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
-                          {new Date(review.created_at).toLocaleDateString('ru-RU')}
-                        </span>
                       </div>
                     </div>
+                    {/* Date on the right */}
+                    <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                      {(() => {
+                        const date = new Date(review.created_at)
+                        const day = String(date.getDate()).padStart(2, '0')
+                        const month = String(date.getMonth() + 1).padStart(2, '0')
+                        const year = date.getFullYear()
+                        return `${day}/${month}/${year}`
+                      })()}
+                    </span>
                   </div>
 
-                  {review.text && (
-                    <p className="text-gray-700 text-sm line-clamp-4 mb-3">{review.text}</p>
-                  )}
-
-                  {/* Review Images */}
+                  {/* Review Images - Horizontal Row */}
                   {review.images && review.images.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mt-3">
+                    <div className="flex space-x-2 mb-3 overflow-x-auto">
                       {review.images.slice(0, 6).map((img: any, idx: number) => (
-                        <div key={img.id || idx} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                        <div key={img.id || idx} className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                           <img
                             src={getImageUrl(img.url)}
                             alt={`Review image ${idx + 1}`}
@@ -763,6 +772,13 @@ export default function ProductDetailPage() {
                         </div>
                       ))}
                     </div>
+                  )}
+
+                  {/* Review Text */}
+                  {review.text && (
+                    <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
+                      {review.text}
+                    </p>
                   )}
                 </div>
               ))}
