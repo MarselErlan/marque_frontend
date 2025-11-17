@@ -469,7 +469,7 @@ export default function ProductDetailPage() {
                 <Heart className={`w-6 h-6 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
               </button>
               <button
-                className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors shadow-sm"
+                className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand rounded-lg transition-colors shadow-sm"
               >
                 <Sparkles className="w-5 h-5" strokeWidth={1.5} />
                 <span className="text-sm font-medium">Манекен</span>
@@ -502,7 +502,7 @@ export default function ProductDetailPage() {
                   className="w-full h-full object-cover transition-opacity duration-300"
                 />
                 <button
-                  className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors shadow-sm"
+                  className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand rounded-lg transition-colors shadow-sm"
                 >
                   <Sparkles className="w-5 h-5" strokeWidth={1.5} />
                   <span className="text-sm font-medium">Манекен</span>
