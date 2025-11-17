@@ -90,12 +90,32 @@ export default function MarquePage() {
         try {
           // Use best-sellers API to show products sorted by actual sales
           const productsData = await productsApi.getBestSellers(25)
+          console.log('Best sellers products loaded:', productsData?.length || 0, productsData)
           if (productsData && productsData.length > 0) {
             setRandomProducts(productsData)
             setHasMoreProducts(productsData.length === 25)
+          } else {
+            // Fallback to regular products if best-sellers is empty
+            console.log('Best sellers empty, loading regular products...')
+            const regularProducts = await productsApi.getAll(25)
+            console.log('Regular products loaded:', regularProducts?.length || 0)
+            if (regularProducts && regularProducts.length > 0) {
+              setRandomProducts(regularProducts)
+              setHasMoreProducts(regularProducts.length === 25)
+            }
           }
         } catch (err) {
             console.error('Failed to load products:', err)
+            // Try fallback to regular products on error
+            try {
+              const regularProducts = await productsApi.getAll(25)
+              if (regularProducts && regularProducts.length > 0) {
+                setRandomProducts(regularProducts)
+                setHasMoreProducts(regularProducts.length === 25)
+              }
+            } catch (fallbackErr) {
+              console.error('Failed to load fallback products:', fallbackErr)
+            }
         }
         
         // Load banners separately (don't block on errors)
@@ -709,6 +729,11 @@ export default function MarquePage() {
           <section className="mb-12">
             {isLoadingInitial ? (
               <ProductCardSkeletonGrid count={12} />
+            ) : randomProducts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg mb-2">Товары не найдены</p>
+                <p className="text-gray-400 text-sm">Попробуйте обновить страницу или изменить фильтры</p>
+              </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4" style={{minHeight: '1156px'}}>
                 {randomProducts.map((product, i) => (
