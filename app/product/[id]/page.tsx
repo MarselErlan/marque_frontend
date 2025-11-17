@@ -23,6 +23,54 @@ type GalleryImage = {
   color?: string | null
 }
 
+// Star Rating Component with partial fill support
+const StarRating = ({ rating, size = "w-4 h-4" }: { rating: number; size?: string }) => {
+  const fullStars = Math.floor(rating)
+  const hasPartialStar = rating % 1 !== 0
+  const partialFill = rating % 1
+
+  return (
+    <div className="flex items-center">
+      {[...Array(5)].map((_, i) => {
+        if (i < fullStars) {
+          // Fully filled star
+          return (
+            <Star
+              key={i}
+              className={`${size} text-yellow-400 fill-current`}
+            />
+          )
+        } else if (i === fullStars && hasPartialStar) {
+          // Partially filled star
+          return (
+            <div key={i} className={`${size} relative inline-block`}>
+              {/* Background (empty) star */}
+              <Star className={`${size} text-gray-300 absolute inset-0`} />
+              {/* Partial fill using clip-path */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  clipPath: `inset(0 ${100 - partialFill * 100}% 0 0)`,
+                }}
+              >
+                <Star className={`${size} text-yellow-400 fill-current`} />
+              </div>
+            </div>
+          )
+        } else {
+          // Empty star
+          return (
+            <Star
+              key={i}
+              className={`${size} text-gray-300`}
+            />
+          )
+        }
+      })}
+    </div>
+  )
+}
+
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -519,16 +567,7 @@ export default function ProductDetailPage() {
               <div className="flex items-center space-x-4 text-sm text-gray-600">
                 <span>Продано {product.sold_count || 0}</span>
                 <div className="flex items-center space-x-1">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(product.rating_avg || 0) ? "text-yellow-400 fill-current" : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
+                  <StarRating rating={product.rating_avg || 0} size="w-4 h-4" />
                   <span>
                     {product.rating_avg?.toFixed(1) || '0.0'} ({product.rating_count || 0})
                   </span>
