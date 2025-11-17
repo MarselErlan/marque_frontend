@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useMemo } from "react"
-import { Star, ArrowRight, Check, Heart, ArrowLeft } from "lucide-react"
+import { Star, ArrowRight, Check, Heart, ArrowLeft, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { productsApi } from "@/lib/api"
@@ -468,6 +468,12 @@ export default function ProductDetailPage() {
               >
                 <Heart className={`w-6 h-6 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
               </button>
+              <button
+                className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors shadow-sm"
+              >
+                <Sparkles className="w-5 h-5" strokeWidth={1.5} />
+                <span className="text-sm font-medium">Манекен</span>
+              </button>
             </div>
             
             {/* Desktop Gallery */}
@@ -489,12 +495,18 @@ export default function ProductDetailPage() {
                   </button>
                 ))}
               </div>
-              <div className="flex-1 aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="flex-1 aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center relative">
                 <img
                   src={getDisplayImage(selectedImageIndex)}
                   alt={galleryImages[selectedImageIndex]?.alt || product.title}
                   className="w-full h-full object-cover transition-opacity duration-300"
                 />
+                <button
+                  className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors shadow-sm"
+                >
+                  <Sparkles className="w-5 h-5" strokeWidth={1.5} />
+                  <span className="text-sm font-medium">Манекен</span>
+                </button>
               </div>
             </div>
           </div>
@@ -561,13 +573,6 @@ export default function ProductDetailPage() {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {colorsForSelectedSize.map(({ name: colorName, hex }) => {
-                    const hasVariantImage = product.skus?.some(
-                      (sku: any) =>
-                        sku.color === colorName &&
-                        sku.size === selectedSize &&
-                        sku.variant_image
-                    )
-
                     const backgroundColor = hex || "#f3f4f6"
 
                     return (
@@ -591,12 +596,6 @@ export default function ProductDetailPage() {
                           className="absolute inset-1 rounded-full border border-black/5"
                           style={{ backgroundColor }}
                         />
-                        {hasVariantImage && (
-                          <span
-                            className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"
-                            title="Есть фото варианта"
-                          />
-                        )}
                       </button>
                     )
                   })}
