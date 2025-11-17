@@ -127,15 +127,12 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           </div>
           {/* Right Section */}
           <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <div className="flex flex-col items-center cursor-pointer hover:text-brand relative group transition-all">
-                <img 
-                  src="/images/adobeman.png" 
-                  alt="Mannequin" 
-                  className="w-14 h-14 mb-1 object-contain"
-                />
-              </div>
+            <Link href="/" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
+              <Sparkles className="w-6 h-6 mb-1" strokeWidth={1.5} />
+              <span>Манекен</span>
+            </Link>
             <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-              <Heart className="w-5 h-5 mb-1" />
+              <Heart className="w-6 h-6 mb-1" strokeWidth={1.5} />
               {wishlistItemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                   {wishlistItemCount}
@@ -145,7 +142,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             </Link>
             <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
               <div className="relative">
-                <ShoppingCart className="w-5 h-5 mb-1" />
+                <ShoppingCart className="w-6 h-6 mb-1" strokeWidth={1.5} />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                     {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -163,18 +160,18 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               {auth.isLoggedIn ? (
                 isOnProfilePage ? (
                   <>
-                    <LogOut className="w-5 h-5 mb-1" />
+                    <LogOut className="w-6 h-6 mb-1" strokeWidth={1.5} />
                     <span>Выйти</span>
                   </>
                 ) : (
                   <>
-                    <User className="w-5 h-5 mb-1" />
+                    <User className="w-6 h-6 mb-1" strokeWidth={1.5} />
                     <span>Профиль</span>
                   </>
                 )
               ) : (
                 <>
-                  <User className="w-5 h-5 mb-1" />
+                  <User className="w-6 h-6 mb-1" strokeWidth={1.5} />
                   <span>Войти</span>
                 </>
               )}
