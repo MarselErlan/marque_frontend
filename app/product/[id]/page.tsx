@@ -710,11 +710,24 @@ export default function ProductDetailPage() {
               {product.reviews.slice(0, 3).map((review: any) => (
                 <div key={review.id} className="bg-white rounded-lg p-4 flex-shrink-0 w-80 lg:w-auto">
                   <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 bg-brand-light rounded-full flex items-center justify-center">
-                      <span className="text-brand font-bold">★</span>
+                    {/* User Profile Picture */}
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
+                      {review.user_profile_image ? (
+                        <img
+                          src={getImageUrl(review.user_profile_image)}
+                          alt={review.user_name || "Покупатель"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-brand font-bold text-lg">
+                          {review.user_name ? review.user_name.charAt(0).toUpperCase() : "П"}
+                        </span>
+                      )}
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-black">Покупатель</h4>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-black truncate">
+                        {review.user_name || "Покупатель"}
+                      </h4>
                       <div className="flex items-center space-x-2">
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
@@ -726,7 +739,7 @@ export default function ProductDetailPage() {
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
                           {new Date(review.created_at).toLocaleDateString('ru-RU')}
                         </span>
                       </div>
@@ -734,7 +747,22 @@ export default function ProductDetailPage() {
                   </div>
 
                   {review.text && (
-                    <p className="text-gray-700 text-sm line-clamp-4">{review.text}</p>
+                    <p className="text-gray-700 text-sm line-clamp-4 mb-3">{review.text}</p>
+                  )}
+
+                  {/* Review Images */}
+                  {review.images && review.images.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {review.images.slice(0, 6).map((img: any, idx: number) => (
+                        <div key={img.id || idx} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                          <img
+                            src={getImageUrl(img.url)}
+                            alt={`Review image ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
