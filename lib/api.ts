@@ -726,11 +726,15 @@ export const profileApi = {
         shipped_date: string | null
         delivered_date: string | null
         items: Array<{
+          id?: number
+          product_id?: number | null
           product_name: string
           quantity: number
           price: number
           subtotal: number
           image_url: string
+          size?: string | null
+          color?: string | null
         }>
       }
     }>(`/profile/orders/${orderId}`, { requiresAuth: true }),
@@ -832,6 +836,53 @@ export const ordersApi = {
     apiRequest(`${API_CONFIG.ENDPOINTS.ORDER_DETAIL}/${orderId}`, {
       requiresAuth: true,
     }),
+  
+  createReview: (data: {
+    order_id: number
+    product_id: number
+    rating: number
+    comment: string
+    title?: string
+    images: File[]
+  }) => {
+    const formData = new FormData()
+    formData.append('order_id', data.order_id.toString())
+    formData.append('product_id', data.product_id.toString())
+    formData.append('rating', data.rating.toString())
+    formData.append('comment', data.comment)
+    if (data.title) {
+      formData.append('title', data.title)
+    }
+    // Append all images with the same field name
+    data.images.forEach((image) => {
+      formData.append('images', image)
+    })
+
+    return apiRequest<{
+      id: number
+      user: number
+      product: number
+      order: number
+      rating: number
+      title: string | null
+      comment: string
+      is_verified_purchase: boolean
+      is_approved: boolean
+      created_at: string
+      updated_at: string
+      images: Array<{
+        id: number
+        image: string
+        image_url: string
+        created_at: string
+      }>
+      user_name: string
+    }>(`${API_CONFIG.ENDPOINTS.ORDERS_CREATE.replace('/create', '')}/review/create`, {
+      method: 'POST',
+      requiresAuth: true,
+      body: formData,
+    })
+  },
 }
 
 // Store Manager API

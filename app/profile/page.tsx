@@ -36,6 +36,7 @@ import {
 import { AuthModals } from "@/components/AuthModals"
 import { getImageUrl } from "@/lib/utils"
 import { toast } from "sonner"
+import { ordersApi, profileApi } from "@/lib/api"
 
 interface ReviewPhoto {
   id: number
@@ -162,10 +163,12 @@ export default function ProfilePage() {
   
   // Authentication states are now managed by the useAuth hook.
   const [selectedOrder, setSelectedOrder] = useState<UiOrder | null>(null)
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState("")
   const [reviewPhotos, setReviewPhotos] = useState<ReviewPhoto[]>([])
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
   const [editingAddress, setEditingAddress] = useState<BackendAddress | null>(null)
   const [showAddressForm, setShowAddressForm] = useState(false)
   const createEmptyAddress = (): AddressFormState => ({
@@ -594,20 +597,58 @@ export default function ProfilePage() {
     setReviewPhotos((prev) => prev.filter((photo) => photo.id !== photoId))
   }
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (reviewPhotos.length === 0) {
-      alert("Фото обязательно для отзыва")
+      toast.error("Фото обязательно для отзыва")
       return
     }
     if (reviewRating === 0) {
-      alert("Пожалуйста, поставьте оценку")
+      toast.error("Пожалуйста, поставьте оценку")
       return
     }
-    // Submit review logic here
-    setShowReviewForm(false)
-    setReviewRating(0)
-    setReviewText("")
-    setReviewPhotos([])
+    if (!reviewText.trim()) {
+      toast.error("Пожалуйста, добавьте текст отзыва")
+      return
+    }
+    if (!selectedOrder) {
+      toast.error("Заказ не выбран")
+      return
+    }
+    if (!selectedProductId) {
+      toast.error("Товар не выбран")
+      return
+    }
+
+    setIsSubmittingReview(true)
+    try {
+      const imageFiles = reviewPhotos.map((photo) => photo.file)
+      
+      await ordersApi.createReview({
+        order_id: selectedOrder.id,
+        product_id: selectedProductId,
+        rating: reviewRating,
+        comment: reviewText.trim(),
+        images: imageFiles,
+      })
+
+      toast.success("Отзыв успешно отправлен! Спасибо за вашу оценку.")
+      
+      // Reset form
+      setShowReviewForm(false)
+      setReviewRating(0)
+      setReviewText("")
+      setReviewPhotos([])
+      setSelectedProductId(null)
+      
+      // Refresh orders to update review status
+      fetchOrders()
+    } catch (error: any) {
+      console.error('Review submission error:', error)
+      const errorMessage = error?.message || error?.detail || "Не удалось отправить отзыв. Попробуйте еще раз."
+      toast.error(errorMessage)
+    } finally {
+      setIsSubmittingReview(false)
+    }
   }
 
   const handleAddPayment = async () => {
@@ -962,8 +1003,29 @@ export default function ProfilePage() {
                               variant="outline"
                               size="sm"
                               className="px-6 py-2 text-brand border-brand hover:bg-brand hover:text-white transition-colors"
-                              onClick={() => {
+                              onClick={async () => {
                                 setSelectedOrder(order)
+                                // Fetch order detail to get product_id
+                                try {
+                                  const orderDetail = await profileApi.getOrderDetail(order.id)
+                                  if (orderDetail.order?.items && orderDetail.order.items.length > 0) {
+                                    // Use the first product's product_id
+                                    const firstItem = orderDetail.order.items[0] as any
+                                    if (firstItem.product_id) {
+                                      setSelectedProductId(firstItem.product_id)
+                                    } else {
+                                      toast.error("Не удалось определить товар для отзыва")
+                                      return
+                                    }
+                                  } else {
+                                    toast.error("В заказе нет товаров")
+                                    return
+                                  }
+                                } catch (error) {
+                                  console.error('Failed to fetch order detail:', error)
+                                  toast.error("Не удалось загрузить детали заказа")
+                                  return
+                                }
                                 setShowReviewForm(true)
                               }}
                             >
@@ -1016,7 +1078,28 @@ export default function ProfilePage() {
                   {selectedOrder.canReview && (
                     <Button
                       className="bg-brand hover:bg-brand-hover text-white"
-                      onClick={() => setShowReviewForm(true)}
+                      onClick={async () => {
+                        try {
+                          const orderDetail = await profileApi.getOrderDetail(selectedOrder.id)
+                          if (orderDetail.order?.items && orderDetail.order.items.length > 0) {
+                            const firstItem = orderDetail.order.items[0] as any
+                            if (firstItem.product_id) {
+                              setSelectedProductId(firstItem.product_id)
+                            } else {
+                              toast.error("Не удалось определить товар для отзыва")
+                              return
+                            }
+                          } else {
+                            toast.error("В заказе нет товаров")
+                            return
+                          }
+                        } catch (error) {
+                          console.error('Failed to fetch order detail:', error)
+                          toast.error("Не удалось загрузить детали заказа")
+                          return
+                        }
+                        setShowReviewForm(true)
+                      }}
                     >
                       Написать отзыв
                     </Button>
@@ -1112,9 +1195,16 @@ export default function ProfilePage() {
                 <Button
                   onClick={handleSubmitReview}
                   className="w-full bg-brand hover:bg-brand-hover text-white"
-                  disabled={reviewPhotos.length === 0 || reviewRating === 0}
+                  disabled={reviewPhotos.length === 0 || reviewRating === 0 || isSubmittingReview || !selectedProductId}
                 >
-                  Отправить отзыв
+                  {isSubmittingReview ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Отправка...
+                    </span>
+                  ) : (
+                    "Отправить отзыв"
+                  )}
                 </Button>
 
                 {/* Order Items */}

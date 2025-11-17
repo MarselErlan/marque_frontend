@@ -40,6 +40,7 @@ export interface Order {
   items_count: number
   items: Array<{
     id?: number
+    product_id?: number | null
     product_name: string
     quantity: number
     price: number
