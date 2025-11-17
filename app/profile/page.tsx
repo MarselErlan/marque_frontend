@@ -83,6 +83,7 @@ interface UiOrder {
   items: UiOrderItem[]
   isActive: boolean
   canReview: boolean
+  hasReview?: boolean
 }
 
 interface UiNotification {
@@ -375,7 +376,7 @@ export default function ProfilePage() {
         deliveryDate: formatDate(order.requested_delivery_date || order.delivery_date),
         items,
         isActive: !["delivered", "cancelled", "refunded"].includes(order.status),
-        canReview: order.status === "delivered",
+        canReview: order.status === "delivered" && !order.has_review,
       }
     })
   }, [backendOrders])
@@ -591,6 +592,8 @@ export default function ProfilePage() {
       url: URL.createObjectURL(file),
     }))
     setReviewPhotos((prev) => [...prev, ...newPhotos])
+    // Reset input to allow selecting the same files again if needed
+    e.target.value = ''
   }
 
   const removePhoto = (photoId: number) => {
@@ -598,10 +601,6 @@ export default function ProfilePage() {
   }
 
   const handleSubmitReview = async () => {
-    if (reviewPhotos.length === 0) {
-      toast.error("Фото обязательно для отзыва")
-      return
-    }
     if (reviewRating === 0) {
       toast.error("Пожалуйста, поставьте оценку")
       return
@@ -621,14 +620,14 @@ export default function ProfilePage() {
 
     setIsSubmittingReview(true)
     try {
-      const imageFiles = reviewPhotos.map((photo) => photo.file)
+      const imageFiles = reviewPhotos.length > 0 ? reviewPhotos.map((photo) => photo.file) : []
       
       await ordersApi.createReview({
         order_id: selectedOrder.id,
         product_id: selectedProductId,
         rating: reviewRating,
         comment: reviewText.trim(),
-        images: imageFiles,
+        images: imageFiles.length > 0 ? imageFiles : undefined,
       })
 
       toast.success("Отзыв успешно отправлен! Спасибо за вашу оценку.")
@@ -993,7 +992,24 @@ export default function ProfilePage() {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => setSelectedOrder(order)}
+                            onClick={async () => {
+                              setSelectedOrder(order)
+                              // Fetch order detail to get latest has_review status
+                              try {
+                                const orderDetail = await profileApi.getOrderDetail(order.id)
+                                if (orderDetail.order?.has_review !== undefined) {
+                                  setSelectedOrder({
+                                    ...order,
+                                    hasReview: orderDetail.order.has_review,
+                                    canReview: order.status === "delivered" && !orderDetail.order.has_review
+                                  })
+                                }
+                              } catch (error) {
+                                console.error('Failed to fetch order detail:', error)
+                                // Still set the order even if detail fetch fails
+                                setSelectedOrder(order)
+                              }
+                            }}
                             className="px-6 py-2 border-gray-300 hover:border-gray-400"
                           >
                             Детали
@@ -1075,7 +1091,7 @@ export default function ProfilePage() {
                     <span className="text-sm text-gray-500">Доставка {selectedOrder.deliveryDate}</span>
                   </div>
 
-                  {selectedOrder.canReview && (
+                  {selectedOrder.canReview && !selectedOrder.hasReview && (
                     <Button
                       className="bg-brand hover:bg-brand-hover text-white"
                       onClick={async () => {
@@ -1088,6 +1104,10 @@ export default function ProfilePage() {
                             } else {
                               toast.error("Не удалось определить товар для отзыва")
                               return
+                            }
+                            // Update selectedOrder with has_review status
+                            if (orderDetail.order.has_review) {
+                              setSelectedOrder({ ...selectedOrder, hasReview: true, canReview: false })
                             }
                           } else {
                             toast.error("В заказе нет товаров")
@@ -1150,7 +1170,9 @@ export default function ProfilePage() {
 
                 {/* Photo Upload */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Добавьте фото (обязательно)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Добавьте фото (необязательно, можно загрузить несколько)
+                  </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                     <div className="text-center">
                       <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -1164,8 +1186,13 @@ export default function ProfilePage() {
                         id="photo-upload"
                       />
                       <label htmlFor="photo-upload" className="cursor-pointer text-brand hover:text-purple-700">
-                        Выберите файлы
+                        Выберите файлы (можно несколько)
                       </label>
+                      {reviewPhotos.length > 0 && (
+                        <p className="text-xs text-gray-400 mt-2">
+                          Загружено фото: {reviewPhotos.length}. Вы можете добавить еще.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -1195,7 +1222,7 @@ export default function ProfilePage() {
                 <Button
                   onClick={handleSubmitReview}
                   className="w-full bg-brand hover:bg-brand-hover text-white"
-                  disabled={reviewPhotos.length === 0 || reviewRating === 0 || isSubmittingReview || !selectedProductId}
+                  disabled={reviewRating === 0 || isSubmittingReview || !selectedProductId}
                 >
                   {isSubmittingReview ? (
                     <span className="flex items-center gap-2">

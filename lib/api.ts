@@ -691,8 +691,10 @@ export const profileApi = {
         currency: string
         order_date: string
         delivery_date: string | null
+        requested_delivery_date?: string | null
         delivery_address: string
         items_count: number
+        has_review?: boolean
         items: Array<{
           product_name: string
           quantity: number
@@ -725,6 +727,7 @@ export const profileApi = {
         confirmed_date: string | null
         shipped_date: string | null
         delivered_date: string | null
+        has_review?: boolean
         items: Array<{
           id?: number
           product_id?: number | null
@@ -843,7 +846,7 @@ export const ordersApi = {
     rating: number
     comment: string
     title?: string
-    images: File[]
+    images?: File[]
   }) => {
     const formData = new FormData()
     formData.append('order_id', data.order_id.toString())
@@ -853,10 +856,12 @@ export const ordersApi = {
     if (data.title) {
       formData.append('title', data.title)
     }
-    // Append all images with the same field name
-    data.images.forEach((image) => {
-      formData.append('images', image)
-    })
+    // Append all images with the same field name (if provided)
+    if (data.images && data.images.length > 0) {
+      data.images.forEach((image) => {
+        formData.append('images', image)
+      })
+    }
 
     return apiRequest<{
       id: number

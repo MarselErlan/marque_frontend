@@ -35,9 +35,10 @@ export interface Order {
   currency: string
   order_date: string
   delivery_date: string | null
-  requested_delivery_date: string | null
+  requested_delivery_date?: string | null
   delivery_address: string
   items_count: number
+  has_review?: boolean
   items: Array<{
     id?: number
     product_id?: number | null
