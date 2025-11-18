@@ -541,6 +541,9 @@ export const profileApi = {
     state?: string
     building?: string
     apartment?: string
+    entrance?: string
+    floor?: string
+    comment?: string
     city?: string
     postal_code?: string
     country?: string
@@ -563,6 +566,9 @@ export const profileApi = {
     state?: string
     building?: string
     apartment?: string
+    entrance?: string
+    floor?: string
+    comment?: string
     city?: string
     postal_code?: string
     country?: string

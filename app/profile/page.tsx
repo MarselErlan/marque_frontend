@@ -53,6 +53,9 @@ interface AddressFormState {
   postalCode: string
   building: string
   apartment: string
+  entrance: string
+  floor: string
+  comment: string
   isDefault: boolean
 }
 
@@ -181,6 +184,9 @@ export default function ProfilePage() {
     postalCode: "",
     building: "",
     apartment: "",
+    entrance: "",
+    floor: "",
+    comment: "",
     isDefault: false,
   })
   const [newAddress, setNewAddress] = useState<AddressFormState>(createEmptyAddress())
@@ -225,14 +231,27 @@ export default function ProfilePage() {
   }
 
   const composeFullAddress = (address: AddressFormState) => {
-    const parts = [
-      address.street?.trim(),
-      address.city?.trim(),
-      address.state?.trim(),
-      address.postalCode?.trim(),
-    ].filter(Boolean)
-
-    return parts.join(", ")
+    if (isUSLocation) {
+      // US format: street, city, state, postalCode
+      const parts = [
+        address.street?.trim(),
+        address.city?.trim(),
+        address.state?.trim(),
+        address.postalCode?.trim(),
+      ].filter(Boolean)
+      return parts.join(", ")
+    } else {
+      // KG format: street, building, apartment, entrance, floor, city
+      const parts = [
+        address.street?.trim() ? `ул. ${address.street.trim()}` : null,
+        address.building?.trim() ? `д. ${address.building.trim()}` : null,
+        address.apartment?.trim() ? `кв. ${address.apartment.trim()}` : null,
+        address.entrance?.trim() ? `подъезд ${address.entrance.trim()}` : null,
+        address.floor?.trim() ? `этаж ${address.floor.trim()}` : null,
+        address.city?.trim(),
+      ].filter(Boolean)
+      return parts.join(", ")
+    }
   }
 
   const notifications: UiNotification[] = useMemo(() => {
@@ -458,11 +477,6 @@ export default function ProfilePage() {
   }
 
   const handleAddAddress = async () => {
-    if (!isUSLocation && !newAddress.fullAddress.trim()) {
-      toast.error("Введите адрес доставки")
-      return
-    }
-
     if (!newAddress.city.trim()) {
       toast.error("Введите город")
       return
@@ -481,6 +495,16 @@ export default function ProfilePage() {
         toast.error("Укажите почтовый индекс")
         return
       }
+    } else {
+      // KG validation
+      if (!newAddress.street.trim()) {
+        toast.error("Введите улицу")
+        return
+      }
+      if (!newAddress.building.trim()) {
+        toast.error("Введите номер дома")
+        return
+      }
     }
 
     const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
@@ -497,6 +521,11 @@ export default function ProfilePage() {
       city: newAddress.city || undefined,
       state: isUSLocation ? newAddress.state || undefined : undefined,
       postal_code: newAddress.postalCode || undefined,
+      building: newAddress.building || undefined,
+      apartment: newAddress.apartment || undefined,
+      entrance: newAddress.entrance || undefined,
+      floor: newAddress.floor || undefined,
+      comment: newAddress.comment || undefined,
       country:
         profile?.country ||
         (isUSLocation ? "United States" : "Kyrgyzstan"),
@@ -521,6 +550,9 @@ export default function ProfilePage() {
       postalCode: address.postal_code || "",
       building: address.building || "",
       apartment: address.apartment || "",
+      entrance: (address as any).entrance || "",
+      floor: (address as any).floor || "",
+      comment: (address as any).comment || "",
       isDefault: address.is_default || false,
     })
     setShowAddressForm(true)
@@ -528,10 +560,6 @@ export default function ProfilePage() {
 
   const handleUpdateAddress = async () => {
     if (!editingAddress) return
-    if (!isUSLocation && !newAddress.fullAddress.trim()) {
-      toast.error("Введите адрес доставки")
-      return
-    }
 
     if (!newAddress.city.trim()) {
       toast.error("Введите город")
@@ -551,6 +579,16 @@ export default function ProfilePage() {
         toast.error("Укажите почтовый индекс")
         return
       }
+    } else {
+      // KG validation
+      if (!newAddress.street.trim()) {
+        toast.error("Введите улицу")
+        return
+      }
+      if (!newAddress.building.trim()) {
+        toast.error("Введите номер дома")
+        return
+      }
     }
 
     const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
@@ -567,6 +605,11 @@ export default function ProfilePage() {
       city: newAddress.city || undefined,
       state: isUSLocation ? newAddress.state || undefined : undefined,
       postal_code: newAddress.postalCode || undefined,
+      building: newAddress.building || undefined,
+      apartment: newAddress.apartment || undefined,
+      entrance: newAddress.entrance || undefined,
+      floor: newAddress.floor || undefined,
+      comment: newAddress.comment || undefined,
       country:
         profile?.country ||
         (isUSLocation ? "United States" : "Kyrgyzstan"),
@@ -1362,70 +1405,155 @@ export default function ProfilePage() {
                       </div>
                     </>
                   ) : (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Адрес *</label>
-                      <Input
-                        type="text"
-                        value={newAddress.fullAddress}
-                        onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
-                        placeholder="ул. Название, дом 123, кв. 45"
-                        className="w-full"
-                        required
-                      />
-                    </div>
+                    <>
+                      {/* KG User Address Form - Matching mobile design */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                        <Input
+                          type="text"
+                          value={newAddress.city}
+                          onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                          placeholder="Бишкек"
+                          className="w-full"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Улица *</label>
+                        <Input
+                          type="text"
+                          value={newAddress.street}
+                          onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                          placeholder="Юнусалиева"
+                          className="w-full"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Дом *</label>
+                          <Input
+                            type="text"
+                            value={newAddress.building}
+                            onChange={(e) => setNewAddress({ ...newAddress, building: e.target.value })}
+                            placeholder="23"
+                            className="w-full"
+                            required
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Квартира</label>
+                          <Input
+                            type="text"
+                            value={newAddress.apartment}
+                            onChange={(e) => setNewAddress({ ...newAddress, apartment: e.target.value })}
+                            placeholder="12"
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Подъезд</label>
+                          <Input
+                            type="text"
+                            value={newAddress.entrance}
+                            onChange={(e) => setNewAddress({ ...newAddress, entrance: e.target.value })}
+                            placeholder="1"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Этаж</label>
+                          <Input
+                            type="text"
+                            value={newAddress.floor}
+                            onChange={(e) => setNewAddress({ ...newAddress, floor: e.target.value })}
+                            placeholder="5"
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Комментарий к заказу
+                        </label>
+                        <Textarea
+                          value={newAddress.comment}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            if (value.length <= 200) {
+                              setNewAddress({ ...newAddress, comment: value })
+                            }
+                          }}
+                          placeholder="Код от домофона #1243"
+                          className="w-full min-h-[100px]"
+                          maxLength={200}
+                        />
+                        <div className="text-right text-xs text-gray-500 mt-1">
+                          {newAddress.comment.length}/200
+                        </div>
+                      </div>
+                    </>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
-                    <Input
-                      type="text"
-                      value={newAddress.city}
-                      onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                      placeholder={isUSLocation ? "Chicago" : "Бишкек"}
-                      className="w-full"
-                      required
-                    />
-                  </div>
+                  {isUSLocation && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                        <Input
+                          type="text"
+                          value={newAddress.city}
+                          onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                          placeholder="Chicago"
+                          className="w-full"
+                          required
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {isUSLocation ? "Штат / Регион *" : "Регион"}
-                    </label>
-                    <Input
-                      type="text"
-                      value={newAddress.state}
-                      onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                      placeholder={isUSLocation ? "IL" : "Чуйская область"}
-                      className="w-full"
-                      required={isUSLocation}
-                    />
-                  </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Штат / Регион *</label>
+                        <Input
+                          type="text"
+                          value={newAddress.state}
+                          onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                          placeholder="IL"
+                          className="w-full"
+                          required
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {isUSLocation ? "ZIP / Почтовый индекс *" : "Почтовый индекс"}
-                    </label>
-                    <Input
-                      type="text"
-                      value={newAddress.postalCode}
-                      onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
-                      placeholder={isUSLocation ? "60074" : "720000"}
-                      className="w-full"
-                      required={isUSLocation}
-                    />
-                  </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">ZIP / Почтовый индекс *</label>
+                        <Input
+                          type="text"
+                          value={newAddress.postalCode}
+                          onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
+                          placeholder="60074"
+                          className="w-full"
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
 
                   <div className="flex space-x-4 pt-4">
                     <Button
                       onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
                       className="flex-1 bg-brand hover:bg-brand-hover text-white"
                       disabled={
-                        (!isUSLocation && !newAddress.fullAddress.trim()) ||
                         !newAddress.city.trim() ||
                         (isUSLocation &&
                           (!newAddress.street.trim() ||
                             !newAddress.state.trim() ||
-                            !newAddress.postalCode.trim()))
+                            !newAddress.postalCode.trim())) ||
+                        (!isUSLocation &&
+                          (!newAddress.street.trim() ||
+                            !newAddress.building.trim()))
                       }
                     >
                       {editingAddress ? "Сохранить изменения" : "Добавить адрес"}
