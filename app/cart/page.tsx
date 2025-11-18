@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard } from "lucide-react"
+import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -25,7 +25,8 @@ export default function CartPage() {
     isLoadingAddresses,
     paymentMethods,
     fetchPaymentMethods,
-    isLoadingPayments
+    isLoadingPayments,
+    profile
   } = useProfile()
 
   const [isClient, setIsClient] = useState(false)
@@ -62,17 +63,40 @@ export default function CartPage() {
   const [checkoutAddress, setCheckoutAddress] = useState("")
   const [checkoutPaymentMethodDisplay, setCheckoutPaymentMethodDisplay] = useState("")
   const [showAddressForm, setShowAddressForm] = useState(false)
-  const [newAddress, setNewAddress] = useState({
-    title: "",
-    full_address: "",
+  
+  // Address form state matching profile page structure
+  const createEmptyAddress = () => ({
+    label: "",
+    fullAddress: "",
     street: "",
     city: "",
     state: "",
-    postal_code: "",
+    postalCode: "",
     building: "",
     apartment: "",
-    is_default: false,
+    isDefault: false,
   })
+  const [newAddress, setNewAddress] = useState(createEmptyAddress())
+  const resetAddressForm = () => setNewAddress(createEmptyAddress())
+  
+  // Get user location for conditional rendering
+  const userLocation = (
+    profile?.location ||
+    profile?.market ||
+    'KG'
+  ).toUpperCase()
+  const isUSLocation = userLocation === 'US'
+  
+  // Compose full address helper
+  const composeFullAddress = (address: typeof newAddress) => {
+    const parts = [
+      address.street?.trim(),
+      address.city?.trim(),
+      address.state?.trim(),
+      address.postalCode?.trim(),
+    ].filter(Boolean)
+    return parts.join(", ")
+  }
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
   const [isCreatingAddress, setIsCreatingAddress] = useState(false)
@@ -213,10 +237,29 @@ export default function CartPage() {
   }
 
   const handleCreateAddress = async () => {
-    if (!newAddress.full_address.trim()) {
-      toast.error('Введите адрес доставки')
+    // Validation matching profile page
+    if (isUSLocation) {
+      if (!newAddress.street.trim()) {
+        toast.error("Введите адрес")
+        return
+      }
+      if (!newAddress.state.trim()) {
+        toast.error("Введите штат/регион")
+        return
+      }
+      if (!newAddress.postalCode.trim()) {
+        toast.error("Укажите почтовый индекс")
+        return
+      }
+    }
+
+    const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
+
+    if (!fullAddressValue) {
+      toast.error("Введите полный адрес")
       return
     }
+
     if (!newAddress.city.trim()) {
       toast.error('Введите город')
       return
@@ -225,20 +268,22 @@ export default function CartPage() {
     setIsCreatingAddress(true)
     try {
       const success = await createAddress({
-        title: newAddress.title || 'Дом',
-        full_address: newAddress.full_address,
+        title: newAddress.label || 'Дом',
+        full_address: fullAddressValue,
         street: newAddress.street || undefined,
         city: newAddress.city,
-        state: newAddress.state || undefined,
-        postal_code: newAddress.postal_code || undefined,
+        state: isUSLocation ? newAddress.state || undefined : undefined,
+        postal_code: newAddress.postalCode || undefined,
+        country: profile?.country || (isUSLocation ? "United States" : "Kyrgyzstan"),
         building: newAddress.building || undefined,
         apartment: newAddress.apartment || undefined,
-        is_default: newAddress.is_default,
+        is_default: newAddress.isDefault || undefined,
       })
 
       if (success) {
         const updatedAddresses = await fetchAddresses()
         setShowAddressForm(false)
+        resetAddressForm()
         // Select the newly created address (last one in the list)
         if (updatedAddresses && updatedAddresses.length > 0) {
           const latest = updatedAddresses[updatedAddresses.length - 1]
@@ -555,11 +600,14 @@ export default function CartPage() {
       </footer>
 
       {/* Address Selection Modal */}
-      <Dialog open={checkoutStep === "address"} onOpenChange={() => {
-        setCheckoutStep(null)
-        setShowAddressForm(false)
-        setSelectedAddressId(null)
-        setCheckoutAddress("")
+      <Dialog open={checkoutStep === "address"} onOpenChange={(open) => {
+        if (!open) {
+          setCheckoutStep(null)
+          setShowAddressForm(false)
+          resetAddressForm()
+          setSelectedAddressId(null)
+          setCheckoutAddress("")
+        }
       }}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -571,97 +619,138 @@ export default function CartPage() {
                 <Loader2 className="w-6 h-6 animate-spin text-brand" />
               </div>
             ) : showAddressForm ? (
-              // Address Creation Form
+              // Address Creation Form - matching profile page structure
               <div className="space-y-4">
-                <Input
-                  placeholder="Название (например: Дом, Работа)"
-                  value={newAddress.title}
-                  onChange={(e) => setNewAddress({ ...newAddress, title: e.target.value })}
-                  className="w-full"
-                />
-                <Input
-                  placeholder="Полный адрес *"
-                  value={newAddress.full_address}
-                  onChange={(e) => setNewAddress({ ...newAddress, full_address: e.target.value })}
-                  className="w-full"
-                  required
-                />
-                <Input
-                  placeholder="Город *"
-                  value={newAddress.city}
-                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                  className="w-full"
-                  required
-                />
-                <Input
-                  placeholder="Улица (опционально)"
-                  value={newAddress.street}
-                  onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full"
-                />
-                <div className="flex space-x-2">
+                <div className="flex items-center space-x-4 mb-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowAddressForm(false)
+                      resetAddressForm()
+                    }}
+                    className="p-0"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <h3 className="text-lg font-semibold text-black">Добавить адрес</h3>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Название адреса</label>
                   <Input
-                    placeholder="Дом/Здание"
-                    value={newAddress.building}
-                    onChange={(e) => setNewAddress({ ...newAddress, building: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="Квартира/Офис"
-                    value={newAddress.apartment}
-                    onChange={(e) => setNewAddress({ ...newAddress, apartment: e.target.value })}
-                    className="flex-1"
+                    type="text"
+                    value={newAddress.label}
+                    onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
+                    placeholder="Дом, Работа, и т.д."
+                    className="w-full"
                   />
                 </div>
-                <Input
-                  placeholder="Штат/Регион (опционально)"
-                  value={newAddress.state}
-                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                  className="w-full"
-                />
-                <Input
-                  placeholder="Почтовый индекс (опционально)"
-                  value={newAddress.postal_code}
-                  onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })}
-                  className="w-full"
-                />
+
+                {isUSLocation ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Street address *</label>
+                      <Input
+                        type="text"
+                        value={newAddress.street}
+                        onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                        placeholder="123 Main St"
+                        className="w-full"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Full address (optional)</label>
+                      <Input
+                        type="text"
+                        value={newAddress.fullAddress}
+                        onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
+                        placeholder="123 Main St, Suite 5"
+                        className="w-full"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Адрес *</label>
+                    <Input
+                      type="text"
+                      value={newAddress.fullAddress}
+                      onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
+                      placeholder="ул. Название, дом 123, кв. 45"
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                  <Input
+                    type="text"
+                    value={newAddress.city}
+                    onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                    placeholder={isUSLocation ? "Chicago" : "Бишкек"}
+                    className="w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {isUSLocation ? "Штат / Регион *" : "Регион"}
+                  </label>
+                  <Input
+                    type="text"
+                    value={newAddress.state}
+                    onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                    placeholder={isUSLocation ? "IL" : "Чуйская область"}
+                    className="w-full"
+                    required={isUSLocation}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {isUSLocation ? "ZIP / Почтовый индекс *" : "Почтовый индекс"}
+                  </label>
+                  <Input
+                    type="text"
+                    value={newAddress.postalCode}
+                    onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
+                    placeholder={isUSLocation ? "60074" : "720000"}
+                    className="w-full"
+                    required={isUSLocation}
+                  />
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="is_default"
-                    checked={newAddress.is_default}
-                    onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
+                    checked={newAddress.isDefault}
+                    onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
                     className="w-4 h-4 text-brand"
                   />
                   <label htmlFor="is_default" className="text-sm text-gray-600">
                     Сделать адресом по умолчанию
                   </label>
                 </div>
-                <div className="flex space-x-2">
+
+                <div className="flex space-x-4 pt-4">
                   <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      setShowAddressForm(false)
-                      setNewAddress({
-                        title: "",
-                        full_address: "",
-                        street: "",
-                        city: "",
-                        state: "",
-                        postal_code: "",
-                        building: "",
-                        apartment: "",
-                        is_default: false,
-                      })
-                    }}
-                  >
-                    Отмена
-                  </Button>
-                  <Button
-                    className="flex-1 bg-brand hover:bg-brand-hover text-white"
                     onClick={handleCreateAddress}
-                    disabled={isCreatingAddress || !newAddress.full_address.trim() || !newAddress.city.trim()}
+                    className="flex-1 bg-brand hover:bg-brand-hover text-white"
+                    disabled={
+                      isCreatingAddress ||
+                      (!isUSLocation && !newAddress.fullAddress.trim()) ||
+                      !newAddress.city.trim() ||
+                      (isUSLocation &&
+                        (!newAddress.street.trim() ||
+                          !newAddress.state.trim() ||
+                          !newAddress.postalCode.trim()))
+                    }
                   >
                     {isCreatingAddress ? (
                       <>
@@ -669,8 +758,18 @@ export default function CartPage() {
                         Создание...
                       </>
                     ) : (
-                      'Создать адрес'
+                      'Добавить адрес'
                     )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowAddressForm(false)
+                      resetAddressForm()
+                    }}
+                    className="flex-1"
+                  >
+                    Отмена
                   </Button>
                 </div>
               </div>
@@ -723,79 +822,126 @@ export default function CartPage() {
                 </Button>
               </div>
             ) : (
-              // No addresses - show creation form
+              // No addresses - show creation form matching profile page
               <div className="space-y-4">
-                <p className="text-center text-gray-600 text-sm">
+                <p className="text-center text-gray-600 text-sm mb-4">
                   У вас нет сохраненных адресов. Создайте адрес для доставки.
                 </p>
-                <Input
-                  placeholder="Название (например: Дом, Работа)"
-                  value={newAddress.title}
-                  onChange={(e) => setNewAddress({ ...newAddress, title: e.target.value })}
-                  className="w-full"
-                />
-                <Input
-                  placeholder="Полный адрес *"
-                  value={newAddress.full_address}
-                  onChange={(e) => setNewAddress({ ...newAddress, full_address: e.target.value })}
-                  className="w-full"
-                  required
-                />
-                <Input
-                  placeholder="Город *"
-                  value={newAddress.city}
-                  onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                  className="w-full"
-                  required
-                />
-                <Input
-                  placeholder="Улица (опционально)"
-                  value={newAddress.street}
-                  onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full"
-                />
-                <div className="flex space-x-2">
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Название адреса</label>
                   <Input
-                    placeholder="Дом/Здание"
-                    value={newAddress.building}
-                    onChange={(e) => setNewAddress({ ...newAddress, building: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="Квартира/Офис"
-                    value={newAddress.apartment}
-                    onChange={(e) => setNewAddress({ ...newAddress, apartment: e.target.value })}
-                    className="flex-1"
+                    type="text"
+                    value={newAddress.label}
+                    onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
+                    placeholder="Дом, Работа, и т.д."
+                    className="w-full"
                   />
                 </div>
-                <Input
-                  placeholder="Штат/Регион (опционально)"
-                  value={newAddress.state}
-                  onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                  className="w-full"
-                />
-                <Input
-                  placeholder="Почтовый индекс (опционально)"
-                  value={newAddress.postal_code}
-                  onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })}
-                  className="w-full"
-                />
+
+                {isUSLocation ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Street address *</label>
+                      <Input
+                        type="text"
+                        value={newAddress.street}
+                        onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
+                        placeholder="123 Main St"
+                        className="w-full"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Full address (optional)</label>
+                      <Input
+                        type="text"
+                        value={newAddress.fullAddress}
+                        onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
+                        placeholder="123 Main St, Suite 5"
+                        className="w-full"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Адрес *</label>
+                    <Input
+                      type="text"
+                      value={newAddress.fullAddress}
+                      onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
+                      placeholder="ул. Название, дом 123, кв. 45"
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                  <Input
+                    type="text"
+                    value={newAddress.city}
+                    onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
+                    placeholder={isUSLocation ? "Chicago" : "Бишкек"}
+                    className="w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {isUSLocation ? "Штат / Регион *" : "Регион"}
+                  </label>
+                  <Input
+                    type="text"
+                    value={newAddress.state}
+                    onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
+                    placeholder={isUSLocation ? "IL" : "Чуйская область"}
+                    className="w-full"
+                    required={isUSLocation}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {isUSLocation ? "ZIP / Почтовый индекс *" : "Почтовый индекс"}
+                  </label>
+                  <Input
+                    type="text"
+                    value={newAddress.postalCode}
+                    onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
+                    placeholder={isUSLocation ? "60074" : "720000"}
+                    className="w-full"
+                    required={isUSLocation}
+                  />
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="is_default_new"
-                    checked={newAddress.is_default}
-                    onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
+                    checked={newAddress.isDefault}
+                    onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
                     className="w-4 h-4 text-brand"
                   />
                   <label htmlFor="is_default_new" className="text-sm text-gray-600">
                     Сделать адресом по умолчанию
                   </label>
                 </div>
+
                 <Button
                   className="w-full bg-brand hover:bg-brand-hover text-white"
                   onClick={handleCreateAddress}
-                  disabled={isCreatingAddress || !newAddress.full_address.trim() || !newAddress.city.trim()}
+                  disabled={
+                    isCreatingAddress ||
+                    (!isUSLocation && !newAddress.fullAddress.trim()) ||
+                    !newAddress.city.trim() ||
+                    (isUSLocation &&
+                      (!newAddress.street.trim() ||
+                        !newAddress.state.trim() ||
+                        !newAddress.postalCode.trim()))
+                  }
                 >
                   {isCreatingAddress ? (
                     <>
