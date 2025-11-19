@@ -116,6 +116,7 @@ export default function CartPage() {
     }
   }
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
+  const [orderComment, setOrderComment] = useState("") // Comment for the order/delivery
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
   const [isCreatingAddress, setIsCreatingAddress] = useState(false)
   const [orderNumber, setOrderNumber] = useState<string>("")
@@ -142,8 +143,22 @@ export default function CartPage() {
       const defaultAddress = addresses.find(addr => addr.is_default) || addresses[0]
       setSelectedAddressId(defaultAddress.id)
       setCheckoutAddress(defaultAddress.full_address)
+      // Pre-fill order comment with address comment if available
+      if (defaultAddress.comment && !orderComment) {
+        setOrderComment(defaultAddress.comment)
+      }
     }
   }, [addresses, selectedAddressId])
+
+  // Update order comment when address changes (only pre-fill if empty)
+  useEffect(() => {
+    if (selectedAddressId && addresses && !orderComment) {
+      const selectedAddress = addresses.find(addr => addr.id === selectedAddressId)
+      if (selectedAddress?.comment) {
+        setOrderComment(selectedAddress.comment)
+      }
+    }
+  }, [selectedAddressId, addresses])
 
   // Auto-select default payment method when payment methods are loaded
   useEffect(() => {
@@ -211,6 +226,10 @@ export default function CartPage() {
     setSelectedAddressId(address.id)
     setCheckoutAddress(address.full_address)
     setShowAddressForm(false)
+    // Pre-fill comment from address if available and no comment entered yet
+    if (address.comment && !orderComment) {
+      setOrderComment(address.comment)
+    }
     // If payment is already selected, go to review step, otherwise close modal
     if (checkoutPaymentMethod) {
       setCheckoutStep("review")
@@ -392,6 +411,7 @@ export default function CartPage() {
         delivery_city: selectedAddress?.city || undefined,
         delivery_state: selectedAddress?.state || undefined,
         delivery_postal_code: selectedAddress?.postal_code || undefined,
+        delivery_notes: orderComment.trim() || undefined,
         shipping_address_id: selectedAddressId || undefined,
         payment_method_used_id: selectedPaymentMethodId || undefined,
         payment_method: checkoutPaymentMethod,
@@ -1391,6 +1411,26 @@ export default function CartPage() {
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
+              </div>
+            </div>
+
+            {/* Order Comment */}
+            <div className="border-t pt-4">
+              <h3 className="text-base font-semibold text-black mb-3">Комментарий к заказу</h3>
+              <Textarea
+                value={orderComment}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value.length <= 500) {
+                    setOrderComment(value)
+                  }
+                }}
+                placeholder="Добавьте комментарий для курьера (например, код от домофона, время доставки и т.д.)"
+                className="w-full min-h-[100px]"
+                maxLength={500}
+              />
+              <div className="text-right text-xs text-gray-500 mt-1">
+                {orderComment.length}/500
               </div>
             </div>
 

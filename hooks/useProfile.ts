@@ -9,6 +9,9 @@ export interface Address {
   street: string | null
   building: string | null
   apartment: string | null
+  entrance: string | null
+  floor: string | null
+  comment: string | null
   city: string | null
   state: string | null
   postal_code: string | null
@@ -146,8 +149,15 @@ export const useProfile = () => {
     try {
       const data = await profileApi.getAddresses()
       if (data.success) {
-        setAddresses(data.addresses)
-        return data.addresses
+        // Ensure all addresses have the new fields (entrance, floor, comment)
+        const addressesWithNewFields = data.addresses.map((addr: any) => ({
+          ...addr,
+          entrance: addr.entrance || null,
+          floor: addr.floor || null,
+          comment: addr.comment || null,
+        }))
+        setAddresses(addressesWithNewFields)
+        return addressesWithNewFields
       }
       return []
     } catch (error) {
@@ -167,6 +177,9 @@ export const useProfile = () => {
     state?: string
     building?: string
     apartment?: string
+    entrance?: string
+    floor?: string
+    comment?: string
     city?: string
     postal_code?: string
     country?: string
@@ -195,6 +208,9 @@ export const useProfile = () => {
     state?: string
     building?: string
     apartment?: string
+    entrance?: string
+    floor?: string
+    comment?: string
     city?: string
     postal_code?: string
     country?: string
