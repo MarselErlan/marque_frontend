@@ -128,6 +128,7 @@ export default function AdminDashboard() {
     customer_phone: string
     delivery_address: string
     delivery_city: string | null
+    delivery_notes?: string | null
     total_amount: number
     currency: string
     amount: string
@@ -1193,6 +1194,11 @@ export default function AdminDashboard() {
                 </div>
 
                     <p className="text-sm text-gray-500">{order.delivery_address}</p>
+                    {order.delivery_notes && (
+                      <p className="text-sm text-purple-600 font-medium mt-1">
+                        💬 {order.delivery_notes}
+                      </p>
+                    )}
               </CardContent>
             </Card>
           ))}
@@ -1379,6 +1385,11 @@ export default function AdminDashboard() {
                 </div>
 
                     <p className="text-sm text-gray-500">{order.delivery_address}</p>
+                    {order.delivery_notes && (
+                      <p className="text-sm text-purple-600 font-medium mt-1">
+                        💬 {order.delivery_notes}
+                      </p>
+                    )}
               </CardContent>
             </Card>
           ))}
@@ -1518,6 +1529,12 @@ export default function AdminDashboard() {
                 <span className="font-medium text-purple-600">
                   {formatDateString(selectedOrder.requested_delivery_date, 'long')}
                 </span>
+              </div>
+            )}
+            {selectedOrder.delivery_notes && (
+              <div className="flex flex-col">
+                <span className="text-gray-600 mb-1">Комментарий к заказу</span>
+                <span className="font-medium text-purple-600">{selectedOrder.delivery_notes}</span>
               </div>
             )}
             <div className="flex justify-between">
