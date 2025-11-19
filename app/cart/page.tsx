@@ -58,7 +58,7 @@ export default function CartPage() {
     return date.toISOString().split('T')[0]
   }
   
-  const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "success" | null>(null)
+  const [checkoutStep, setCheckoutStep] = useState<"address" | "payment" | "review" | "success" | null>(null)
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null)
   const [checkoutAddress, setCheckoutAddress] = useState("")
@@ -184,25 +184,22 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     auth.requireAuth(async () => {
-      // If address and payment are already selected, submit order directly
-      if (checkoutAddress && checkoutPaymentMethod) {
-        await handlePaymentSubmit()
-        return
-      }
-      
-      // Otherwise, start the checkout flow
+      // Always start the checkout flow - require user to confirm address and payment
       // Fetch addresses when checkout starts
       const fetchedAddresses = await fetchAddresses()
       // Auto-select default address if available
-      if (fetchedAddresses && fetchedAddresses.length > 0) {
+      if (fetchedAddresses && fetchedAddresses.length > 0 && !selectedAddressId) {
         const defaultAddress = fetchedAddresses.find(addr => addr.is_default) || fetchedAddresses[0]
         setSelectedAddressId(defaultAddress.id)
         setCheckoutAddress(defaultAddress.full_address)
       }
       
-      // If address is selected but payment is not, go to payment step
+      // If both address and payment are selected, go to review step
+      // Otherwise, if address is selected but payment is not, go to payment step
       // Otherwise start with address
-      if (checkoutAddress && !checkoutPaymentMethod) {
+      if (checkoutAddress && checkoutPaymentMethod) {
+        setCheckoutStep("review")
+      } else if (checkoutAddress && !checkoutPaymentMethod) {
         setCheckoutStep("payment")
       } else {
         setCheckoutStep("address")
@@ -214,7 +211,12 @@ export default function CartPage() {
     setSelectedAddressId(address.id)
     setCheckoutAddress(address.full_address)
     setShowAddressForm(false)
-    setCheckoutStep(null) // Close modal when selecting from cart page
+    // If payment is already selected, go to review step, otherwise close modal
+    if (checkoutPaymentMethod) {
+      setCheckoutStep("review")
+    } else {
+      setCheckoutStep(null)
+    }
   }
 
   const handleAddressButtonClick = () => {
@@ -251,7 +253,12 @@ export default function CartPage() {
     } else {
       setCheckoutPaymentMethodDisplay(paymentMethod.payment_type)
     }
-    setCheckoutStep(null) // Close modal when selecting from cart page
+    // If address is already selected, go to review step, otherwise close modal
+    if (checkoutAddress) {
+      setCheckoutStep("review")
+    } else {
+      setCheckoutStep(null)
+    }
   }
 
   const handleCreateAddress = async () => {
@@ -330,13 +337,34 @@ export default function CartPage() {
 
   const handleAddressSubmit = () => {
     if (selectedAddressId && checkoutAddress) {
-      setCheckoutStep("payment")
+      // If payment is already selected, go to review, otherwise go to payment
+      if (checkoutPaymentMethod) {
+        setCheckoutStep("review")
+      } else {
+        setCheckoutStep("payment")
+      }
     } else if (!addresses || addresses.length === 0) {
       toast.error('Пожалуйста, выберите или создайте адрес доставки')
     }
   }
 
-  const handlePaymentSubmit = async () => {
+  const handlePaymentSubmit = () => {
+    // Just navigate to review step, don't create order yet
+    if (!checkoutPaymentMethod) {
+      toast.error('Пожалуйста, выберите способ оплаты')
+      return
+    }
+
+    if (!checkoutAddress) {
+      toast.error('Пожалуйста, укажите адрес доставки')
+      return
+    }
+
+    // Go to review step
+    setCheckoutStep("review")
+  }
+
+  const handleConfirmOrder = async () => {
     if (!checkoutPaymentMethod) {
       toast.error('Пожалуйста, выберите способ оплаты')
       return
@@ -1271,15 +1299,153 @@ export default function CartPage() {
               className="w-full bg-brand hover:bg-brand-hover text-white"
               onClick={() => {
                 if (checkoutPaymentMethod) {
-                  setCheckoutStep(null)
+                  // If address is selected, go to review, otherwise close
+                  if (checkoutAddress) {
+                    setCheckoutStep("review")
+                  } else {
+                    setCheckoutStep(null)
+                  }
                 } else {
                   toast.error('Пожалуйста, выберите способ оплаты')
                 }
               }}
               disabled={!checkoutPaymentMethod || isSubmittingOrder}
             >
-              Сохранить и закрыть
+              {checkoutAddress ? "Продолжить" : "Сохранить и закрыть"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review/Confirmation Modal */}
+      <Dialog open={checkoutStep === "review"} onOpenChange={(open) => {
+        if (!open) {
+          setCheckoutStep(null)
+        }
+      }}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">Подтверждение заказа</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Order Items Summary */}
+            <div>
+              <h3 className="text-base font-semibold text-black mb-3">Товары в заказе</h3>
+              <div className="space-y-3">
+                {cartItems.map((item) => (
+                  <div key={`${item.id}-${item.size}-${item.color}`} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <img
+                      src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
+                      alt={item.name}
+                      className="w-16 h-20 object-cover rounded"
+                      onError={(e) => {
+                        e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                      }}
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-black">{item.name}</p>
+                      <p className="text-xs text-gray-500">
+                        Размер: {item.size} | Цвет: {item.color}
+                      </p>
+                      <p className="text-sm font-semibold text-brand mt-1">
+                        {item.price} сом × {item.quantity} = {(item.price * item.quantity).toLocaleString()} сом
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Delivery Information */}
+            <div className="border-t pt-4">
+              <h3 className="text-base font-semibold text-black mb-3">Доставка</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Дата доставки:</span>
+                  <span className="text-sm font-medium text-black">
+                    {selectedDeliveryDateIndex === 0 ? 'Завтра' : selectedDeliveryDateIndex === 1 ? 'Послезавтра' : deliveryDates[selectedDeliveryDateIndex].getDate().toString()}{' '}
+                    {formatDeliveryDate(selectedDeliveryDateObj)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Адрес доставки:</span>
+                  <button
+                    onClick={() => {
+                      setCheckoutStep("address")
+                    }}
+                    className="text-sm font-medium text-brand hover:underline text-right max-w-[60%] flex items-center gap-1"
+                  >
+                    {checkoutAddress || "Не выбран"}
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Способ оплаты:</span>
+                  <button
+                    onClick={() => {
+                      setCheckoutStep("payment")
+                    }}
+                    className="text-sm font-medium text-brand hover:underline flex items-center gap-1"
+                  >
+                    {checkoutPaymentMethodDisplay || "Не выбран"}
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="border-t pt-4">
+              <h3 className="text-base font-semibold text-black mb-3">Итого</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Товары ({cartItems.length}):</span>
+                  <span className="text-black font-medium">{subtotal.toLocaleString()} сом</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Доставка:</span>
+                  <span className="text-black font-medium">{deliveryCost.toLocaleString()} сом</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Скидка:</span>
+                    <span className="text-green-600 font-medium">-{discount.toLocaleString()} сом</span>
+                  </div>
+                )}
+                <div className="border-t pt-2 mt-2">
+                  <div className="flex justify-between text-base font-bold">
+                    <span className="text-black">Итого к оплате:</span>
+                    <span className="text-brand">{total.toLocaleString()} сом</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3 pt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setCheckoutStep(null)}
+                disabled={isSubmittingOrder}
+              >
+                Отмена
+              </Button>
+              <Button
+                className="flex-1 bg-brand hover:bg-brand-hover text-white"
+                onClick={handleConfirmOrder}
+                disabled={isSubmittingOrder || !checkoutAddress || !checkoutPaymentMethod}
+              >
+                {isSubmittingOrder ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Оформление...
+                  </>
+                ) : (
+                  'Подтвердить заказ'
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
