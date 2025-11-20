@@ -55,7 +55,6 @@ interface AddressFormState {
   apartment: string
   entrance: string
   floor: string
-  comment: string
   isDefault: boolean
 }
 
@@ -184,10 +183,9 @@ export default function ProfilePage() {
     postalCode: "",
     building: "",
     apartment: "",
-    entrance: "",
-    floor: "",
-    comment: "",
-    isDefault: false,
+      entrance: "",
+      floor: "",
+      isDefault: false,
   })
   const [newAddress, setNewAddress] = useState<AddressFormState>(createEmptyAddress())
   const resetAddressForm = () => setNewAddress(createEmptyAddress())
@@ -525,7 +523,6 @@ export default function ProfilePage() {
       apartment: newAddress.apartment || undefined,
       entrance: newAddress.entrance || undefined,
       floor: newAddress.floor || undefined,
-      comment: newAddress.comment || undefined,
       country:
         profile?.country ||
         (isUSLocation ? "United States" : "Kyrgyzstan"),
@@ -552,7 +549,6 @@ export default function ProfilePage() {
       apartment: address.apartment || "",
       entrance: (address as any).entrance || "",
       floor: (address as any).floor || "",
-      comment: (address as any).comment || "",
       isDefault: address.is_default || false,
     })
     setShowAddressForm(true)
@@ -609,7 +605,6 @@ export default function ProfilePage() {
       apartment: newAddress.apartment || undefined,
       entrance: newAddress.entrance || undefined,
       floor: newAddress.floor || undefined,
-      comment: newAddress.comment || undefined,
       country:
         profile?.country ||
         (isUSLocation ? "United States" : "Kyrgyzstan"),
@@ -1520,27 +1515,6 @@ export default function ProfilePage() {
                     </>
                   )}
 
-                  {/* Comment field for both US and KG users */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Комментарий к заказу
-                    </label>
-                    <Textarea
-                      value={newAddress.comment}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        if (value.length <= 200) {
-                          setNewAddress({ ...newAddress, comment: value })
-                        }
-                      }}
-                      placeholder={isUSLocation ? "Delivery instructions, gate code, etc." : "Код от домофона #1243"}
-                      className="w-full min-h-[100px]"
-                      maxLength={200}
-                    />
-                    <div className="text-right text-xs text-gray-500 mt-1">
-                      {newAddress.comment.length}/200
-                    </div>
-                  </div>
 
                   <div className="flex space-x-4 pt-4">
                     <Button

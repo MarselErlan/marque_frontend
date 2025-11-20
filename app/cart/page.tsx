@@ -77,7 +77,6 @@ export default function CartPage() {
     apartment: "",
     entrance: "",
     floor: "",
-    comment: "",
     isDefault: false,
   })
   const [newAddress, setNewAddress] = useState(createEmptyAddress())
@@ -226,10 +225,6 @@ export default function CartPage() {
     setSelectedAddressId(address.id)
     setCheckoutAddress(address.full_address)
     setShowAddressForm(false)
-    // Pre-fill comment from address if available and no comment entered yet
-    if (address.comment && !orderComment) {
-      setOrderComment(address.comment)
-    }
     // If payment is already selected, go to review step, otherwise close modal
     if (checkoutPaymentMethod) {
       setCheckoutStep("review")
@@ -333,7 +328,6 @@ export default function CartPage() {
         apartment: newAddress.apartment || undefined,
         entrance: newAddress.entrance || undefined,
         floor: newAddress.floor || undefined,
-        comment: newAddress.comment || undefined,
         is_default: newAddress.isDefault || undefined,
       })
 
@@ -824,26 +818,6 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Комментарий к заказу
-                      </label>
-                      <Textarea
-                        value={newAddress.comment}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          if (value.length <= 200) {
-                            setNewAddress({ ...newAddress, comment: value })
-                          }
-                        }}
-                        placeholder="Код от домофона #1243"
-                        className="w-full min-h-[100px]"
-                        maxLength={200}
-                      />
-                      <div className="text-right text-xs text-gray-500 mt-1">
-                        {newAddress.comment.length}/200
-                      </div>
-                    </div>
                   </>
                 )}
 
@@ -888,27 +862,6 @@ export default function CartPage() {
                 )}
 
                 {/* Comment field for both US and KG users */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Комментарий к заказу
-                  </label>
-                  <Textarea
-                    value={newAddress.comment}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      if (value.length <= 200) {
-                        setNewAddress({ ...newAddress, comment: value })
-                      }
-                    }}
-                    placeholder={isUSLocation ? "Delivery instructions, gate code, etc." : "Код от домофона #1243"}
-                    className="w-full min-h-[100px]"
-                    maxLength={200}
-                  />
-                  <div className="text-right text-xs text-gray-500 mt-1">
-                    {newAddress.comment.length}/200
-                  </div>
-                </div>
-
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -1166,27 +1119,6 @@ export default function CartPage() {
                 )}
 
                 {/* Comment field for both US and KG users */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Комментарий к заказу
-                  </label>
-                  <Textarea
-                    value={newAddress.comment}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      if (value.length <= 200) {
-                        setNewAddress({ ...newAddress, comment: value })
-                      }
-                    }}
-                    placeholder={isUSLocation ? "Delivery instructions, gate code, etc." : "Код от домофона #1243"}
-                    className="w-full min-h-[100px]"
-                    maxLength={200}
-                  />
-                  <div className="text-right text-xs text-gray-500 mt-1">
-                    {newAddress.comment.length}/200
-                  </div>
-                </div>
-
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
