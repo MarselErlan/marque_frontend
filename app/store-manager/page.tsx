@@ -1509,16 +1509,79 @@ export default function AdminDashboard() {
               <span className="text-gray-600">Телефон</span>
                   <span className="font-medium">{selectedOrder.customer_phone}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Адрес</span>
-                  <span className="font-medium">{selectedOrder.delivery_address}</span>
-            </div>
+            
+            {/* Address Information Section */}
+            <div className="border-t pt-3 mt-3">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Адрес доставки</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Полный адрес</span>
+                  <span className="font-medium text-right max-w-[60%]">{selectedOrder.delivery_address || 'Не указан'}</span>
+                </div>
+                
+                {/* Detailed address fields from shipping_address if available */}
+                {selectedOrder.shipping_address && (
+                  <>
+                    {selectedOrder.shipping_address.street && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Улица</span>
+                        <span className="font-medium">{selectedOrder.shipping_address.street}</span>
+                      </div>
+                    )}
+                    {selectedOrder.shipping_address.building && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Дом/Здание</span>
+                        <span className="font-medium">{selectedOrder.shipping_address.building}</span>
+                      </div>
+                    )}
+                    {selectedOrder.shipping_address.apartment && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Квартира</span>
+                        <span className="font-medium">{selectedOrder.shipping_address.apartment}</span>
+                      </div>
+                    )}
+                    {selectedOrder.shipping_address.entrance && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Подъезд</span>
+                        <span className="font-medium">{selectedOrder.shipping_address.entrance}</span>
+                      </div>
+                    )}
+                    {selectedOrder.shipping_address.floor && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Этаж</span>
+                        <span className="font-medium">{selectedOrder.shipping_address.floor}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+                
                 {selectedOrder.delivery_city && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Город</span>
                     <span className="font-medium">{selectedOrder.delivery_city}</span>
                   </div>
                 )}
+                {selectedOrder.delivery_state && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Штат/Область</span>
+                    <span className="font-medium">{selectedOrder.delivery_state}</span>
+                  </div>
+                )}
+                {selectedOrder.delivery_postal_code && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Почтовый индекс</span>
+                    <span className="font-medium">{selectedOrder.delivery_postal_code}</span>
+                  </div>
+                )}
+                {selectedOrder.delivery_country && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Страна</span>
+                    <span className="font-medium">{selectedOrder.delivery_country}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <div className="flex justify-between">
               <span className="text-gray-600">Дата и время</span>
                   <span className="font-medium">{selectedOrder.order_date_formatted || selectedOrder.order_date}</span>
