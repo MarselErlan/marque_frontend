@@ -186,7 +186,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           <Link href="/" className="py-2 -my-2 touch-manipulation">
             <h1 className="text-xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
           </Link>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-8">
             <Link href="/" className="p-2 -m-2 touch-manipulation">
               <Sparkles className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
             </Link>
