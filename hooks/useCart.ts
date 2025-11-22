@@ -188,92 +188,43 @@ export const useCart = () => {
 
     const userId = getUserId()
     
-    // Optimistically update the state first (for both authenticated and non-authenticated)
-    let previousItems: CartItem[] = []
-    let updatedItems: CartItem[] = []
-    setCartItems(prevItems => {
-      previousItems = prevItems // Save previous state in case we need to revert
-      updatedItems = prevItems.map(item =>
-        item.id === productId && item.size === size && item.color === color
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-      // Update count immediately
-      const totalCount = updatedItems.reduce((total, item) => total + item.quantity, 0)
-      setCartItemCount(totalCount)
-      // Dispatch event for real-time update (only cart:updated, not cart:refresh to avoid reload)
-      window.dispatchEvent(new CustomEvent('cart:updated', { 
-        detail: { count: totalCount, items: updatedItems }
-      }))
-      return updatedItems
-    })
-    
     if (userId && isAuthenticated) {
       // Update backend cart (productId here should be cart_item_id from backend)
       const cartItemId = Number(productId)
-      let retryCount = 0
-      const maxRetries = 1
-      
-      while (retryCount <= maxRetries) {
-        try {
-          await cartApi.updateQuantity(userId, cartItemId, newQuantity)
-          // Success - optimistic update is already applied, no need to reload
-          return
-        } catch (error: any) {
-          // For 500 errors, try once more (might be transient)
-          if (error?.status === 500 && retryCount < maxRetries) {
-            retryCount++
-            await new Promise(resolve => setTimeout(resolve, 500)) // Wait 500ms before retry
-            continue
-          }
-          
-          // For 404 or final failure, reload cart to sync with backend state
-          if (error?.status === 404 || retryCount >= maxRetries) {
-            // Reload cart to get current state from backend
-            setTimeout(async () => {
-              try {
-                await loadCart()
-              } catch (loadError) {
-                // Silently fail reload - user already sees error message
-              }
-            }, 300)
-          }
-          
-          // Revert to previous state on error
-          setCartItems(previousItems)
-          const totalCount = previousItems.reduce((total, item) => total + item.quantity, 0)
-          setCartItemCount(totalCount)
-          window.dispatchEvent(new CustomEvent('cart:updated', { 
-            detail: { count: totalCount, items: previousItems }
-          }))
-          
-          // Show appropriate error message
-          if (error?.status === 500) {
-            toast.error('Ошибка сервера. Попробуйте еще раз.')
-          } else if (error?.status === 404) {
-            toast.error('Товар не найден в корзине')
-          } else {
-            toast.error('Не удалось обновить количество')
-          }
-          return
+      try {
+        await cartApi.updateQuantity(userId, cartItemId, newQuantity)
+        // Reload cart from backend to sync state (this was the original working behavior)
+        await loadCart()
+        // Dispatch event for real-time update after successful reload
+        window.dispatchEvent(new CustomEvent('cart:refresh'))
+        return
+      } catch (error: any) {
+        console.error('Failed to update backend cart:', error)
+        // Show appropriate error message
+        if (error?.status === 500) {
+          toast.error('Ошибка сервера. Попробуйте еще раз.')
+        } else if (error?.status === 404) {
+          toast.error('Товар не найден в корзине')
+        } else {
+          toast.error('Не удалось обновить количество')
         }
+        // Reload cart to sync with backend state on error
+        await loadCart()
+        return
       }
     } else {
-      // For non-authenticated users, save to localStorage
-      try {
-        localStorage.setItem('cart', JSON.stringify(updatedItems))
-      } catch (error) {
-        console.error('Error saving cart to localStorage:', error)
-        // Revert on error
-        setCartItems(previousItems)
-        const totalCount = previousItems.reduce((total, item) => total + item.quantity, 0)
-        setCartItemCount(totalCount)
-        window.dispatchEvent(new CustomEvent('cart:updated', { 
-          detail: { count: totalCount, items: previousItems }
-        }))
-      }
+      // For non-authenticated users, update localStorage cart
+      setCartItems(prevItems => {
+        const newItems = prevItems.map(item =>
+          item.id === productId && item.size === size && item.color === color
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+        saveCart(newItems)
+        return newItems
+      })
     }
-  }, [isAuthenticated, removeFromCart])
+  }, [isAuthenticated, loadCart, saveCart, removeFromCart])
 
   // Clear cart
   const clearCart = async () => {
