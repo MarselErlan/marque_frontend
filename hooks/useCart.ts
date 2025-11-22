@@ -42,9 +42,7 @@ export const useCart = () => {
         // User is authenticated, fetch from backend
         try {
           const backendCart = await cartApi.get(userId)
-          console.log('Backend cart response:', backendCart)
           const items = backendCart.items.map((item: any) => {
-            console.log('Cart item from backend:', item)
             // Use cart_item_id if available, otherwise use id
             // The backend should return cart_item_id in the id field, but check both
             const cartItemId = item.cart_item_id || item.id
@@ -212,41 +210,53 @@ export const useCart = () => {
     
     if (userId && isAuthenticated) {
       // Update backend cart (productId here should be cart_item_id from backend)
-      try {
-        const cartItemId = Number(productId)
-        console.log('Updating cart quantity:', { userId, cartItemId, newQuantity, productId, size, color })
-        await cartApi.updateQuantity(userId, cartItemId, newQuantity)
-        console.log('Cart quantity updated successfully')
-        // Don't reload immediately - optimistic update is already applied
-        // The state is already correct, so no need to reload and risk overwriting
-      } catch (error: any) {
-        console.error('Failed to update backend cart:', error)
-        console.error('Error details:', {
-          message: error?.message,
-          status: error?.status,
-          details: error?.details,
-          userId,
-          cartItemId: Number(productId),
-          newQuantity,
-          currentCartItems: previousItems
-        })
-        
-        // Check if it's a specific error we can handle
-        if (error?.status === 404) {
-          console.error('Cart item not found - might need to reload cart')
-          // Optionally reload cart to sync with backend
-          setTimeout(() => loadCart(), 500)
+      const cartItemId = Number(productId)
+      let retryCount = 0
+      const maxRetries = 1
+      
+      while (retryCount <= maxRetries) {
+        try {
+          await cartApi.updateQuantity(userId, cartItemId, newQuantity)
+          // Success - optimistic update is already applied, no need to reload
+          return
+        } catch (error: any) {
+          // For 500 errors, try once more (might be transient)
+          if (error?.status === 500 && retryCount < maxRetries) {
+            retryCount++
+            await new Promise(resolve => setTimeout(resolve, 500)) // Wait 500ms before retry
+            continue
+          }
+          
+          // For 404 or final failure, reload cart to sync with backend state
+          if (error?.status === 404 || retryCount >= maxRetries) {
+            // Reload cart to get current state from backend
+            setTimeout(async () => {
+              try {
+                await loadCart()
+              } catch (loadError) {
+                // Silently fail reload - user already sees error message
+              }
+            }, 300)
+          }
+          
+          // Revert to previous state on error
+          setCartItems(previousItems)
+          const totalCount = previousItems.reduce((total, item) => total + item.quantity, 0)
+          setCartItemCount(totalCount)
+          window.dispatchEvent(new CustomEvent('cart:updated', { 
+            detail: { count: totalCount, items: previousItems }
+          }))
+          
+          // Show appropriate error message
+          if (error?.status === 500) {
+            toast.error('Ошибка сервера. Попробуйте еще раз.')
+          } else if (error?.status === 404) {
+            toast.error('Товар не найден в корзине')
+          } else {
+            toast.error('Не удалось обновить количество')
+          }
+          return
         }
-        
-        // Revert to previous state on error
-        setCartItems(previousItems)
-        const totalCount = previousItems.reduce((total, item) => total + item.quantity, 0)
-        setCartItemCount(totalCount)
-        window.dispatchEvent(new CustomEvent('cart:updated', { 
-          detail: { count: totalCount, items: previousItems }
-        }))
-        toast.error('Не удалось обновить количество')
-        return
       }
     } else {
       // For non-authenticated users, save to localStorage
