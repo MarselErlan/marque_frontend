@@ -42,18 +42,25 @@ export const useCart = () => {
         // User is authenticated, fetch from backend
         try {
           const backendCart = await cartApi.get(userId)
-          const items = backendCart.items.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            originalPrice: item.original_price,
-            brand: item.brand || 'MARQUE',
-            image: item.image || '/images/product_placeholder_adobe.png',
-            quantity: item.quantity,
-            size: item.size,
-            color: item.color,
-            sku_id: item.sku_id
-          }))
+          console.log('Backend cart response:', backendCart)
+          const items = backendCart.items.map((item: any) => {
+            console.log('Cart item from backend:', item)
+            // Use cart_item_id if available, otherwise use id
+            // The backend should return cart_item_id in the id field, but check both
+            const cartItemId = item.cart_item_id || item.id
+            return {
+              id: cartItemId, // This should be cart_item_id from backend for authenticated users
+              name: item.name,
+              price: item.price,
+              originalPrice: item.original_price,
+              brand: item.brand || 'MARQUE',
+              image: item.image || '/images/product_placeholder_adobe.png',
+              quantity: item.quantity,
+              size: item.size,
+              color: item.color,
+              sku_id: item.sku_id
+            }
+          })
           setCartItems(items)
           setCartItemCount(backendCart.total_items || items.reduce((total: number, item: CartItem) => total + item.quantity, 0))
           setIsAuthenticated(true)
@@ -204,13 +211,33 @@ export const useCart = () => {
     })
     
     if (userId && isAuthenticated) {
-      // Update backend cart (productId here is cart_item_id)
+      // Update backend cart (productId here should be cart_item_id from backend)
       try {
-        await cartApi.updateQuantity(userId, Number(productId), newQuantity)
+        const cartItemId = Number(productId)
+        console.log('Updating cart quantity:', { userId, cartItemId, newQuantity, productId, size, color })
+        await cartApi.updateQuantity(userId, cartItemId, newQuantity)
+        console.log('Cart quantity updated successfully')
         // Don't reload immediately - optimistic update is already applied
         // The state is already correct, so no need to reload and risk overwriting
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to update backend cart:', error)
+        console.error('Error details:', {
+          message: error?.message,
+          status: error?.status,
+          details: error?.details,
+          userId,
+          cartItemId: Number(productId),
+          newQuantity,
+          currentCartItems: previousItems
+        })
+        
+        // Check if it's a specific error we can handle
+        if (error?.status === 404) {
+          console.error('Cart item not found - might need to reload cart')
+          // Optionally reload cart to sync with backend
+          setTimeout(() => loadCart(), 500)
+        }
+        
         // Revert to previous state on error
         setCartItems(previousItems)
         const totalCount = previousItems.reduce((total, item) => total + item.quantity, 0)
