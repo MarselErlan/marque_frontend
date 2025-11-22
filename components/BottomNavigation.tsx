@@ -101,7 +101,7 @@ export const BottomNavigation = () => {
               <button
                 key={item.id}
                 onClick={item.onClick}
-                className="flex-1 flex justify-center"
+                className="flex-1 flex justify-center cursor-pointer active:scale-95 transition-transform"
                 type="button"
               >
                 {content}
@@ -113,7 +113,7 @@ export const BottomNavigation = () => {
             <Link
               key={item.id}
               href={item.href}
-              className="flex-1 flex justify-center"
+              className="flex-1 flex justify-center active:scale-95 transition-transform"
             >
               {content}
             </Link>
