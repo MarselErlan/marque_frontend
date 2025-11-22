@@ -130,12 +130,6 @@ export default function ProfilePage() {
     markNotificationRead,
     markAllNotificationsRead,
     unreadNotificationCount,
-    phoneNumbers,
-    isLoadingPhones,
-    fetchPhoneNumbers,
-    createPhoneNumber,
-    updatePhoneNumber,
-    deletePhoneNumber,
   } = useProfile()
   
   // Handle logout with redirect
@@ -158,9 +152,6 @@ export default function ProfilePage() {
   const [orderFilter, setOrderFilter] = useState("active")
   const [userName, setUserName] = useState("Анна Ахматова")
   const [phoneNumber, setPhoneNumber] = useState("+996 505 32 53 11")
-  const [additionalPhone, setAdditionalPhone] = useState("")
-  const [additionalPhoneId, setAdditionalPhoneId] = useState<number | null>(null)
-  const [isSavingAdditionalPhone, setIsSavingAdditionalPhone] = useState(false)
   const [pendingProfileImage, setPendingProfileImage] = useState<File | null>(null)
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
@@ -218,7 +209,6 @@ export default function ProfilePage() {
     'KG'
   ).toUpperCase()
   const isUSLocation = userLocation === 'US'
-  const additionalPhonePlaceholder = isUSLocation ? "+1 555 123 4567" : "+996 505 32 53 11"
   const profileImageUrl = localProfileImageUrl || (profile?.profile_image ? getImageUrl(profile.profile_image) : null)
   
   // Update local image URL when profile changes
@@ -301,19 +291,6 @@ export default function ProfilePage() {
     }
   }, [auth.isLoading, auth.isLoggedIn, userData, router])
 
-  useEffect(() => {
-    if (isLoadingPhones) {
-      return
-    }
-    if (phoneNumbers.length > 0) {
-      const primary = phoneNumbers.find((number) => number.is_primary) ?? phoneNumbers[0]
-      setAdditionalPhone(primary.phone)
-      setAdditionalPhoneId(primary.id)
-    } else {
-      setAdditionalPhone("")
-      setAdditionalPhoneId(null)
-    }
-  }, [phoneNumbers, isLoadingPhones])
 
   useEffect(() => {
     if (profile) {
@@ -329,12 +306,11 @@ export default function ProfilePage() {
     }
     
     fetchProfile()
-    fetchAddresses()
-    fetchPaymentMethods()
-    fetchOrders()
-    fetchNotifications()
-    fetchPhoneNumbers()
-  }, [auth.isLoggedIn, auth.isLoading, fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications, fetchPhoneNumbers])
+      fetchAddresses()
+      fetchPaymentMethods()
+      fetchOrders()
+      fetchNotifications()
+  }, [auth.isLoggedIn, auth.isLoading, fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
@@ -466,43 +442,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handleSaveAdditionalPhone = async () => {
-    const trimmed = additionalPhone.trim()
-    if (!trimmed) {
-      toast.error("Введите дополнительный номер телефона")
-      return
-    }
-    if (!trimmed.startsWith('+')) {
-      toast.error("Добавьте код страны, например +996...")
-      return
-    }
-    setIsSavingAdditionalPhone(true)
-    try {
-      const payload = { phone: trimmed, label: 'Additional', is_primary: true }
-      const success = additionalPhoneId
-        ? await updatePhoneNumber(additionalPhoneId, payload)
-        : await createPhoneNumber(payload)
-      if (success) {
-        setAdditionalPhone(trimmed)
-      }
-    } finally {
-      setIsSavingAdditionalPhone(false)
-    }
-  }
-
-  const handleRemoveAdditionalPhone = async () => {
-    if (!additionalPhoneId) return
-    setIsSavingAdditionalPhone(true)
-    try {
-      const success = await deletePhoneNumber(additionalPhoneId)
-      if (success) {
-        setAdditionalPhone("")
-        setAdditionalPhoneId(null)
-      }
-    } finally {
-      setIsSavingAdditionalPhone(false)
-    }
-  }
 
   const handleAddAddress = async () => {
     if (!newAddress.city.trim()) {
@@ -945,65 +884,6 @@ export default function ProfilePage() {
                       disabled 
                       className="w-full h-11 md:h-12 text-base md:text-lg bg-gray-50 border-gray-200 text-gray-500" 
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Дополнительный номер телефона
-                    </label>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <Input
-                        type="tel"
-                        value={additionalPhone}
-                        onChange={(e) => setAdditionalPhone(e.target.value)}
-                        placeholder={additionalPhonePlaceholder}
-                        className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
-                      />
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={handleSaveAdditionalPhone}
-                          disabled={isSavingAdditionalPhone || isLoadingPhones || !additionalPhone.trim()}
-                          className="px-4 sm:px-6"
-                        >
-                          {isSavingAdditionalPhone ? (
-                            <span className="flex items-center gap-2">
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              Сохраняем...
-                            </span>
-                          ) : (
-                            additionalPhoneId ? "Обновить" : "Добавить"
-                          )}
-                        </Button>
-                        {additionalPhoneId && (
-                          <Button
-                            variant="outline"
-                            onClick={handleRemoveAdditionalPhone}
-                            disabled={isSavingAdditionalPhone || isLoadingPhones}
-                            className="px-4 sm:px-6"
-                          >
-                            Удалить
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    {isLoadingPhones && (
-                      <p className="text-sm text-gray-500 mt-2">Загружаем дополнительные номера...</p>
-                    )}
-                    {!isLoadingPhones && phoneNumbers.length > 1 && (
-                      <div className="mt-3">
-                        <p className="text-xs text-gray-500 uppercase tracking-wide">Другие номера</p>
-                        <ul className="mt-2 space-y-1 text-sm text-gray-600">
-                          {phoneNumbers
-                            .filter((number) => number.id !== additionalPhoneId)
-                            .map((number) => (
-                              <li key={number.id}>
-                                {number.phone}
-                                {number.label ? ` • ${number.label}` : ""}
-                              </li>
-                            ))}
-                        </ul>
-                      </div>
-                    )}
                   </div>
 
                   {/* Logout Button */}

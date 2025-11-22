@@ -1344,23 +1344,6 @@ export default function CartPage() {
               </div>
             </div>
 
-            {/* Customer Information */}
-            <div className="border-t pt-4">
-              <h3 className="text-base font-semibold text-black mb-3">Контактная информация</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Телефон:</span>
-                  <span className="text-sm font-medium text-black">{profile?.phone || "Не указан"}</span>
-                </div>
-                {additionalPhone && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Дополнительный телефон:</span>
-                    <span className="text-sm font-medium text-black">{additionalPhone}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Delivery Information */}
             <div className="border-t pt-4">
               <h3 className="text-base font-semibold text-black mb-3">Доставка</h3>
@@ -1398,6 +1381,16 @@ export default function CartPage() {
                 </div>
               </div>
             </div>
+
+            {/* Additional Phone Number */}
+            {additionalPhone && (
+              <div className="border-t pt-4">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Дополнительный телефон:</span>
+                  <span className="text-sm font-medium text-black">{additionalPhone}</span>
+                </div>
+              </div>
+            )}
 
             {/* Order Comment */}
             <div className="border-t pt-4">
