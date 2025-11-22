@@ -29,11 +29,17 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(wishlistItemCount)
+  const [cartCount, setCartCount] = useState(cartItemCount)
   
   // Update wishlist count in real-time
   useEffect(() => {
     setWishlistCount(wishlistItemCount)
   }, [wishlistItemCount])
+  
+  // Update cart count in real-time
+  useEffect(() => {
+    setCartCount(cartItemCount)
+  }, [cartItemCount])
   
   // Listen for wishlist update events
   useEffect(() => {
@@ -46,6 +52,20 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
     window.addEventListener('wishlist:updated', handleWishlistUpdate as EventListener)
     return () => {
       window.removeEventListener('wishlist:updated', handleWishlistUpdate as EventListener)
+    }
+  }, [])
+  
+  // Listen for cart update events
+  useEffect(() => {
+    const handleCartUpdate = (event: CustomEvent) => {
+      if (event.detail?.count !== undefined) {
+        setCartCount(event.detail.count)
+      }
+    }
+    
+    window.addEventListener('cart:updated', handleCartUpdate as EventListener)
+    return () => {
+      window.removeEventListener('cart:updated', handleCartUpdate as EventListener)
     }
   }, [])
   
@@ -165,9 +185,9 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
               <div className="relative">
                 <ShoppingCart className="w-6 h-6 mb-1" strokeWidth={1.5} />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
               </div>
@@ -222,9 +242,9 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             </Link>
             <Link href="/cart" className="relative p-2 -m-2 touch-manipulation">
               <ShoppingCart className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
-              {cartItemCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                  {cartItemCount > 9 ? '9+' : cartItemCount}
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
             </Link>

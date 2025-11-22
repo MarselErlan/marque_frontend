@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { cartApi } from '@/lib/api'
 import { toast } from '@/lib/toast'
 
@@ -34,7 +34,7 @@ export const useCart = () => {
   }
 
   // Load cart from backend or localStorage
-  const loadCart = async () => {
+  const loadCart = useCallback(async () => {
     try {
       const userId = getUserId()
       
@@ -75,28 +75,34 @@ export const useCart = () => {
       setCartItems([])
       setCartItemCount(0)
     }
-  }
+  }, [])
 
   // Save cart to localStorage
-  const saveCart = (items: CartItem[]) => {
+  const saveCart = useCallback((items: CartItem[]) => {
     try {
       localStorage.setItem('cart', JSON.stringify(items))
       const totalCount = items.reduce((total, item) => total + item.quantity, 0)
       setCartItemCount(totalCount)
+      // Dispatch custom event for real-time updates
+      window.dispatchEvent(new CustomEvent('cart:updated', { 
+        detail: { count: totalCount, items: items }
+      }))
     } catch (error) {
       console.error('Error saving cart:', error)
     }
-  }
+  }, [])
 
   // Add item to cart
-  const addToCart = async (product: Omit<CartItem, 'quantity'>) => {
+  const addToCart = useCallback(async (product: Omit<CartItem, 'quantity'>) => {
     const userId = getUserId()
     
-    if (userId && product.sku_id) {
+      if (userId && product.sku_id) {
       // Add to backend cart
       try {
         await cartApi.add(userId, product.sku_id, 1)
         await loadCart() // Reload cart from backend
+        // Dispatch event for real-time update
+        window.dispatchEvent(new CustomEvent('cart:refresh'))
         toast.success('Товар добавлен в корзину!')
         return
       } catch (error) {
@@ -128,13 +134,15 @@ export const useCart = () => {
       }
 
       saveCart(newItems)
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('cart:refresh'))
       toast.success('Товар добавлен в корзину!')
       return newItems
     })
-  }
+  }, [loadCart, saveCart])
 
   // Remove item from cart
-  const removeFromCart = async (productId: string | number, size?: string, color?: string) => {
+  const removeFromCart = useCallback(async (productId: string | number, size?: string, color?: string) => {
     const userId = getUserId()
     
     if (userId && isAuthenticated) {
@@ -142,6 +150,8 @@ export const useCart = () => {
       try {
         await cartApi.remove(userId, Number(productId))
         await loadCart() // Reload cart from backend
+        // Dispatch event for real-time update
+        window.dispatchEvent(new CustomEvent('cart:refresh'))
         toast.success('Товар удален из корзины')
         return
       } catch (error) {
@@ -157,13 +167,15 @@ export const useCart = () => {
         !(item.id === productId && item.size === size && item.color === color)
       )
       saveCart(newItems)
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('cart:refresh'))
       toast.success('Товар удален из корзины')
       return newItems
     })
-  }
+  }, [isAuthenticated, loadCart, saveCart])
 
   // Update quantity
-  const updateQuantity = async (productId: string | number, newQuantity: number, size?: string, color?: string) => {
+  const updateQuantity = useCallback(async (productId: string | number, newQuantity: number, size?: string, color?: string) => {
     if (newQuantity <= 0) {
       await removeFromCart(productId, size, color)
       return
@@ -176,6 +188,8 @@ export const useCart = () => {
       try {
         await cartApi.updateQuantity(userId, Number(productId), newQuantity)
         await loadCart() // Reload cart from backend
+        // Dispatch event for real-time update
+        window.dispatchEvent(new CustomEvent('cart:refresh'))
         return
       } catch (error) {
         console.error('Failed to update backend cart:', error)
@@ -191,9 +205,11 @@ export const useCart = () => {
           : item
       )
       saveCart(newItems)
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('cart:refresh'))
       return newItems
     })
-  }
+  }, [isAuthenticated, loadCart, saveCart])
 
   // Clear cart
   const clearCart = async () => {
@@ -212,10 +228,15 @@ export const useCart = () => {
     setCartItems([])
     setCartItemCount(0)
     localStorage.removeItem('cart')
+    // Dispatch event for real-time update
+    window.dispatchEvent(new CustomEvent('cart:updated', { 
+      detail: { count: 0, items: [] }
+    }))
+    window.dispatchEvent(new CustomEvent('cart:refresh'))
   }
 
   // Sync local cart with backend when user logs in
-  const syncCartWithBackend = async () => {
+  const syncCartWithBackend = useCallback(async () => {
     try {
       const userId = getUserId()
       if (!userId) return
@@ -255,11 +276,14 @@ export const useCart = () => {
       // Reload cart from backend
       await loadCart()
       
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('cart:refresh'))
+      
       toast.success('Корзина синхронизирована!')
     } catch (error) {
       console.error('Failed to sync cart:', error)
     }
-  }
+  }, [loadCart])
 
   // Calculate totals
   const calculateTotals = () => {
@@ -282,7 +306,19 @@ export const useCart = () => {
   // Initialize cart
   useEffect(() => {
     loadCart()
-  }, [])
+  }, [loadCart])
+  
+  // Listen for cart update events from other components
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      loadCart()
+    }
+    
+    window.addEventListener('cart:refresh', handleCartUpdate)
+    return () => {
+      window.removeEventListener('cart:refresh', handleCartUpdate)
+    }
+  }, [loadCart])
 
   // Watch for authentication changes and sync
   useEffect(() => {
@@ -304,7 +340,7 @@ export const useCart = () => {
       window.removeEventListener('auth:login', handleLogin)
       window.removeEventListener('auth:logout', handleLogout)
     }
-  }, [])
+  }, [loadCart, syncCartWithBackend])
 
   return {
     cartItems,
