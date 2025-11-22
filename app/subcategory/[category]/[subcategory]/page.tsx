@@ -492,14 +492,14 @@ export default function SubcategoryPage({
               </div>
             ) : products.length > 0 ? (
               <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-6 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-1 gap-y-0.5 md:gap-6 mb-8">
                   {products.map((product) => (
                     <Link 
                       key={product.id} 
                       href={`/product/${product.slug || product.id}`} 
-                      className="bg-white rounded-md p-1.5 md:p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
+                      className="bg-white rounded-md p-1 md:p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                     >
-                      <div className="relative mb-1 md:mb-2">
+                      <div className="relative mb-0.5 md:mb-2">
                     {(product.discount_percentage || product.discount_percent) && (
                           <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
                         -{product.discount_percentage || product.discount_percent}%
@@ -521,21 +521,21 @@ export default function SubcategoryPage({
                           />
                         </div>
                       </div>
-                      <div className="space-y-0 md:space-y-0.5">
-                        <div className="text-xs text-gray-500 uppercase font-medium">
+                      <div className="space-y-0">
+                        <div className="text-xs text-gray-500 uppercase font-medium leading-tight">
                           {product.brand_name || 'MARQUE'}
                         </div>
-                        <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight mb-0 md:mb-1">
+                        <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
                           {product.title}
                         </h3>
-                        <div className="flex items-baseline space-x-2">
+                        <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
                       <span className="text-base font-bold text-brand">{product.price || product.price_min} сом</span>
                       {(product.original_price || product.original_price_min) && (
                         <span className="text-xs text-gray-400 line-through">{product.original_price || product.original_price_min} сом</span>
                           )}
                         </div>
                         {product.sold_count > 0 && (
-                          <div className="text-xs text-gray-500">Продано {product.sold_count}</div>
+                          <div className="text-xs text-gray-500 leading-tight">Продано {product.sold_count}</div>
                         )}
                     {product.in_stock === false && (
                           <div className="text-xs text-red-500">Нет в наличии</div>
