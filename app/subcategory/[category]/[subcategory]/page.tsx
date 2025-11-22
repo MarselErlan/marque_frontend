@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronRight, ChevronDown, Heart, ChevronLeft } from "lucide-react"
+import { ChevronRight, ChevronDown, Heart, ChevronLeft, ArrowLeft, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
@@ -14,7 +14,7 @@ import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
 
 const sortOptions = [
-  { value: "popular", label: "Популярное" },
+  { value: "popular", label: "По популярности" },
   { value: "newest", label: "Новинки" },
   { value: "price_asc", label: "Сначала дешёвые" },
   { value: "price_desc", label: "Сначала дорогие" },
@@ -230,8 +230,8 @@ export default function SubcategoryPage({
       <AuthModals {...auth} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 mb-4 text-sm">
+        {/* Breadcrumb - Desktop */}
+        <div className="hidden md:flex items-center gap-2 mb-4 text-sm">
           <button 
             onClick={openCatalog}
             className="text-gray-600 hover:text-brand cursor-pointer"
@@ -242,14 +242,96 @@ export default function SubcategoryPage({
           <span className="font-medium text-black">{subcategory?.name || params.subcategory}</span>
         </div>
 
-        {/* Title and Count */}
-              <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">{subcategory?.name || 'Товары'} <span className="text-gray-500 font-normal text-lg">{total} товаров</span></h1>
-                </div>
+        {/* Mobile: Back Button with Category Name */}
+        <div className="md:hidden flex items-center gap-2 mb-3">
+          <button 
+            onClick={() => router.back()}
+            className="p-1 -ml-1"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <span className="text-base font-bold text-black">{category?.name || params.category}</span>
+        </div>
 
-        {/* Horizontal Filter Bar */}
-        <div className="mb-6 flex flex-wrap items-center gap-3">
-          {/* Sort Dropdown */}
+        {/* Title and Count */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-black">{subcategory?.name || 'Товары'} <span className="text-gray-500 font-normal text-lg">{total} товаров</span></h1>
+        </div>
+
+        {/* Mobile: Simplified Filter Bar - Only 2 buttons */}
+        <div className="md:hidden mb-4 flex items-center gap-2 relative">
+          {/* Sort Button with X to clear */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                if (sortBy !== "popular") {
+                  setSortBy("popular")
+                  setCurrentPage(1)
+                } else {
+                  setShowSortDropdown(!showSortDropdown)
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm"
+            >
+              <span>{sortOptions.find((opt) => opt.value === sortBy)?.label || "По популярности"}</span>
+              {sortBy !== "popular" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSortBy("popular")
+                    setCurrentPage(1)
+                  }}
+                  className="ml-1"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              )}
+              {sortBy === "popular" && (
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              )}
+            </button>
+            {showSortDropdown && sortBy === "popular" && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowSortDropdown(false)}
+                />
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[200px]">
+                  {sortOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setSortBy(option.value)
+                        setShowSortDropdown(false)
+                        setCurrentPage(1)
+                      }}
+                      className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm ${
+                        sortBy === option.value ? 'bg-gray-50 text-brand font-medium' : ''
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* All Filters Button */}
+          <button 
+            onClick={() => setShowAllFiltersModal(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            Все фильтры
+          </button>
+        </div>
+
+        {/* Desktop: Full Filter Bar */}
+        <div className="hidden md:flex flex-wrap items-center gap-3 mb-6">
+          {/* Sort Dropdown - Desktop */}
           <div className="relative">
             <button
               onClick={() => setShowSortDropdown(!showSortDropdown)}
@@ -279,7 +361,7 @@ export default function SubcategoryPage({
             )}
           </div>
 
-          {/* All Filters Button */}
+          {/* All Filters Button - Desktop */}
           <button 
             onClick={() => setShowAllFiltersModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm font-medium"
