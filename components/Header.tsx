@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Heart, ShoppingCart, User, LogOut, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,26 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
   
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
+  const [wishlistCount, setWishlistCount] = useState(wishlistItemCount)
+  
+  // Update wishlist count in real-time
+  useEffect(() => {
+    setWishlistCount(wishlistItemCount)
+  }, [wishlistItemCount])
+  
+  // Listen for wishlist update events
+  useEffect(() => {
+    const handleWishlistUpdate = (event: CustomEvent) => {
+      if (event.detail?.count !== undefined) {
+        setWishlistCount(event.detail.count)
+      }
+    }
+    
+    window.addEventListener('wishlist:updated', handleWishlistUpdate as EventListener)
+    return () => {
+      window.removeEventListener('wishlist:updated', handleWishlistUpdate as EventListener)
+    }
+  }, [])
   
   // Check if we're on the profile page
   const isOnProfilePage = pathname === '/profile'
@@ -132,12 +152,14 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               <span>Манекен</span>
             </Link>
             <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-              <Heart className="w-6 h-6 mb-1" strokeWidth={1.5} />
-              {wishlistItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                  {wishlistItemCount}
-                </span>
-              )}
+              <div className="relative">
+                <Heart className="w-6 h-6 mb-1" strokeWidth={1.5} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {wishlistCount > 9 ? '9+' : wishlistCount}
+                  </span>
+                )}
+              </div>
               <span>Избранные</span>
             </Link>
             <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
@@ -192,9 +214,9 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             </Link>
             <Link href="/wishlist" className="relative p-2 -m-2 touch-manipulation">
               <Heart className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
-              {wishlistItemCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                  {wishlistItemCount > 9 ? '9+' : wishlistItemCount}
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
                 </span>
               )}
             </Link>

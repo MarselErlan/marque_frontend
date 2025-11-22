@@ -9,12 +9,7 @@ export const useWishlist = () => {
   const [isClient, setIsClient] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  useEffect(() => {
-    setIsClient(true)
-    loadWishlist()
-  }, [])
-  
-  const loadWishlist = async () => {
+  const loadWishlist = useCallback(async () => {
     try {
       const token = localStorage.getItem('authToken')
       const userDataStr = localStorage.getItem('userData')
@@ -71,12 +66,33 @@ export const useWishlist = () => {
     } catch (error) {
       console.error("Failed to load wishlist", error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    setIsClient(true)
+    loadWishlist()
+  }, [loadWishlist])
+  
+  // Listen for wishlist update events from other components
+  useEffect(() => {
+    const handleWishlistUpdate = () => {
+      loadWishlist()
+    }
+    
+    window.addEventListener('wishlist:refresh', handleWishlistUpdate)
+    return () => {
+      window.removeEventListener('wishlist:refresh', handleWishlistUpdate)
+    }
+  }, [loadWishlist])
 
   useEffect(() => {
     if (isClient) {
       try {
         localStorage.setItem('wishlist', JSON.stringify(wishlistItems))
+        // Dispatch custom event for real-time updates
+        window.dispatchEvent(new CustomEvent('wishlist:updated', { 
+          detail: { count: wishlistItems.length, items: wishlistItems }
+        }))
       } catch (error) {
         console.error("Failed to save wishlist to localStorage", error)
       }
@@ -100,6 +116,8 @@ export const useWishlist = () => {
         const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id
         await wishlistApi.add(userId, productId)
         await loadWishlist() // Reload wishlist from backend
+        // Dispatch event for real-time update
+        window.dispatchEvent(new CustomEvent('wishlist:refresh'))
         toast.success('Товар добавлен в избранное!')
         return
       } catch (error) {
@@ -116,9 +134,12 @@ export const useWishlist = () => {
         return prevItems // Already in wishlist
       }
       toast.success('Товар добавлен в избранное!')
-      return [...prevItems, product]
+      const newItems = [...prevItems, product]
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('wishlist:refresh'))
+      return newItems
     })
-  }, [])
+  }, [loadWishlist])
 
   const removeFromWishlist = useCallback(async (productId: string | number) => {
     const token = localStorage.getItem('authToken')
@@ -137,6 +158,8 @@ export const useWishlist = () => {
         const numericId = typeof productId === 'string' ? parseInt(productId) : productId
         await wishlistApi.remove(userId, numericId)
         await loadWishlist() // Reload wishlist from backend
+        // Dispatch event for real-time update
+        window.dispatchEvent(new CustomEvent('wishlist:refresh'))
         toast.success('Товар удален из избранного')
         return
       } catch (error) {
@@ -148,9 +171,14 @@ export const useWishlist = () => {
     
     // Remove from localStorage wishlist - handle both string and number IDs
     const idToRemove = String(productId)
-    setWishlistItems((prevItems) => prevItems.filter((item) => String(item.id) !== idToRemove))
+    setWishlistItems((prevItems) => {
+      const newItems = prevItems.filter((item) => String(item.id) !== idToRemove)
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('wishlist:refresh'))
+      return newItems
+    })
     toast.success('Товар удален из избранного')
-  }, [isAuthenticated])
+  }, [isAuthenticated, loadWishlist])
 
   const isInWishlist = useCallback((productId: string | number) => {
     // Convert both to strings for comparison to handle type inconsistencies
@@ -199,11 +227,14 @@ export const useWishlist = () => {
       // Reload wishlist from backend
       await loadWishlist()
       
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('wishlist:refresh'))
+      
       toast.success('Избранное синхронизировано!')
     } catch (error) {
       console.error('Failed to sync wishlist:', error)
     }
-  }, [])
+  }, [loadWishlist])
 
   // Watch for authentication changes and sync
   useEffect(() => {
