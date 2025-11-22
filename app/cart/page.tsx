@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard, ArrowLeft, Zap, Sparkles } from "lucide-react"
+import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard, ArrowLeft, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -544,13 +544,13 @@ export default function CartPage() {
                 {/* 3D Mannequin Button */}
                 <div className="mt-4 md:mt-6">
                   <Button
-                    className="w-full bg-brand hover:bg-brand-hover text-white py-2.5 md:py-3 rounded-lg text-sm md:text-base flex items-center justify-center gap-2"
+                    className="w-full bg-brand hover:bg-brand-hover text-white py-2.5 md:py-3 rounded-lg text-sm md:text-base font-medium flex items-center justify-center gap-2"
                     onClick={() => {
                       // Navigate to mannequin page or open mannequin feature
                       router.push('/mannequin')
                     }}
                   >
-                    <Zap className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2} />
+                    <Sparkles className="w-4 h-4 md:w-5 md:h-5" strokeWidth={1.5} />
                     <span>3D манекен</span>
                   </Button>
                 </div>
