@@ -181,11 +181,46 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
       </div>
       {/* Mobile Header */}
       <div className="md:hidden px-4 pt-2 pb-3">
+        {/* Top Row: Logo + Icons */}
         <div className="flex items-center justify-between mb-3">
           <Link href="/">
             <h1 className="text-xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
           </Link>
+          <div className="flex items-center space-x-3">
+            <Link href="/wishlist" className="relative">
+              <Heart className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
+              {wishlistItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {wishlistItemCount > 9 ? '9+' : wishlistItemCount}
+                </span>
+              )}
+            </Link>
+            <Link href="/cart" className="relative">
+              <ShoppingCart className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {cartItemCount > 9 ? '9+' : cartItemCount}
+                </span>
+              )}
+            </Link>
+            <button 
+              onClick={handleHeaderAuthClick} 
+              className="cursor-pointer"
+              type="button"
+            >
+              {auth.isLoggedIn ? (
+                isOnProfilePage ? (
+                  <LogOut className="w-6 h-6 text-red-600" strokeWidth={1.5} />
+                ) : (
+                  <User className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
+                )
+              ) : (
+                <User className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
+              )}
+            </button>
+          </div>
         </div>
+        {/* Bottom Row: Catalog + Search */}
         <div className="flex items-center space-x-3">
           <Button
             className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-lg flex items-center space-x-2"
