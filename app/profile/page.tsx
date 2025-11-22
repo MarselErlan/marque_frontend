@@ -161,8 +161,11 @@ export default function ProfilePage() {
   const [additionalPhone, setAdditionalPhone] = useState("")
   const [additionalPhoneId, setAdditionalPhoneId] = useState<number | null>(null)
   const [isSavingAdditionalPhone, setIsSavingAdditionalPhone] = useState(false)
+  const [pendingProfileImage, setPendingProfileImage] = useState<File | null>(null)
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [localProfileImageUrl, setLocalProfileImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   
   // Authentication states are now managed by the useAuth hook.
@@ -216,7 +219,14 @@ export default function ProfilePage() {
   ).toUpperCase()
   const isUSLocation = userLocation === 'US'
   const additionalPhonePlaceholder = isUSLocation ? "+1 555 123 4567" : "+996 505 32 53 11"
-  const profileImageUrl = profile?.profile_image ? getImageUrl(profile.profile_image) : null
+  const profileImageUrl = localProfileImageUrl || (profile?.profile_image ? getImageUrl(profile.profile_image) : null)
+  
+  // Update local image URL when profile changes
+  useEffect(() => {
+    if (profile?.profile_image && !localProfileImageUrl) {
+      setLocalProfileImageUrl(getImageUrl(profile.profile_image))
+    }
+  }, [profile?.profile_image])
 
   // Mock notifications data
   const getNotificationDateLabel = (date: Date) => {
@@ -408,32 +418,51 @@ export default function ProfilePage() {
     fileInputRef.current?.click()
   }
 
-  const handleProfileImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    setIsUploadingImage(true)
-    try {
-      await updateProfile({ profile_image: file })
-    } catch (error) {
-      console.error('Profile image upload failed', error)
-      toast.error('Не удалось загрузить фото профиля')
-    } finally {
-      setIsUploadingImage(false)
-      event.target.value = ''
+    setPendingProfileImage(file)
+    // Create preview URL
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        setLocalProfileImageUrl(e.target.result as string)
+      }
     }
+    reader.readAsDataURL(file)
+    event.target.value = ''
   }
 
-  const handleSaveProfileName = async () => {
+  const handleUpdateProfile = async () => {
     const trimmed = userName.trim()
     if (!trimmed) {
       toast.error("Введите имя")
       return
     }
-    setIsSavingProfile(true)
+    
+    setIsUpdatingProfile(true)
     try {
-      await updateProfile({ full_name: trimmed })
+      // Update profile with name and image together
+      const updateData: any = { full_name: trimmed }
+      if (pendingProfileImage) {
+        updateData.profile_image = pendingProfileImage
+      }
+      
+      await updateProfile(updateData)
+      
+      // Clear pending image after successful update and refresh profile
+      if (pendingProfileImage) {
+        setPendingProfileImage(null)
+        // Refresh profile to get new image URL
+        await fetchProfile()
+      }
+      
+      toast.success('Профиль успешно обновлен')
+    } catch (error) {
+      console.error('Profile update failed', error)
+      toast.error('Не удалось обновить профиль')
     } finally {
-      setIsSavingProfile(false)
+      setIsUpdatingProfile(false)
     }
   }
 
@@ -867,9 +896,8 @@ export default function ProfilePage() {
                       size="sm"
                       onClick={handleProfileImageButtonClick}
                       className="bg-brand/40 md:bg-transparent text-brand md:text-brand border-brand/40 md:border-brand hover:bg-brand/50 md:hover:bg-brand hover:text-white transition-colors text-xs md:text-sm"
-                      disabled={isUploadingImage}
                     >
-                      {isUploadingImage ? 'Загрузка...' : 'Редактировать фото'}
+                      Редактировать фото
                     </Button>
                   </div>
                 </div>
@@ -878,28 +906,33 @@ export default function ProfilePage() {
                 <div className="space-y-4 md:space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">ФИО</label>
-                    <div className="flex flex-col sm:flex-row gap-3 items-start">
-                      <Input
-                        type="text"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        className="w-full h-11 md:h-12 text-base md:text-lg border-gray-300 focus:border-brand focus:ring-brand"
-                      />
-                      <Button
-                        onClick={handleSaveProfileName}
-                        disabled={isSavingProfile || !userName.trim()}
-                        className="sm:w-auto w-full"
-                      >
-                        {isSavingProfile ? (
-                          <span className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Сохраняем...
-                          </span>
-                        ) : (
-                          "Сохранить"
-                        )}
-                      </Button>
-                    </div>
+                    <Input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      className="w-full h-11 md:h-12 text-base md:text-lg border-gray-300 focus:border-brand focus:ring-brand"
+                    />
+                  </div>
+                  
+                  {/* Update Button */}
+                  <div className="pt-2">
+                    <Button
+                      onClick={handleUpdateProfile}
+                      disabled={isUpdatingProfile || !userName.trim()}
+                      className="w-full md:w-auto bg-brand hover:bg-brand-hover text-white"
+                    >
+                      {isUpdatingProfile ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Обновление...
+                        </span>
+                      ) : (
+                        "Обновить"
+                      )}
+                    </Button>
+                    {pendingProfileImage && (
+                      <p className="text-xs text-gray-500 mt-2">Изображение будет обновлено при сохранении</p>
+                    )}
                   </div>
 
                   <div>

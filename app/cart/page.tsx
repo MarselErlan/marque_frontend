@@ -27,7 +27,9 @@ export default function CartPage() {
     paymentMethods,
     fetchPaymentMethods,
     isLoadingPayments,
-    profile
+    profile,
+    phoneNumbers,
+    fetchPhoneNumbers
   } = useProfile()
 
   const [isClient, setIsClient] = useState(false)
@@ -136,13 +138,17 @@ export default function CartPage() {
     setIsClient(true)
   }, [])
 
-  // Load addresses and payment methods when user is logged in
+  // Load addresses, payment methods, and phone numbers when user is logged in
   useEffect(() => {
     if (auth.isLoggedIn && !auth.isLoading) {
       fetchAddresses()
       fetchPaymentMethods()
+      fetchPhoneNumbers()
     }
-  }, [auth.isLoggedIn, auth.isLoading, fetchAddresses, fetchPaymentMethods])
+  }, [auth.isLoggedIn, auth.isLoading, fetchAddresses, fetchPaymentMethods, fetchPhoneNumbers])
+  
+  // Get additional phone number
+  const additionalPhone = phoneNumbers?.find(p => !p.is_primary)?.phone || phoneNumbers?.find(p => p.is_primary && phoneNumbers.length > 1)?.phone || null
 
   // Auto-select default address when addresses are loaded
   useEffect(() => {
@@ -1338,6 +1344,23 @@ export default function CartPage() {
               </div>
             </div>
 
+            {/* Customer Information */}
+            <div className="border-t pt-4">
+              <h3 className="text-base font-semibold text-black mb-3">Контактная информация</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Телефон:</span>
+                  <span className="text-sm font-medium text-black">{profile?.phone || "Не указан"}</span>
+                </div>
+                {additionalPhone && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Дополнительный телефон:</span>
+                    <span className="text-sm font-medium text-black">{additionalPhone}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Delivery Information */}
             <div className="border-t pt-4">
               <h3 className="text-base font-semibold text-black mb-3">Доставка</h3>
@@ -1472,6 +1495,18 @@ export default function CartPage() {
                 )}
               </div>
             )}
+            <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Телефон:</span>
+                <span className="font-medium text-black">{profile?.phone || "Не указан"}</span>
+              </div>
+              {additionalPhone && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Дополнительный телефон:</span>
+                  <span className="font-medium text-black">{additionalPhone}</span>
+                </div>
+              )}
+            </div>
             <p className="text-gray-600 mb-6">Мы отправили детали заказа на ваш номер телефона</p>
             <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleOrderComplete}>
               Перейти в профиль
