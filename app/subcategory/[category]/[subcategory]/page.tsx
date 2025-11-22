@@ -46,6 +46,7 @@ export default function SubcategoryPage({
     brands: [],
   })
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({})
+  const [selectedGender, setSelectedGender] = useState<string>('')
   const [sortBy, setSortBy] = useState("popular")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -57,6 +58,8 @@ export default function SubcategoryPage({
   const [showAllFiltersModal, setShowAllFiltersModal] = useState(false)
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [showSubcategoryDropdown, setShowSubcategoryDropdown] = useState(false)
+  const [showColorSelectionModal, setShowColorSelectionModal] = useState(false)
+  const [showBrandSelectionModal, setShowBrandSelectionModal] = useState(false)
   const [allCategories, setAllCategories] = useState<any[]>([])
   const [allSubcategories, setAllSubcategories] = useState<any[]>([])
   
@@ -557,6 +560,7 @@ export default function SubcategoryPage({
                 onClick={() => {
                   setSelectedFilters({ sizes: [], colors: [], brands: [] })
                   setPriceRange({})
+                  setSelectedGender('')
                   setCurrentPage(1)
                 }}
               className="px-4 py-2 text-brand hover:text-brand-hover text-sm font-medium"
@@ -695,6 +699,7 @@ export default function SubcategoryPage({
                   onClick={() => {
                     setSelectedFilters({ sizes: [], colors: [], brands: [] })
                     setPriceRange({})
+                    setSelectedGender('')
                     setCurrentPage(1)
                   }}
                 >
@@ -715,6 +720,7 @@ export default function SubcategoryPage({
                 onClick={() => {
                   setSelectedFilters({ sizes: [], colors: [], brands: [] })
                   setPriceRange({})
+                  setSelectedGender('')
                   setCurrentPage(1)
                 }}
                 className="text-sm text-gray-600"
@@ -793,6 +799,43 @@ export default function SubcategoryPage({
                 </>
               )}
 
+              {/* Gender Filter */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <span className="text-base font-normal text-black">Пол</span>
+              </div>
+              <div className="flex gap-2 pb-3 border-b border-gray-100">
+                <button
+                  onClick={() => setSelectedGender(selectedGender === 'women' ? '' : 'women')}
+                  className={`px-4 py-2 border rounded-lg text-sm ${
+                    selectedGender === 'women'
+                      ? 'border-brand bg-brand text-white'
+                      : 'border-gray-300 text-black'
+                  }`}
+                >
+                  Для женщин
+                </button>
+                <button
+                  onClick={() => setSelectedGender(selectedGender === 'men' ? '' : 'men')}
+                  className={`px-4 py-2 border rounded-lg text-sm ${
+                    selectedGender === 'men'
+                      ? 'border-brand bg-brand text-white'
+                      : 'border-gray-300 text-black'
+                  }`}
+                >
+                  Для мужчин
+                </button>
+                <button
+                  onClick={() => setSelectedGender(selectedGender === 'boys' ? '' : 'boys')}
+                  className={`px-4 py-2 border rounded-lg text-sm ${
+                    selectedGender === 'boys'
+                      ? 'border-brand bg-brand text-white'
+                      : 'border-gray-300 text-black'
+                  }`}
+                >
+                  Для мальчиков
+                </button>
+              </div>
+
               {/* Category Filter */}
               {category && (
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
@@ -821,22 +864,34 @@ export default function SubcategoryPage({
 
               {/* Color Filter */}
               {filters.available_colors && filters.available_colors.length > 0 && (
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <button
+                  onClick={() => setShowColorSelectionModal(true)}
+                  className="w-full flex items-center justify-between py-3 border-b border-gray-100"
+                >
                   <span className="text-base font-normal text-black">Цвет</span>
-                  <button className="flex items-center gap-1 text-sm text-black">
-                    Все <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                  <div className="flex items-center gap-1 text-sm text-black">
+                    {selectedFilters.colors && selectedFilters.colors.length > 0 
+                      ? `${selectedFilters.colors.length} выбрано`
+                      : 'Все'
+                    } <ChevronRight className="w-4 h-4" />
+                  </div>
+                </button>
               )}
 
               {/* Brand Filter */}
               {filters.available_brands && filters.available_brands.length > 0 && (
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <button
+                  onClick={() => setShowBrandSelectionModal(true)}
+                  className="w-full flex items-center justify-between py-3 border-b border-gray-100"
+                >
                   <span className="text-base font-normal text-black">Бренд</span>
-                  <button className="flex items-center gap-1 text-sm text-black">
-                    Все <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                  <div className="flex items-center gap-1 text-sm text-black">
+                    {selectedFilters.brands && selectedFilters.brands.length > 0 
+                      ? `${selectedFilters.brands.length} выбрано`
+                      : 'Все'
+                    } <ChevronRight className="w-4 h-4" />
+                  </div>
+                </button>
               )}
             </div>
           </div>
@@ -1010,6 +1065,7 @@ export default function SubcategoryPage({
                   onClick={() => {
                     setSelectedFilters({ sizes: [], colors: [], brands: [] })
                     setPriceRange({})
+                    setSelectedGender('')
                     setCurrentPage(1)
                   }}
                 >
@@ -1025,6 +1081,98 @@ export default function SubcategoryPage({
             </div>
           </div>
         </>
+      )}
+
+      {/* Color Selection Modal - Mobile */}
+      {showColorSelectionModal && (
+        <div className="md:hidden fixed inset-0 bg-white z-50 overflow-y-auto">
+          {/* Top Bar */}
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-10">
+            <button
+              onClick={() => {
+                setSelectedFilters(prev => ({ ...prev, colors: [] }))
+              }}
+              className="text-sm text-gray-600"
+            >
+              Сбросить
+            </button>
+            <h2 className="text-base font-bold text-black">Цвет</h2>
+            <button 
+              onClick={() => setShowColorSelectionModal(false)}
+              className="text-sm text-gray-600"
+            >
+              Закрыть
+            </button>
+          </div>
+
+          {/* Color Options */}
+          <div className="px-4 py-4">
+            {filters.available_colors && filters.available_colors.length > 0 ? (
+              <div className="space-y-2">
+                {filters.available_colors.map((color: string) => (
+                  <label 
+                    key={color} 
+                    className="flex items-center justify-between py-3 border-b border-gray-100 cursor-pointer"
+                  >
+                    <span className="text-base text-black capitalize">{color}</span>
+                    <Checkbox 
+                      checked={selectedFilters.colors?.includes(color)}
+                      onCheckedChange={(checked) => handleFilterChange("colors", color, checked as boolean)} 
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">Нет доступных цветов</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Brand Selection Modal - Mobile */}
+      {showBrandSelectionModal && (
+        <div className="md:hidden fixed inset-0 bg-white z-50 overflow-y-auto">
+          {/* Top Bar */}
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-10">
+            <button
+              onClick={() => {
+                setSelectedFilters(prev => ({ ...prev, brands: [] }))
+              }}
+              className="text-sm text-gray-600"
+            >
+              Сбросить
+            </button>
+            <h2 className="text-base font-bold text-black">Бренд</h2>
+            <button 
+              onClick={() => setShowBrandSelectionModal(false)}
+              className="text-sm text-gray-600"
+            >
+              Закрыть
+            </button>
+          </div>
+
+          {/* Brand Options */}
+          <div className="px-4 py-4">
+            {filters.available_brands && filters.available_brands.length > 0 ? (
+              <div className="space-y-2">
+                {filters.available_brands.map((brand: any) => (
+                  <label 
+                    key={brand.slug} 
+                    className="flex items-center justify-between py-3 border-b border-gray-100 cursor-pointer"
+                  >
+                    <span className="text-base text-black">{brand.name}</span>
+                    <Checkbox 
+                      checked={selectedFilters.brands?.includes(brand.slug)}
+                      onCheckedChange={(checked) => handleFilterChange("brands", brand.slug, checked as boolean)} 
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">Нет доступных брендов</div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Footer */}
