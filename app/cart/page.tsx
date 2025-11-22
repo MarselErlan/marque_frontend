@@ -126,6 +126,7 @@ export default function CartPage() {
   }
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState("")
   const [orderComment, setOrderComment] = useState("") // Comment for the order/delivery
+  const [additionalPhoneForOrder, setAdditionalPhoneForOrder] = useState("") // Additional phone number for order
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
   const [isCreatingAddress, setIsCreatingAddress] = useState(false)
   const [orderNumber, setOrderNumber] = useState<string>("")
@@ -1382,33 +1383,42 @@ export default function CartPage() {
               </div>
             </div>
 
-            {/* Additional Phone Number */}
-            {additionalPhone && (
-              <div className="border-t pt-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Дополнительный телефон:</span>
-                  <span className="text-sm font-medium text-black">{additionalPhone}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Order Comment */}
+            {/* Additional Phone Number and Comment */}
             <div className="border-t pt-4">
-              <h3 className="text-base font-semibold text-black mb-3">Комментарий к заказу</h3>
-              <Textarea
-                value={orderComment}
-                onChange={(e) => {
-                  const value = e.target.value
-                  if (value.length <= 500) {
-                    setOrderComment(value)
-                  }
-                }}
-                placeholder="Добавьте комментарий для курьера (например, код от домофона, время доставки и т.д.)"
-                className="w-full min-h-[100px]"
-                maxLength={500}
-              />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {orderComment.length}/500
+              <div className="space-y-4">
+                {/* Additional Phone Number */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Дополнительный телефон (на всякий случай)
+                  </label>
+                  <Input
+                    type="tel"
+                    value={additionalPhoneForOrder}
+                    onChange={(e) => setAdditionalPhoneForOrder(e.target.value)}
+                    placeholder={profile?.phone ? `Например: ${profile.phone}` : "+996 505 32 53 11"}
+                    className="w-full h-11 text-base border-gray-300 focus:border-brand focus:ring-brand"
+                  />
+                </div>
+
+                {/* Order Comment */}
+                <div>
+                  <h3 className="text-base font-semibold text-black mb-3">Комментарий к заказу</h3>
+                  <Textarea
+                    value={orderComment}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value.length <= 500) {
+                        setOrderComment(value)
+                      }
+                    }}
+                    placeholder="Добавьте комментарий для курьера (например, код от домофона, время доставки и т.д.)"
+                    className="w-full min-h-[100px]"
+                    maxLength={500}
+                  />
+                  <div className="text-right text-xs text-gray-500 mt-1">
+                    {orderComment.length}/500
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1493,10 +1503,10 @@ export default function CartPage() {
                 <span className="text-gray-600">Телефон:</span>
                 <span className="font-medium text-black">{profile?.phone || "Не указан"}</span>
               </div>
-              {additionalPhone && (
+              {additionalPhoneForOrder && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Дополнительный телефон:</span>
-                  <span className="font-medium text-black">{additionalPhone}</span>
+                  <span className="font-medium text-black">{additionalPhoneForOrder}</span>
                 </div>
               )}
             </div>
