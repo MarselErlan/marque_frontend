@@ -39,7 +39,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
     <>
       {/* Phone Number Modal */}
       <Dialog open={isPhoneModalOpen} onOpenChange={setIsPhoneModalOpen}>
-        <DialogContent className="sm:max-w-md mx-4">
+        <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] max-h-[90vh] overflow-y-auto mx-auto">
           <DialogHeader className="text-center pb-4">
             <div className="mx-auto w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
               <Phone className="w-8 h-8 text-brand" />
@@ -103,7 +103,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
 
       {/* SMS Verification Modal */}
       <Dialog open={isSmsModalOpen} onOpenChange={setIsSmsModalOpen}>
-        <DialogContent className="sm:max-w-md mx-4">
+        <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] max-h-[90vh] overflow-y-auto mx-auto">
           <DialogHeader className="text-center pb-4">
             <div className="flex items-center justify-center relative mb-4">
               <Button
