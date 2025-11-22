@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard, ArrowLeft } from "lucide-react"
+import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard, ArrowLeft, Zap, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -48,9 +48,17 @@ export default function CartPage() {
   const [selectedDeliveryDateIndex, setSelectedDeliveryDateIndex] = useState(0)
   const selectedDeliveryDateObj = deliveryDates[selectedDeliveryDateIndex]
   
-  // Format date for display (e.g., "21 июл")
+  // Format date for display (e.g., "21 июн")
   const formatDeliveryDate = (date: Date) => {
     return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+  }
+  
+  // Get day name for date display
+  const getDayName = (date: Date, index: number) => {
+    if (index === 0) return 'Завтра'
+    if (index === 1) return 'Послезавтра'
+    const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+    return days[date.getDay()]
   }
 
   // Format date for API (ISO format YYYY-MM-DD)
@@ -441,18 +449,18 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 md:bg-gray-50">
       <AuthModals {...auth} />
 
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
-        <div className="md:flex md:gap-8">
+      <main className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-4 lg:py-8">
+        <div className="bg-white md:bg-transparent md:flex md:gap-8">
           {/* Cart Items */}
-          <div className="flex-1">
-            <div className="mb-6">
+          <div className="flex-1 px-4 md:px-0 pt-4 md:pt-0 pb-4 md:pb-0">
+            <div className="mb-4 md:mb-6">
               <h1 className="text-2xl font-bold text-black">Корзина</h1>
-              <p className="text-gray-500 md:hidden">{cartItems.length} товара</p>
+              <p className="text-gray-500 text-sm mt-1">{cartItems.length} {cartItems.length === 1 ? 'товар' : cartItems.length < 5 ? 'товара' : 'товаров'}</p>
             </div>
 
             {cartItems.length === 0 ? (
@@ -467,77 +475,93 @@ export default function CartPage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
-                {cartItems.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg p-4 flex space-x-4">
-                  {/* Product Image */}
-                  <img
-                    src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
-                    alt={item.name}
-                    className="w-20 h-24 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.src = '/images/product_placeholder_adobe.png'
-                    }}
-                  />
+              <>
+                <div className="space-y-3 md:space-y-4">
+                  {cartItems.map((item) => (
+                  <div key={item.id} className="bg-white rounded-lg p-3 md:p-4 flex space-x-3 md:space-x-4">
+                    {/* Product Image */}
+                    <img
+                      src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
+                      alt={item.name}
+                      className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg flex-shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                      }}
+                    />
 
-                  {/* Product Details */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">{item.brand || 'H&M'}</p>
-                        <h3 className="font-medium text-black mb-2 text-sm leading-tight">{item.name}</h3>
-                        <div className="flex items-center space-x-4 text-xs text-gray-600">
-                          <span>Размер: {item.size}</span>
-                          <span>Цвет: {item.color}</span>
+                    {/* Product Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-500 mb-0.5">{item.brand || 'H&M'}</p>
+                          <h3 className="font-medium text-black mb-1.5 text-sm leading-tight line-clamp-2">{item.name}</h3>
+                          <div className="flex items-center gap-3 text-xs text-gray-600 mb-2">
+                            <span>Размер {item.size}</span>
+                            <span>Цвет {item.color}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                          <Button variant="ghost" size="sm" className="p-1 h-auto bg-gray-100 rounded-full">
+                            <Edit className="w-3.5 h-3.5 text-gray-500" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="p-1 h-auto bg-gray-100 rounded-full" onClick={() => removeFromCart(item.id, item.size, item.color)}>
+                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end space-y-2">
-                        <Button variant="ghost" size="sm" className="p-1 h-auto bg-gray-100 rounded-full">
-                          <Edit className="w-4 h-4 text-gray-500" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="p-1 h-auto bg-gray-100 rounded-full" onClick={() => removeFromCart(item.id, item.size, item.color)}>
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
 
-                    {/* Quantity and Price */}
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-8 h-8 p-0 bg-gray-100 border-none"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.size, item.color)}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </Button>
-                        <span className="w-8 text-center font-bold">{item.quantity}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-8 h-8 p-0 bg-gray-100 border-none"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1, item.size, item.color)}
-                        >
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-base font-bold text-brand">{item.price} сом</span>
-                        {item.originalPrice && <span className="text-sm text-gray-400 line-through">{item.originalPrice} сом</span>}
+                      {/* Quantity and Price */}
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-7 h-7 md:w-8 md:h-8 p-0 bg-gray-100 border-none"
+                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.size, item.color)}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                          <span className="w-6 md:w-8 text-center font-bold text-sm">{item.quantity}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-7 h-7 md:w-8 md:h-8 p-0 bg-gray-100 border-none"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.size, item.color)}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center space-x-2 flex-shrink-0">
+                          <span className="text-sm md:text-base font-bold text-brand">{item.price} сом</span>
+                          {item.originalPrice && <span className="text-xs md:text-sm text-gray-400 line-through">{item.originalPrice} сом</span>}
+                        </div>
                       </div>
                     </div>
                   </div>
+                ))}
                 </div>
-              ))}
-              </div>
+                
+                {/* 3D Mannequin Button */}
+                <div className="mt-4 md:mt-6">
+                  <Button
+                    className="w-full bg-brand hover:bg-brand-hover text-white py-2.5 md:py-3 rounded-lg text-sm md:text-base flex items-center justify-center gap-2"
+                    onClick={() => {
+                      // Navigate to mannequin page or open mannequin feature
+                      router.push('/mannequin')
+                    }}
+                  >
+                    <Zap className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2} />
+                    <span>3D манекен</span>
+                  </Button>
+                </div>
+              </>
             )}
           </div>
 
           {/* Order Summary */}
           {cartItems.length > 0 && (
-            <div className="w-full md:w-96 mt-8 md:mt-0">
-              <div className="bg-white rounded-lg p-4 md:p-6 space-y-4">
+            <div className="w-full md:w-96 mt-0 md:mt-0 px-4 md:px-0 pb-4 md:pb-0">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 space-y-4">
                 {/* Delivery Options */}
                 <div>
                   <div className="flex bg-gray-100 rounded-lg p-1 text-sm mb-4">
@@ -547,7 +571,7 @@ export default function CartPage() {
 
                   <div>
                     <p className="text-sm font-semibold text-black mb-2">Дата доставки</p>
-                    <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4">
+                    <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
                       {deliveryDates.map((date: Date, i: number) => (
                         <button
                           key={i}
@@ -558,10 +582,10 @@ export default function CartPage() {
                           }`}
                           onClick={() => setSelectedDeliveryDateIndex(i)}
                         >
-                          <span className="font-semibold">
-                            {i === 0 ? 'Завтра' : i === 1 ? 'Послезавтра' : date.getDate().toString()}
-                          </span><br/>
-                          <span className="text-gray-500">{formatDeliveryDate(date)}</span>
+                          <span className="font-semibold block">
+                            {i === 0 ? 'Завтра' : i === 1 ? 'Послезавтра' : getDayName(date, i).split(' ')[0]}
+                          </span>
+                          <span className="text-gray-500 text-xs mt-0.5 block">{formatDeliveryDate(date)}</span>
                         </button>
                       ))}
                     </div>
@@ -573,37 +597,43 @@ export default function CartPage() {
                       onClick={handleAddressButtonClick}
                       className="w-full flex justify-between items-center text-left bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500">Адрес доставки</p>
-                        {checkoutAddress ? (
-                          <p className="font-semibold">{checkoutAddress}</p>
-                        ) : (
-                          <p className="font-semibold text-gray-400">Выберите адрес</p>
-                        )}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-500 mb-0.5">Адрес доставки</p>
+                          {checkoutAddress ? (
+                            <p className="font-semibold text-sm truncate">{checkoutAddress}</p>
+                          ) : (
+                            <p className="font-semibold text-sm text-gray-400">Выберите адрес</p>
+                          )}
+                        </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                      <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     </button>
                     <button 
                       onClick={handlePaymentMethodButtonClick}
                       className="w-full flex justify-between items-center text-left bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500">Способ оплаты</p>
-                        {checkoutPaymentMethodDisplay ? (
-                          <p className="font-semibold">{checkoutPaymentMethodDisplay}</p>
-                        ) : (
-                          <p className="font-semibold text-gray-400">Выберите способ оплаты</p>
-                        )}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <CreditCard className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-500 mb-0.5">Способ оплаты</p>
+                          {checkoutPaymentMethodDisplay ? (
+                            <p className="font-semibold text-sm truncate">{checkoutPaymentMethodDisplay}</p>
+                          ) : (
+                            <p className="font-semibold text-sm text-gray-400">Выберите способ оплаты</p>
+                          )}
+                        </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                      <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     </button>
                   </div>
                 </div>
 
                 {/* Order Summary */}
-                <div className="border-t pt-4 space-y-2 text-sm">
+                <div className="border-t pt-4 space-y-2.5 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Товары в заказе</span>
+                    <span className="text-gray-600">Товаров в заказе</span>
                     <span className="text-black font-medium">{cartItems.length}</span>
                   </div>
                   <div className="flex justify-between">
@@ -614,7 +644,7 @@ export default function CartPage() {
                     <span className="text-gray-600">Скидка</span>
                     <span className="text-black font-medium">-{discount.toLocaleString()} сом</span>
                   </div>
-                  <div className="border-t pt-2 mt-2">
+                  <div className="border-t pt-2.5 mt-2.5">
                     <div className="flex justify-between text-base font-bold">
                       <span className="text-black">Итого</span>
                       <span className="text-brand">{total.toLocaleString()} сом</span>
