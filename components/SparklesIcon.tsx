@@ -12,21 +12,44 @@ export const SparklesIcon = React.forwardRef<SVGSVGElement, SparklesIconProps>(
       <svg
         ref={ref}
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
+        viewBox="0 0 32 32"
         fill="currentColor"
         className={cn("shrink-0", className)}
         {...props}
       >
-        {/* Smaller sparkle (top left) - four-pointed star with rounded bulbous points */}
-        {/* Using the SVG from the provided file - extracting sparkle paths */}
-        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" 
-              fill="currentColor" 
-              transform="translate(-5, -1) scale(0.35)" />
-        
-        {/* Larger sparkle (bottom right) - four-pointed star with rounded bulbous points */}
-        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" 
-              fill="currentColor" 
-              transform="translate(5, 13) scale(0.5)" />
+        {/* маленькая искра (слева-сверху) */}
+        <g transform="translate(4, 2) scale(0.6)">
+          {/* внешняя форма */}
+          <path
+            d="M12 2
+               Q16 8 22 12
+               Q16 16 12 22
+               Q8 16 2 12
+               Q8 8 12 2 Z"
+            fill="currentColor"
+          />
+          {/* внутренний ромб */}
+          <path
+            d="M12 8 L16 12 L12 16 L8 12 Z"
+            fill="white"
+          />
+        </g>
+
+        {/* большая искра (справа-снизу) */}
+        <g transform="translate(13, 11) scale(1.1)">
+          <path
+            d="M12 2
+               Q16 8 22 12
+               Q16 16 12 22
+               Q8 16 2 12
+               Q8 8 12 2 Z"
+            fill="currentColor"
+          />
+          <path
+            d="M12 8 L16 12 L12 16 L8 12 Z"
+            fill="white"
+          />
+        </g>
       </svg>
     )
   }
