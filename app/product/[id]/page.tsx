@@ -86,6 +86,10 @@ export default function ProductDetailPage() {
   const [isAddedToCart, setIsAddedToCart] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   
+  // Swipe state for product images
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  
   const [isClient, setIsClient] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
@@ -411,6 +415,66 @@ export default function ProductDetailPage() {
     router.push('/cart')
   }
 
+  // Swipe handlers for product images
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe && galleryImages.length > 0) {
+      setSelectedImageIndex((prev) => (prev + 1) % galleryImages.length)
+    }
+    if (isRightSwipe && galleryImages.length > 0) {
+      setSelectedImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+    }
+  }
+
+  // Mouse handlers for desktop swipe
+  const [mouseStart, setMouseStart] = useState<number | null>(null)
+  const [mouseEnd, setMouseEnd] = useState<number | null>(null)
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    setMouseEnd(null)
+    setMouseStart(e.clientX)
+  }
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (mouseStart !== null) {
+      setMouseEnd(e.clientX)
+    }
+  }
+
+  const onMouseUp = () => {
+    if (!mouseStart || !mouseEnd) return
+    
+    const distance = mouseStart - mouseEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe && galleryImages.length > 0) {
+      setSelectedImageIndex((prev) => (prev + 1) % galleryImages.length)
+    }
+    if (isRightSwipe && galleryImages.length > 0) {
+      setSelectedImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+    }
+    
+    setMouseStart(null)
+    setMouseEnd(null)
+  }
+
   if (!isClient) {
     return null
   }
@@ -491,12 +555,22 @@ export default function ProductDetailPage() {
           {/* Product Images */}
           <div className="space-y-4">
             {/* Main Image Carousel - Mobile */}
-            <div className="lg:hidden relative">
+            <div 
+              className="lg:hidden relative"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+              onMouseLeave={onMouseUp}
+            >
               <div className="aspect-square bg-white overflow-hidden">
                 <img
                   src={getDisplayImage(selectedImageIndex)}
                   alt={galleryImages[selectedImageIndex]?.alt || product.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover select-none"
+                  draggable={false}
                 />
               </div>
               {galleryImages.length > 1 && (
@@ -543,11 +617,18 @@ export default function ProductDetailPage() {
                   </button>
                 ))}
               </div>
-              <div className="flex-1 aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center relative">
+              <div 
+                className="flex-1 aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center relative cursor-grab active:cursor-grabbing"
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseUp}
+              >
                 <img
                   src={getDisplayImage(selectedImageIndex)}
                   alt={galleryImages[selectedImageIndex]?.alt || product.title}
-                  className="w-full h-full object-cover transition-opacity duration-300"
+                  className="w-full h-full object-cover transition-opacity duration-300 select-none"
+                  draggable={false}
                 />
                 <button
                   className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand rounded-lg transition-colors shadow-sm"

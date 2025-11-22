@@ -48,6 +48,12 @@ export default function MarquePage() {
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [bannerRotationIndex, setBannerRotationIndex] = useState(0)
   const [isClient, setIsClient] = useState(false)
+  
+  // Swipe state for banner
+  const [bannerTouchStart, setBannerTouchStart] = useState<number | null>(null)
+  const [bannerTouchEnd, setBannerTouchEnd] = useState<number | null>(null)
+  const [bannerMouseStart, setBannerMouseStart] = useState<number | null>(null)
+  const [bannerMouseEnd, setBannerMouseEnd] = useState<number | null>(null)
   const [apiBanners, setApiBanners] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMoreProducts, setHasMoreProducts] = useState(true)
@@ -535,6 +541,62 @@ export default function MarquePage() {
     return banners
   }
 
+  // Swipe handlers for banner
+  const bannerMinSwipeDistance = 50
+
+  const onBannerTouchStart = (e: React.TouchEvent) => {
+    setBannerTouchEnd(null)
+    setBannerTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onBannerTouchMove = (e: React.TouchEvent) => {
+    setBannerTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onBannerTouchEnd = () => {
+    if (!bannerTouchStart || !bannerTouchEnd || heroBanners.length === 0) return
+    
+    const distance = bannerTouchStart - bannerTouchEnd
+    const isLeftSwipe = distance > bannerMinSwipeDistance
+    const isRightSwipe = distance < -bannerMinSwipeDistance
+
+    if (isLeftSwipe) {
+      setBannerRotationIndex((prev) => (prev + 1) % heroBanners.length)
+    }
+    if (isRightSwipe) {
+      setBannerRotationIndex((prev) => (prev - 1 + heroBanners.length) % heroBanners.length)
+    }
+  }
+
+  const onBannerMouseDown = (e: React.MouseEvent) => {
+    setBannerMouseEnd(null)
+    setBannerMouseStart(e.clientX)
+  }
+
+  const onBannerMouseMove = (e: React.MouseEvent) => {
+    if (bannerMouseStart !== null) {
+      setBannerMouseEnd(e.clientX)
+    }
+  }
+
+  const onBannerMouseUp = () => {
+    if (!bannerMouseStart || !bannerMouseEnd || heroBanners.length === 0) return
+    
+    const distance = bannerMouseStart - bannerMouseEnd
+    const isLeftSwipe = distance > bannerMinSwipeDistance
+    const isRightSwipe = distance < -bannerMinSwipeDistance
+
+    if (isLeftSwipe) {
+      setBannerRotationIndex((prev) => (prev + 1) % heroBanners.length)
+    }
+    if (isRightSwipe) {
+      setBannerRotationIndex((prev) => (prev - 1 + heroBanners.length) % heroBanners.length)
+    }
+    
+    setBannerMouseStart(null)
+    setBannerMouseEnd(null)
+  }
+
   // Infinite scroll effect
   useEffect(() => {
     const handleScroll = async () => {
@@ -601,7 +663,16 @@ export default function MarquePage() {
       <main className="w-full relative">
         {/* Picture Carousel - Desktop Only */}
         <section className="w-full mb-8 mt-8 hidden md:block">
-          <div className="flex items-center justify-center h-[506px] relative overflow-hidden w-full">
+          <div 
+            className="flex items-center justify-center h-[506px] relative overflow-hidden w-full cursor-grab active:cursor-grabbing"
+            onTouchStart={onBannerTouchStart}
+            onTouchMove={onBannerTouchMove}
+            onTouchEnd={onBannerTouchEnd}
+            onMouseDown={onBannerMouseDown}
+            onMouseMove={onBannerMouseMove}
+            onMouseUp={onBannerMouseUp}
+            onMouseLeave={onBannerMouseUp}
+          >
             {getCurrentBanners().map((banner, index) => (
               <div
                 key={`${banner.id}-${bannerRotationIndex}-${index}`}
@@ -630,7 +701,8 @@ export default function MarquePage() {
                     <img 
                       src={getImageUrl(banner.image_url, "/images/placeholder_banner_adobe.png")} 
                       alt={banner.title || 'Banner'} 
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover select-none"
+                      draggable={false}
                       onError={(e) => { 
                         e.currentTarget.src = "/images/placeholder_banner_adobe.png"
                       }}
@@ -670,7 +742,12 @@ export default function MarquePage() {
         
         {/* Mobile Banner Carousel */}
         <section className="w-full my-4 md:hidden">
-          <div className="h-48 relative overflow-hidden flex items-center justify-center">
+          <div 
+            className="h-48 relative overflow-hidden flex items-center justify-center"
+            onTouchStart={onBannerTouchStart}
+            onTouchMove={onBannerTouchMove}
+            onTouchEnd={onBannerTouchEnd}
+          >
             {getCurrentBanners().map((banner, index) => (
               <div
                 key={`${banner.id}-${bannerRotationIndex}-${index}`}
@@ -691,7 +768,8 @@ export default function MarquePage() {
                     <img 
                       src={getImageUrl(banner.mobile_image_url || banner.image_url, "/images/placeholder_banner_adobe.png")} 
                       alt={banner.title || 'Banner'} 
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover select-none"
+                      draggable={false}
                       onError={(e) => { 
                         e.currentTarget.src = "/images/placeholder_banner_adobe.png"
                       }}
