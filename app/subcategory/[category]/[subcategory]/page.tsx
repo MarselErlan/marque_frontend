@@ -704,32 +704,168 @@ export default function SubcategoryPage({
             )}
       </main>
 
-      {/* All Filters Sidebar */}
+      {/* All Filters Modal */}
       {showAllFiltersModal && (
         <>
-          {/* Light backdrop - click to close */}
-          <div 
-            className="fixed inset-0 bg-transparent z-30"
-            onClick={() => setShowAllFiltersModal(false)}
-          />
-          
-          {/* Left Sidebar */}
-          <div className="fixed inset-y-0 left-0 w-80 bg-white z-40 overflow-y-auto shadow-2xl border-r border-gray-200">
-            {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Все фильтры</h2>
+          {/* Mobile: Full Screen Overlay */}
+          <div className="md:hidden fixed inset-0 bg-white z-50 overflow-y-auto">
+            {/* Top Bar with 3 buttons */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-10">
+              <button
+                onClick={() => {
+                  setSelectedFilters({ sizes: [], colors: [], brands: [] })
+                  setPriceRange({})
+                  setCurrentPage(1)
+                }}
+                className="text-sm text-gray-600"
+              >
+                Сбросить
+              </button>
+              <h2 className="text-base font-bold text-black">Фильтры</h2>
               <button 
                 onClick={() => setShowAllFiltersModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full"
+                className="text-sm text-gray-600"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                Закрыть
               </button>
             </div>
 
-            {/* Filters Content */}
-            <div className="p-6 space-y-6">
+            {/* Mobile Filters Content */}
+            <div className="px-4 py-4 space-y-4">
+              {/* Size Filter */}
+              {filters.available_sizes && filters.available_sizes.length > 0 && (
+                <>
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                    <span className="text-base font-normal text-black">Размер</span>
+                    <button className="text-sm text-gray-500">Показать все</button>
+                  </div>
+                  <div className="overflow-x-auto pb-2 -mx-4 px-4">
+                    <div className="flex gap-2 min-w-max">
+                      {filters.available_sizes.map((size: string) => (
+                        <button
+                          key={size}
+                          onClick={() => {
+                            const checked = !selectedFilters.sizes?.includes(size)
+                            handleFilterChange("sizes", size, checked)
+                          }}
+                          className={`px-4 py-2 border rounded-lg text-sm whitespace-nowrap ${
+                            selectedFilters.sizes?.includes(size)
+                              ? 'border-brand bg-brand text-white'
+                              : 'border-gray-300 text-black'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Price Filter */}
+              {filters.price_range && (
+                <>
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                    <span className="text-base font-normal text-black">Цена</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        placeholder="От"
+                        value={priceRange.min || ''}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">сом</span>
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        placeholder="До"
+                        value={priceRange.max || ''}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
+                      />
+                      <span className="text-xs text-gray-500 mt-1 block">сом</span>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Category Filter */}
+              {category && (
+                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                  <span className="text-base font-normal text-black">Категория</span>
+                  <button 
+                    onClick={openCatalog}
+                    className="flex items-center gap-1 text-sm text-black"
+                  >
+                    {category.name} <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Subcategory Filter */}
+              {subcategory && (
+                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                  <span className="text-base font-normal text-black">Подкатегория</span>
+                  <button 
+                    onClick={openCatalog}
+                    className="flex items-center gap-1 text-sm text-black"
+                  >
+                    {subcategory.name} <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Color Filter */}
+              {filters.available_colors && filters.available_colors.length > 0 && (
+                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                  <span className="text-base font-normal text-black">Цвет</span>
+                  <button className="flex items-center gap-1 text-sm text-black">
+                    Все <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Brand Filter */}
+              {filters.available_brands && filters.available_brands.length > 0 && (
+                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                  <span className="text-base font-normal text-black">Бренд</span>
+                  <button className="flex items-center gap-1 text-sm text-black">
+                    Все <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop: Left Sidebar (unchanged) */}
+          <div className="hidden md:block">
+            {/* Light backdrop - click to close */}
+            <div 
+              className="fixed inset-0 bg-transparent z-30"
+              onClick={() => setShowAllFiltersModal(false)}
+            />
+            
+            {/* Left Sidebar */}
+            <div className="fixed inset-y-0 left-0 w-80 bg-white z-40 overflow-y-auto shadow-2xl border-r border-gray-200">
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold">Все фильтры</h2>
+                <button 
+                  onClick={() => setShowAllFiltersModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Desktop Filters Content */}
+              <div className="p-6 space-y-6">
               {/* Category Filter - Dynamic from API */}
               {allCategories.length > 0 && (
                 <div>
@@ -866,25 +1002,26 @@ export default function SubcategoryPage({
               )}
             </div>
 
-            {/* Footer Actions */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setSelectedFilters({ sizes: [], colors: [], brands: [] })
-                  setPriceRange({})
-                  setCurrentPage(1)
-                }}
-              >
-                Сбросить
-              </Button>
-              <Button
-                className="flex-1 bg-brand hover:bg-brand-hover text-white"
-                onClick={() => setShowAllFiltersModal(false)}
-              >
-                Применить
-              </Button>
+              {/* Desktop Footer Actions */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setSelectedFilters({ sizes: [], colors: [], brands: [] })
+                    setPriceRange({})
+                    setCurrentPage(1)
+                  }}
+                >
+                  Сбросить
+                </Button>
+                <Button
+                  className="flex-1 bg-brand hover:bg-brand-hover text-white"
+                  onClick={() => setShowAllFiltersModal(false)}
+                >
+                  Применить
+                </Button>
+              </div>
             </div>
           </div>
         </>
