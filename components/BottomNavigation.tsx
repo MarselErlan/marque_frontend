@@ -14,8 +14,7 @@ export const BottomNavigation = () => {
   const { cartItemCount } = useCart()
   const { wishlistItemCount } = useWishlist()
 
-  const handleAuthClick = (e: React.MouseEvent) => {
-    e.preventDefault()
+  const handleAuthClick = () => {
     if (!auth.isLoggedIn) {
       auth.requireAuth(() => {
         // After login, navigate to profile
@@ -101,7 +100,7 @@ export const BottomNavigation = () => {
               <button
                 key={item.id}
                 onClick={item.onClick}
-                className="flex-1 flex justify-center cursor-pointer active:scale-95 transition-transform"
+                className="flex-1 flex justify-center items-center cursor-pointer active:scale-95 transition-transform touch-manipulation min-h-[60px]"
                 type="button"
               >
                 {content}
@@ -113,7 +112,7 @@ export const BottomNavigation = () => {
             <Link
               key={item.id}
               href={item.href}
-              className="flex-1 flex justify-center active:scale-95 transition-transform"
+              className="flex-1 flex justify-center items-center active:scale-95 transition-transform touch-manipulation min-h-[60px]"
             >
               {content}
             </Link>
