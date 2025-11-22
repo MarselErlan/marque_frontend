@@ -735,21 +735,21 @@ export default function MarquePage() {
                 <p className="text-gray-400 text-sm">Попробуйте обновить страницу или изменить фильтры</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4" style={{minHeight: '1156px'}}>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-1 md:gap-4" style={{minHeight: '1156px'}}>
                 {randomProducts.map((product, i) => (
                   <Link
                     key={`${product.id}-${i}`}
                     href={`/product/${product.slug || product.id}`}
-                    className="bg-white rounded-md p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
+                    className="bg-white rounded-md p-1.5 md:p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                   >
                     {/* Discount Badge */}
-                    <div className="relative mb-2">
+                    <div className="relative mb-1 md:mb-2">
                       {product.discount_percent && (
-                        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
+                        <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
                           -{product.discount_percent}%
                         </div>
                       )}
-                      <div className="absolute top-2 right-2 z-10">
+                      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10">
                         <button onClick={(e) => handleWishlistClick(e, product)}>
                           <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
                         </button>
@@ -773,11 +773,11 @@ export default function MarquePage() {
                     </div>
                     
                     {/* Product Info */}
-                    <div className="space-y-0.5">
+                    <div className="space-y-0 md:space-y-0.5">
                       <div className="text-xs text-gray-500 uppercase font-medium">
                         {product.brand_name || product.brand || 'MARQUE'}
                       </div>
-                      <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight mb-1">
+                      <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight mb-0 md:mb-1">
                         {product.title || product.name}
                       </h3>
                       
