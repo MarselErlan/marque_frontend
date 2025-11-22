@@ -829,15 +829,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg md:text-2xl font-semibold text-gray-900 mb-1">{userName}</h2>
-                    <p className="text-sm md:text-lg text-gray-600 mb-3">{phoneNumber}</p>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={handleProfileImageButtonClick}
-                      className="bg-brand/40 md:bg-transparent text-brand md:text-brand border-brand/40 md:border-brand hover:bg-brand/50 md:hover:bg-brand hover:text-white transition-colors text-xs md:text-sm"
-                    >
-                      Редактировать фото
-                    </Button>
+                    <p className="text-sm md:text-lg text-gray-600">{phoneNumber}</p>
                   </div>
                 </div>
 
