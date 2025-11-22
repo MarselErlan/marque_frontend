@@ -22,15 +22,15 @@ export const SparklesIcon = React.forwardRef<SVGSVGElement, SparklesIconProps>(
           {/* внешняя форма */}
           <path
             d="M12 2
-               Q16 8 22 12
-               Q16 16 12 22
-               Q8 16 2 12
-               Q8 8 12 2 Z"
+               Q18 6 24 12
+               Q18 18 12 22
+               Q6 18 0 12
+               Q6 6 12 2 Z"
             fill="currentColor"
           />
           {/* внутренний ромб */}
           <path
-            d="M12 8 L16 12 L12 16 L8 12 Z"
+            d="M12 7 L17 12 L12 17 L7 12 Z"
             fill="white"
           />
         </g>
@@ -39,14 +39,14 @@ export const SparklesIcon = React.forwardRef<SVGSVGElement, SparklesIconProps>(
         <g transform="translate(13, 11) scale(1.1)">
           <path
             d="M12 2
-               Q16 8 22 12
-               Q16 16 12 22
-               Q8 16 2 12
-               Q8 8 12 2 Z"
+               Q18 6 24 12
+               Q18 18 12 22
+               Q6 18 0 12
+               Q6 6 12 2 Z"
             fill="currentColor"
           />
           <path
-            d="M12 8 L16 12 L12 16 L8 12 Z"
+            d="M12 7 L17 12 L12 17 L7 12 Z"
             fill="white"
           />
         </g>
