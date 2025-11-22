@@ -15,12 +15,16 @@ export const BottomNavigation = () => {
   const { wishlistItemCount } = useWishlist()
 
   const handleAuthClick = () => {
+    console.log('🔵 Auth button clicked!', { isLoggedIn: auth.isLoggedIn })
     if (!auth.isLoggedIn) {
+      console.log('🔵 Opening login modal...')
       auth.requireAuth(() => {
+        console.log('🔵 Login successful, navigating to profile...')
         // After login, navigate to profile
         router.push('/profile')
       })
     } else {
+      console.log('🔵 Already logged in, navigating to profile...')
       // User is logged in, navigate to profile
       router.push('/profile')
     }
