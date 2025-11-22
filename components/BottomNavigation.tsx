@@ -26,98 +26,67 @@ export const BottomNavigation = () => {
     }
   }
 
-  const navItems = [
-    {
-      id: 'mannequin',
-      label: 'Манекен',
-      icon: (
-        <div className="flex items-center justify-center">
-          <Sparkles className="w-6 h-6" strokeWidth={1.5} />
-        </div>
-      ),
-      href: '/',
-      active: pathname === '/',
-    },
-    {
-      id: 'wishlist',
-      label: 'Избранные',
-      icon: (
-        <div className="relative">
-          <Heart className="w-6 h-6" strokeWidth={1.5} />
-          {wishlistItemCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-              {wishlistItemCount > 9 ? '9+' : wishlistItemCount}
-            </span>
-          )}
-        </div>
-      ),
-      href: '/wishlist',
-      active: pathname === '/wishlist',
-    },
-    {
-      id: 'cart',
-      label: 'Корзина',
-      icon: (
-        <div className="relative">
-          <ShoppingCart className="w-6 h-6" strokeWidth={1.5} />
-          {cartItemCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-              {cartItemCount > 9 ? '9+' : cartItemCount}
-            </span>
-          )}
-        </div>
-      ),
-      href: '/cart',
-      active: pathname === '/cart',
-    },
-    {
-      id: 'auth',
-      label: auth.isLoggedIn ? 'Профиль' : 'Войти',
-      icon: <User className="w-6 h-6" strokeWidth={1.5} />,
-      href: auth.isLoggedIn ? '/profile' : '#',
-      active: pathname === '/profile',
-      onClick: handleAuthClick,
-    },
-  ]
-
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-gray-100 border-t border-gray-200">
       <div className="flex items-center justify-around px-4 py-3">
-        {navItems.map((item) => {
-          const content = (
-            <div
-              className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${
-                item.active ? 'text-brand' : 'text-gray-700'
-              }`}
-            >
-              {item.icon}
-              <span className="text-xs font-medium">{item.label}</span>
+        {/* Манекен */}
+        <Link
+          href="/"
+          className="flex-1 flex justify-center items-center active:scale-95 transition-transform touch-manipulation min-h-[60px]"
+        >
+          <div className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${pathname === '/' ? 'text-brand' : 'text-gray-700'}`}>
+            <Sparkles className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-xs font-medium">Манекен</span>
+          </div>
+        </Link>
+
+        {/* Избранные */}
+        <Link
+          href="/wishlist"
+          className="flex-1 flex justify-center items-center active:scale-95 transition-transform touch-manipulation min-h-[60px]"
+        >
+          <div className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${pathname === '/wishlist' ? 'text-brand' : 'text-gray-700'}`}>
+            <div className="relative">
+              <Heart className="w-6 h-6" strokeWidth={1.5} />
+              {wishlistItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {wishlistItemCount > 9 ? '9+' : wishlistItemCount}
+                </span>
+              )}
             </div>
-          )
+            <span className="text-xs font-medium">Избранные</span>
+          </div>
+        </Link>
 
-          if (item.onClick) {
-            return (
-              <button
-                key={item.id}
-                onClick={item.onClick}
-                className="flex-1 flex justify-center items-center cursor-pointer active:scale-95 transition-transform touch-manipulation min-h-[60px]"
-                type="button"
-              >
-                {content}
-              </button>
-            )
-          }
+        {/* Корзина */}
+        <Link
+          href="/cart"
+          className="flex-1 flex justify-center items-center active:scale-95 transition-transform touch-manipulation min-h-[60px]"
+        >
+          <div className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${pathname === '/cart' ? 'text-brand' : 'text-gray-700'}`}>
+            <div className="relative">
+              <ShoppingCart className="w-6 h-6" strokeWidth={1.5} />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  {cartItemCount > 9 ? '9+' : cartItemCount}
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-medium">Корзина</span>
+          </div>
+        </Link>
 
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="flex-1 flex justify-center items-center active:scale-95 transition-transform touch-manipulation min-h-[60px]"
-            >
-              {content}
-            </Link>
-          )
-        })}
+        {/* Войти / Профиль */}
+        <button
+          onClick={handleAuthClick}
+          className="flex-1 flex justify-center items-center active:scale-95 transition-transform touch-manipulation min-h-[60px]"
+          type="button"
+        >
+          <div className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${pathname === '/profile' ? 'text-brand' : 'text-gray-700'}`}>
+            <User className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-xs font-medium">{auth.isLoggedIn ? 'Профиль' : 'Войти'}</span>
+          </div>
+        </button>
       </div>
     </div>
   )
