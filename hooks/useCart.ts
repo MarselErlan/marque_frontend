@@ -183,33 +183,60 @@ export const useCart = () => {
 
     const userId = getUserId()
     
-    if (userId && isAuthenticated) {
-      // Update backend cart (productId here is cart_item_id)
-      try {
-        await cartApi.updateQuantity(userId, Number(productId), newQuantity)
-        await loadCart() // Reload cart from backend
-        // Dispatch event for real-time update
-        window.dispatchEvent(new CustomEvent('cart:refresh'))
-        return
-      } catch (error) {
-        console.error('Failed to update backend cart:', error)
-        // Fall back to localStorage
-      }
-    }
-
-    // Update localStorage cart
+    // Optimistically update the state first (for both authenticated and non-authenticated)
+    let previousItems: CartItem[] = []
+    let updatedItems: CartItem[] = []
     setCartItems(prevItems => {
-      const newItems = prevItems.map(item =>
+      previousItems = prevItems // Save previous state in case we need to revert
+      updatedItems = prevItems.map(item =>
         item.id === productId && item.size === size && item.color === color
           ? { ...item, quantity: newQuantity }
           : item
       )
-      saveCart(newItems)
-      // Dispatch event for real-time update
-      window.dispatchEvent(new CustomEvent('cart:refresh'))
-      return newItems
+      // Update count immediately
+      const totalCount = updatedItems.reduce((total, item) => total + item.quantity, 0)
+      setCartItemCount(totalCount)
+      // Dispatch event for real-time update (only cart:updated, not cart:refresh to avoid reload)
+      window.dispatchEvent(new CustomEvent('cart:updated', { 
+        detail: { count: totalCount, items: updatedItems }
+      }))
+      return updatedItems
     })
-  }, [isAuthenticated, loadCart, saveCart])
+    
+    if (userId && isAuthenticated) {
+      // Update backend cart (productId here is cart_item_id)
+      try {
+        await cartApi.updateQuantity(userId, Number(productId), newQuantity)
+        // Don't reload immediately - optimistic update is already applied
+        // The state is already correct, so no need to reload and risk overwriting
+      } catch (error) {
+        console.error('Failed to update backend cart:', error)
+        // Revert to previous state on error
+        setCartItems(previousItems)
+        const totalCount = previousItems.reduce((total, item) => total + item.quantity, 0)
+        setCartItemCount(totalCount)
+        window.dispatchEvent(new CustomEvent('cart:updated', { 
+          detail: { count: totalCount, items: previousItems }
+        }))
+        toast.error('Не удалось обновить количество')
+        return
+      }
+    } else {
+      // For non-authenticated users, save to localStorage
+      try {
+        localStorage.setItem('cart', JSON.stringify(updatedItems))
+      } catch (error) {
+        console.error('Error saving cart to localStorage:', error)
+        // Revert on error
+        setCartItems(previousItems)
+        const totalCount = previousItems.reduce((total, item) => total + item.quantity, 0)
+        setCartItemCount(totalCount)
+        window.dispatchEvent(new CustomEvent('cart:updated', { 
+          detail: { count: totalCount, items: previousItems }
+        }))
+      }
+    }
+  }, [isAuthenticated, removeFromCart])
 
   // Clear cart
   const clearCart = async () => {
