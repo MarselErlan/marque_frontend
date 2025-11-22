@@ -18,18 +18,18 @@ export const SparklesIcon = React.forwardRef<SVGSVGElement, SparklesIconProps>(
         {...props}
       >
         {/* Smaller sparkle (top left) - four-pointed star with rounded bulbous points */}
-        <path d="M6.5 2.5 C6.5 2.5 7 1.5 8 1.5 C9 1.5 9.5 2.5 9.5 2.5 C9.5 2.5 10.5 2 10.5 3 C10.5 4 9.5 4.5 9.5 4.5 C9.5 4.5 10 5.5 9 5.5 C8 5.5 7.5 4.5 7.5 4.5 C7.5 4.5 6.5 5 6.5 4 C6.5 3 7.5 2.5 7.5 2.5 C7.5 2.5 7 1.5 6.5 2.5 Z" />
-        {/* Central diamond cutout for smaller sparkle */}
-        <path d="M7.5 3.5 L8 3 L8.5 3.5 L8 4 L7.5 3.5 Z" fill="white" />
+        {/* Using the SVG from the provided file - extracting sparkle paths */}
+        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" 
+              fill="currentColor" 
+              transform="translate(-5, -1) scale(0.35)" />
         
         {/* Larger sparkle (bottom right) - four-pointed star with rounded bulbous points */}
-        <path d="M10 17 C10 17 12.5 12.5 17.5 10 C22.5 7.5 25 2.5 25 2.5 C25 2.5 22.5 -2.5 17.5 0 C12.5 2.5 10 7.5 10 7.5 C10 7.5 7.5 2.5 2.5 0 C-2.5 -2.5 -5 2.5 -5 2.5 C-5 2.5 -2.5 7.5 2.5 10 C7.5 12.5 10 17 10 17 Z" />
-        {/* Central diamond cutout for larger sparkle */}
-        <path d="M10 13.5 L11.5 12 L13 13.5 L11.5 15 L10 13.5 Z" fill="white" />
+        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" 
+              fill="currentColor" 
+              transform="translate(5, 13) scale(0.5)" />
       </svg>
     )
   }
 )
 
 SparklesIcon.displayName = "SparklesIcon"
-
