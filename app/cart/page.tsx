@@ -1389,7 +1389,7 @@ export default function CartPage() {
                 {/* Additional Phone Number */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Дополнительный телефон (на всякий случай)
+                    Дополнительный телефон
                   </label>
                   <Input
                     type="tel"
