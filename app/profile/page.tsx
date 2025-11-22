@@ -829,7 +829,24 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg md:text-2xl font-semibold text-gray-900 mb-1">{userName}</h2>
-                    <p className="text-sm md:text-lg text-gray-600">{phoneNumber}</p>
+                    <p className="text-sm md:text-lg text-gray-600 mb-3">{phoneNumber}</p>
+                    <Button
+                      onClick={handleUpdateProfile}
+                      disabled={isUpdatingProfile || !userName.trim()}
+                      className="bg-brand/40 md:bg-transparent text-brand md:text-brand border-brand/40 md:border-brand hover:bg-brand/50 md:hover:bg-brand hover:text-white transition-colors text-xs md:text-sm"
+                    >
+                      {isUpdatingProfile ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
+                          Обновление...
+                        </span>
+                      ) : (
+                        "Обновить"
+                      )}
+                    </Button>
+                    {pendingProfileImage && (
+                      <p className="text-xs text-gray-500 mt-2">Изображение будет обновлено при сохранении</p>
+                    )}
                   </div>
                 </div>
 
@@ -843,27 +860,6 @@ export default function ProfilePage() {
                       onChange={(e) => setUserName(e.target.value)}
                       className="w-full h-11 md:h-12 text-base md:text-lg border-gray-300 focus:border-brand focus:ring-brand"
                     />
-                  </div>
-                  
-                  {/* Update Button */}
-                  <div className="pt-2">
-                    <Button
-                      onClick={handleUpdateProfile}
-                      disabled={isUpdatingProfile || !userName.trim()}
-                      className="w-full md:w-auto bg-brand hover:bg-brand-hover text-white"
-                    >
-                      {isUpdatingProfile ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Обновление...
-                        </span>
-                      ) : (
-                        "Обновить"
-                      )}
-                    </Button>
-                    {pendingProfileImage && (
-                      <p className="text-xs text-gray-500 mt-2">Изображение будет обновлено при сохранении</p>
-                    )}
                   </div>
 
                   <div>
