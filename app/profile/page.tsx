@@ -18,6 +18,7 @@ import {
   Trash2,
   Edit,
   Loader2,
+  ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -770,8 +771,31 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50">
       <AuthModals {...auth} />
       
+      {/* Mobile Navigation Tabs */}
+      <div className="lg:hidden bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="flex overflow-x-auto px-4">
+          {mobileTabItems.map((item) => {
+            const Icon = sidebarItems.find(si => si.id === item.id)?.icon || User
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === item.id
+                    ? "border-brand text-brand"
+                    : "border-transparent text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+      <main className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-4 lg:py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar - Desktop Only */}
           <div className="hidden lg:block w-64">
@@ -798,13 +822,13 @@ export default function ProfilePage() {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1">
+          <div className="flex-1 bg-white md:bg-transparent">
             {activeTab === "profile" && (
-              <div className="bg-white rounded-lg p-6 md:p-8">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 {/* Profile Header */}
-                <div className="flex items-center space-x-6 mb-8">
-                  <div className="relative">
-                    <div className="w-24 h-24 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center border border-gray-200">
+                <div className="flex items-start md:items-center space-x-4 md:space-x-6 mb-6 md:mb-8">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-16 h-16 md:w-24 md:h-24 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center border border-gray-200">
                       {profileImageUrl ? (
                         <img
                           src={profileImageUrl}
@@ -812,19 +836,19 @@ export default function ProfilePage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <User className="w-12 h-12 text-gray-400" />
+                        <User className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={handleProfileImageButtonClick}
                       disabled={isUploadingImage}
-                      className="absolute bottom-0 right-0 w-9 h-9 bg-brand rounded-full flex items-center justify-center hover:bg-brand-hover transition-colors disabled:opacity-70"
+                      className="absolute bottom-0 right-0 w-7 h-7 md:w-9 md:h-9 bg-brand rounded-full flex items-center justify-center hover:bg-brand-hover transition-colors disabled:opacity-70"
                     >
                       {isUploadingImage ? (
-                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                        <Loader2 className="w-3 h-3 md:w-4 md:h-4 text-white animate-spin" />
                       ) : (
-                        <Camera className="w-4 h-4 text-white" />
+                        <Camera className="w-3 h-3 md:w-4 md:h-4 text-white" />
                       )}
                     </button>
                     <input
@@ -835,14 +859,14 @@ export default function ProfilePage() {
                       onChange={handleProfileImageChange}
                     />
                   </div>
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-1">{userName}</h2>
-                    <p className="text-gray-600 text-lg mb-3">{phoneNumber}</p>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg md:text-2xl font-semibold text-gray-900 mb-1">{userName}</h2>
+                    <p className="text-sm md:text-lg text-gray-600 mb-3">{phoneNumber}</p>
                     <Button 
                       variant="outline"
                       size="sm"
                       onClick={handleProfileImageButtonClick}
-                      className="text-brand border-brand hover:bg-brand hover:text-white transition-colors"
+                      className="bg-brand/40 md:bg-transparent text-brand md:text-brand border-brand/40 md:border-brand hover:bg-brand/50 md:hover:bg-brand hover:text-white transition-colors text-xs md:text-sm"
                       disabled={isUploadingImage}
                     >
                       {isUploadingImage ? 'Загрузка...' : 'Редактировать фото'}
@@ -851,15 +875,15 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Profile Form */}
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">ФИО</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">ФИО</label>
                     <div className="flex flex-col sm:flex-row gap-3 items-start">
                       <Input
                         type="text"
                         value={userName}
                         onChange={(e) => setUserName(e.target.value)}
-                        className="w-full h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
+                        className="w-full h-11 md:h-12 text-base md:text-lg border-gray-300 focus:border-brand focus:ring-brand"
                       />
                       <Button
                         onClick={handleSaveProfileName}
@@ -879,14 +903,14 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">
                       Номер телефона (нельзя изменить)
                     </label>
                     <Input 
                       type="tel" 
                       value={phoneNumber} 
                       disabled 
-                      className="w-full h-12 text-lg bg-gray-50 border-gray-200 text-gray-500" 
+                      className="w-full h-11 md:h-12 text-base md:text-lg bg-gray-50 border-gray-200 text-gray-500" 
                     />
                   </div>
 
@@ -950,14 +974,14 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Logout Button */}
-                  <div className="pt-8 border-t border-gray-200">
+                  <div className="pt-6 md:pt-8 border-t border-gray-200">
                     <Button
                       onClick={handleLogoutClick}
                       variant="outline"
-                      className="w-full h-12 flex items-center justify-center space-x-3 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors"
+                      className="w-full h-11 md:h-12 flex items-center justify-center gap-2 md:gap-3 text-pink-600 md:text-red-600 border-pink-200 md:border-red-200 bg-pink-50/50 md:bg-transparent hover:bg-pink-50 md:hover:bg-red-50 hover:border-pink-300 md:hover:border-red-300 transition-colors"
                     >
-                      <LogOut className="w-5 h-5" />
-                      <span className="text-lg font-medium">Выйти из аккаунта</span>
+                      <ChevronRight className="w-4 h-4 md:w-5 md:h-5 rotate-180" />
+                      <span className="text-base md:text-lg font-medium">Выйти из аккаунта</span>
                     </Button>
                   </div>
                 </div>
@@ -965,7 +989,7 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "orders" && !selectedOrder && !showReviewForm && (
-              <div className="bg-white rounded-lg p-6 md:p-8">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-semibold text-gray-900 mb-1">Мои заказы</h2>
@@ -1291,7 +1315,7 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "addresses" && !showAddressForm && (
-              <div className="bg-white rounded-lg p-6 md:p-8">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-1">Адреса доставки</h2>
                   <p className="text-gray-600">{backendAddresses.length} адреса</p>
@@ -1344,7 +1368,7 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "addresses" && showAddressForm && (
-              <div className="bg-white rounded-lg p-6">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6">
                 <div className="flex items-center space-x-4 mb-6">
                   <Button
                     variant="ghost"
@@ -1550,7 +1574,7 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "payments" && !showPaymentForm && (
-              <div className="bg-white rounded-lg p-6 md:p-8">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-1">Способы оплаты</h2>
                   <p className="text-gray-600">{backendPaymentMethods.length} способа</p>
@@ -1600,7 +1624,7 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "payments" && showPaymentForm && (
-              <div className="bg-white rounded-lg p-6">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6">
                 <div className="flex items-center space-x-4 mb-6">
                   <Button
                     variant="ghost"
@@ -1708,7 +1732,7 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "notifications" && (
-              <div className="bg-white rounded-lg p-6 md:p-8">
+              <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                   <div>
                     <h2 className="text-2xl font-semibold text-gray-900 mb-1">Уведомления</h2>
