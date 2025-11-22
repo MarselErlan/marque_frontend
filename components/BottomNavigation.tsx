@@ -2,24 +2,28 @@
 
 import { Heart, ShoppingCart, User, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
 
 export const BottomNavigation = () => {
   const pathname = usePathname()
+  const router = useRouter()
   const auth = useAuth()
   const { cartItemCount } = useCart()
   const { wishlistItemCount } = useWishlist()
 
   const handleAuthClick = (e: React.MouseEvent) => {
+    e.preventDefault()
     if (!auth.isLoggedIn) {
-      e.preventDefault()
       auth.requireAuth(() => {
         // After login, navigate to profile
-        window.location.href = '/profile'
+        router.push('/profile')
       })
+    } else {
+      // User is logged in, navigate to profile
+      router.push('/profile')
     }
   }
 
