@@ -108,8 +108,12 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
               <div className="flex items-center justify-between px-4 py-3">
                 <h2 className="text-xl font-bold text-black">Каталог</h2>
                 <button
-                  onClick={handleClose}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleClose()
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors touch-manipulation"
+                  aria-label="Закрыть каталог"
                 >
                   <X className="w-5 h-5 text-gray-600" />
                 </button>

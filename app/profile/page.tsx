@@ -733,6 +733,7 @@ export default function ProfilePage() {
     { id: "orders", label: "Заказы" },
     { id: "addresses", label: "Адреса доставки" },
     { id: "payments", label: "Способы оплаты" },
+    { id: "notifications", label: "Уведомления" },
   ]
 
   return (
