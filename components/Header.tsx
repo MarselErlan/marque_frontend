@@ -181,67 +181,31 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
       </div>
       {/* Mobile Header */}
       <div className="md:hidden px-4 pt-2 pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <Link href="/">
             <h1 className="text-xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
           </Link>
-          <div className="flex items-center space-x-4">
-            <Link href="/wishlist" className="p-2 relative">
-              <Heart className="w-6 h-6 text-gray-600" />
-              {wishlistItemCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                  {wishlistItemCount}
-                </span>
-              )}
-            </Link>
-            <Link href="/cart" className="p-2 relative">
-              <ShoppingCart className="w-6 h-6 text-gray-600" />
-              {cartItemCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
-            <button 
-              onClick={handleHeaderAuthClick} 
-              className="p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-colors"
-              type="button"
-              style={{ background: 'transparent', border: 'none' }}
-            >
-              {auth.isLoggedIn ? (
-                isOnProfilePage ? (
-                  <LogOut className="w-6 h-6 text-red-600" />
-                ) : (
-                  <User className="w-6 h-6 text-brand" />
-                )
-              ) : (
-                <User className="w-6 h-6 text-brand" />
-              )}
-            </button>
-          </div>
         </div>
-        <div className="mt-3">
-          <div className="flex items-center space-x-3">
-            <Button
-              className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-              onClick={handleCatalogClick}
-            >
-              <span className="text-lg">⋮⋮⋮</span>
-              <span>Каталог</span>
-            </Button>
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="Товар, бренд или артикул"
-                className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onFocus={handleSearchFocus}
-                onBlur={handleSearchBlur}
-                onKeyDown={handleSearchKeyDown}
-              />
-            </div>
+        <div className="flex items-center space-x-3">
+          <Button
+            className="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+            onClick={handleCatalogClick}
+          >
+            <span className="text-lg">⋮⋮⋮</span>
+            <span>Каталог</span>
+          </Button>
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="Товар, бренд или артикул"
+              className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              onKeyDown={handleSearchKeyDown}
+            />
           </div>
         </div>
       </div>

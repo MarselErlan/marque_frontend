@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { CatalogProvider } from "@/contexts/CatalogContext"
 import { GlobalCatalogWrapper } from "@/components/GlobalCatalogWrapper"
 import { Header } from "@/components/Header"
+import { BottomNavigation } from "@/components/BottomNavigation"
 import "./globals.css"
 
 const inter = Inter({
@@ -40,9 +41,12 @@ export default function RootLayout({
             </header>
             
             {/* Page Content */}
-            <main>
+            <main className="pb-20 md:pb-0">
               {children}
             </main>
+            
+            {/* Bottom Navigation - Mobile Only */}
+            <BottomNavigation />
           </ErrorBoundary>
           <GlobalCatalogWrapper />
           <Toaster richColors position="top-right" />
