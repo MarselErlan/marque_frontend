@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Search, Heart, ShoppingCart, User, LogOut, Sparkles } from 'lucide-react'
+import { Search, Heart, ShoppingCart, User, LogOut } from 'lucide-react'
+import { SparklesIcon } from './SparklesIcon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
@@ -168,7 +169,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           {/* Right Section */}
           <div className="flex items-center space-x-6 text-sm text-gray-600">
             <Link href="/" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
-              <Sparkles className="w-6 h-6 mb-1" strokeWidth={1.5} />
+              <SparklesIcon className="w-6 h-6 mb-1" strokeWidth={1.5} />
               <span>Манекен</span>
             </Link>
             <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
@@ -230,7 +231,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           </Link>
           <div className="flex items-center gap-8">
             <Link href="/" className="p-2 -m-2 touch-manipulation">
-              <Sparkles className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
+              <SparklesIcon className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
             </Link>
             <Link href="/wishlist" className="relative p-2 -m-2 touch-manipulation">
               <Heart className="w-6 h-6 text-gray-700" strokeWidth={1.5} />

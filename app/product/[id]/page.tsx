@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useMemo } from "react"
-import { Star, ArrowRight, Check, Heart, ArrowLeft, Sparkles } from "lucide-react"
+import { Star, ArrowRight, Check, Heart, ArrowLeft } from "lucide-react"
+import { SparklesIcon } from "@/components/SparklesIcon"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { productsApi } from "@/lib/api"
@@ -593,7 +594,7 @@ export default function ProductDetailPage() {
               <button
                 className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand rounded-lg transition-colors shadow-sm"
               >
-                <Sparkles className="w-5 h-5" strokeWidth={1.5} />
+                <SparklesIcon className="w-5 h-5" strokeWidth={1.5} />
                 <span className="text-sm font-medium">Манекен</span>
               </button>
             </div>
@@ -633,7 +634,7 @@ export default function ProductDetailPage() {
                 <button
                   className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand rounded-lg transition-colors shadow-sm"
                 >
-                  <Sparkles className="w-5 h-5" strokeWidth={1.5} />
+                  <SparklesIcon className="w-5 h-5" strokeWidth={1.5} />
                   <span className="text-sm font-medium">Манекен</span>
                 </button>
               </div>

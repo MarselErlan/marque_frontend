@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard, ArrowLeft, Sparkles } from "lucide-react"
+import { ShoppingCart, Edit, Trash2, Minus, Plus, Check, ChevronRight, Loader2, MapPin, CreditCard, ArrowLeft } from "lucide-react"
+import { SparklesIcon } from "@/components/SparklesIcon"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -557,7 +558,7 @@ export default function CartPage() {
                       router.push('/mannequin')
                     }}
                   >
-                    <Sparkles className="w-4 h-4 md:w-4 md:h-4" strokeWidth={1.5} />
+                    <SparklesIcon className="w-4 h-4 md:w-4 md:h-4" strokeWidth={1.5} />
                     <span>3D манекен</span>
                   </Button>
                 </div>

@@ -1,6 +1,7 @@
 "use client"
 
-import { Heart, ShoppingCart, User, Sparkles } from 'lucide-react'
+import { Heart, ShoppingCart, User } from 'lucide-react'
+import { SparklesIcon } from './SparklesIcon'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -39,7 +40,7 @@ export const BottomNavigation = () => {
           className="flex-1 flex justify-center items-center active:scale-95 transition-transform touch-manipulation min-h-[60px]"
         >
           <div className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${pathname === '/' ? 'text-brand' : 'text-gray-700'}`}>
-            <Sparkles className="w-6 h-6" strokeWidth={1.5} />
+            <SparklesIcon className="w-6 h-6" strokeWidth={1.5} />
             <span className="text-xs font-medium">Манекен</span>
           </div>
         </Link>
