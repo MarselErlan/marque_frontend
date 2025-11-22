@@ -54,7 +54,10 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               <div className="flex space-x-3">
                 <Select value={countryCode} onValueChange={setCountryCode}>
                   <SelectTrigger className="w-28 h-12 border-gray-300 focus:border-brand focus:ring-brand">
-                    <SelectValue />
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{countryCodes.find(c => c.code === countryCode)?.flag}</span>
+                      <span className="font-medium">{countryCode}</span>
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     {countryCodes.map((country) => (

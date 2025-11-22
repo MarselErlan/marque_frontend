@@ -463,33 +463,8 @@ export default function MarquePage() {
     },
   ]
 
-  // Hero banners for rotation - use API data or fallback to hardcoded
-  const fallbackHeroBanners = [
-    {
-      id: 'collection',
-      title: 'Новая коллекция',
-      image_url: '/b93dc4af6b33446ca2a5472bc63797bc73a9eae2.png',
-      banner_type: 'hero' as const,
-      display_order: 0
-    },
-    {
-      id: 'discount',
-      title: 'Скидки',
-      image_url: '/fcdeeb08e8c20a6a5cf5276b59b60923dfb8c706(1).png',
-      banner_type: 'hero' as const,
-      display_order: 1
-    },
-    {
-      id: 'quality',
-      title: 'Качество',
-      image_url: '/5891ae04bafdf76a4d441c78c7e1f8a0a3a1d631.png',
-      banner_type: 'hero' as const,
-      display_order: 2
-    }
-  ]
-
-  // Use API banners if available, otherwise use fallback
-  const heroBanners = apiBanners.length > 0 ? apiBanners : fallbackHeroBanners
+  // Use only API banners (no fallback to prevent flash on page load)
+  const heroBanners = apiBanners
 
   // Dynamic carousel images from database (can be any amount)
   const [carouselImages, setCarouselImages] = useState<any[]>([])
@@ -662,6 +637,7 @@ export default function MarquePage() {
       {/* Main Content */}
       <main className="w-full relative">
         {/* Picture Carousel - Desktop Only */}
+        {heroBanners.length > 0 && (
         <section className="w-full mb-8 mt-8 hidden md:block">
           <div 
             className="flex items-center justify-center h-[506px] relative overflow-hidden w-full cursor-grab active:cursor-grabbing"
@@ -739,8 +715,10 @@ export default function MarquePage() {
             </div>
           </div>
         </section>
+        )}
         
         {/* Mobile Banner Carousel */}
+        {heroBanners.length > 0 && (
         <section className="w-full my-4 md:hidden">
           <div 
             className="h-48 relative overflow-hidden flex items-center justify-center"
@@ -800,6 +778,7 @@ export default function MarquePage() {
             </div>
           </div>
         </section>
+        )}
 
         {/* Content Container */}
         <div className="w-full px-4" style={{maxWidth: '1680px', margin: '0 auto'}}>
