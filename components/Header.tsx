@@ -187,6 +187,9 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             <h1 className="text-xl font-bold text-black tracking-wider cursor-pointer">MARQUE</h1>
           </Link>
           <div className="flex items-center space-x-3">
+            <Link href="/">
+              <Sparkles className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
+            </Link>
             <Link href="/wishlist" className="relative">
               <Heart className="w-6 h-6 text-gray-700" strokeWidth={1.5} />
               {wishlistItemCount > 0 && (
