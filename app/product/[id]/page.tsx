@@ -786,36 +786,100 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Product Description */}
-        {product.description && (
-          <section className="mb-12 px-4 lg:px-0">
-            <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">О товаре</h2>
-            <p className="text-gray-700 leading-relaxed mb-6 text-sm">{product.description}</p>
+        <section className="mb-12 px-4 lg:px-0">
+          <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">О товаре</h2>
+          
+          {/* Description Text */}
+          {product.description && (
+            <p className="text-gray-700 leading-relaxed mb-6 text-sm lg:text-base">
+              {product.description}
+            </p>
+          )}
 
-            {/* Specifications Table */}
-            {product.attributes && Object.keys(product.attributes).length > 0 && (
-              <div className="bg-white rounded-lg p-4 lg:p-6">
-                <h3 className="font-semibold text-black mb-4">Характеристики</h3>
-                <div className="space-y-3 text-sm">
-                  {Object.entries(product.attributes).map(([key, value]) => (
-                    <div key={key} className="flex justify-between py-2 border-b border-gray-100 last:border-b-0">
-                      <span className="text-gray-600">{key}</span>
-                      <span className="text-black font-medium">{value as string}</span>
-                    </div>
-                  ))}
-                  {/* Add category and subcategory info */}
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Категория</span>
-                    <span className="text-black font-medium">{product.category?.name}</span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-gray-100 last:border-b-0">
-                    <span className="text-gray-600">Подкатегория</span>
-                    <span className="text-black font-medium">{product.subcategory?.name}</span>
-                  </div>
+          {/* Specifications Table */}
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="divide-y divide-gray-200">
+              {/* Пол (Gender) */}
+              {product.category && (
+                <div className="flex justify-between items-center py-3 px-4">
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">Пол</span>
+                  <span className="text-sm lg:text-base text-black font-medium">
+                    {product.category.name === 'Мужчинам' || product.category.name === 'Мужской' 
+                      ? 'Мужской' 
+                      : product.category.name === 'Женщинам' || product.category.name === 'Женский'
+                      ? 'Женский'
+                      : product.category.name || '—'}
+                  </span>
                 </div>
-              </div>
-            )}
-          </section>
-        )}
+              )}
+
+              {/* Цвет (Color) */}
+              {selectedColor && (
+                <div className="flex justify-between items-center py-3 px-4">
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">Цвет</span>
+                  <span className="text-sm lg:text-base text-black font-medium capitalize">
+                    {selectedColor}
+                  </span>
+                </div>
+              )}
+
+              {/* Состав (Composition) */}
+              {(product.attributes?.Состав || product.attributes?.состав || product.attributes?.Material || product.attributes?.material || product.attributes?.Composition || product.attributes?.composition) && (
+                <div className="flex justify-between items-center py-3 px-4">
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">Состав</span>
+                  <span className="text-sm lg:text-base text-black font-medium">
+                    {product.attributes?.Состав || product.attributes?.состав || product.attributes?.Material || product.attributes?.material || product.attributes?.Composition || product.attributes?.composition || '—'}
+                  </span>
+                </div>
+              )}
+
+              {/* Сезон (Season) */}
+              {(product.attributes?.Сезон || product.attributes?.сезон || product.attributes?.Season || product.attributes?.season) && (
+                <div className="flex justify-between items-center py-3 px-4">
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">Сезон</span>
+                  <span className="text-sm lg:text-base text-black font-medium">
+                    {product.attributes?.Сезон || product.attributes?.сезон || product.attributes?.Season || product.attributes?.season || '—'}
+                  </span>
+                </div>
+              )}
+
+              {/* Артикул (Article/SKU) */}
+              {(product.skus && product.skus.length > 0 && product.skus[0]?.sku_code) || product.attributes?.Артикул || product.attributes?.артикул || product.attributes?.Article || product.attributes?.article || product.attributes?.SKU || product.attributes?.sku ? (
+                <div className="flex justify-between items-center py-3 px-4">
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">Артикул</span>
+                  <span className="text-sm lg:text-base text-black font-medium">
+                    {product.skus && product.skus.length > 0 && product.skus[0]?.sku_code 
+                      ? product.skus[0].sku_code 
+                      : product.attributes?.Артикул || product.attributes?.артикул || product.attributes?.Article || product.attributes?.article || product.attributes?.SKU || product.attributes?.sku || '—'}
+                  </span>
+                </div>
+              ) : null}
+
+              {/* Additional attributes from API */}
+              {product.attributes && Object.entries(product.attributes).map(([key, value]) => {
+                // Skip already displayed fields (case-insensitive)
+                const keyLower = key.toLowerCase()
+                const skipKeys = [
+                  'состав', 'composition', 'material', 'материал',
+                  'сезон', 'season',
+                  'артикул', 'article', 'sku',
+                  'бренд', 'brand',
+                  'категория', 'category',
+                  'подкатегория', 'subcategory'
+                ]
+                if (skipKeys.includes(keyLower)) {
+                  return null
+                }
+                return (
+                  <div key={key} className="flex justify-between items-center py-3 px-4">
+                    <span className="text-sm lg:text-base text-gray-600 font-normal">{key}</span>
+                    <span className="text-sm lg:text-base text-black font-medium">{value as string}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
 
         {/* Reviews Section */}
         {product.reviews && product.reviews.length > 0 && (
@@ -830,14 +894,14 @@ export default function ProductDetailPage() {
               </Link>
             </div>
 
-            <div className="flex space-x-4 overflow-x-auto pb-4 -mx-4 px-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:mx-0 lg:px-0">
+            <div className="space-y-4 lg:space-y-6">
               {product.reviews.slice(0, 3).map((review: any) => (
-                <div key={review.id} className="bg-white rounded-lg p-4 flex-shrink-0 w-80 lg:w-auto">
+                <div key={review.id} className="bg-white rounded-lg p-4 lg:p-6">
                   {/* User Info Row */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3 flex-1 min-w-0">
                       {/* User Profile Picture */}
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
+                      <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
                         {review.user_profile_image ? (
                           <img
                             src={getImageUrl(review.user_profile_image)}
@@ -845,13 +909,13 @@ export default function ProductDetailPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-brand font-bold text-lg">
+                          <span className="text-brand font-bold text-lg lg:text-xl">
                             {review.user_name ? review.user_name.charAt(0).toUpperCase() : "П"}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-black truncate mb-1">
+                        <h4 className="font-semibold text-black text-sm lg:text-base mb-1.5">
                           {review.user_name || "Покупатель"}
                         </h4>
                         {/* Star Rating */}
@@ -859,8 +923,8 @@ export default function ProductDetailPage() {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`w-3 h-3 ${
-                                i < review.rating ? "text-yellow-400 fill-current" : "text-gray-300"
+                              className={`w-3.5 h-3.5 lg:w-4 lg:h-4 ${
+                                i < (review.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"
                               }`}
                             />
                           ))}
@@ -868,24 +932,28 @@ export default function ProductDetailPage() {
                       </div>
                     </div>
                     {/* Date on the right */}
-                    <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                    <span className="text-xs lg:text-sm text-gray-500 whitespace-nowrap ml-2">
                       {(() => {
-                        const date = new Date(review.created_at)
-                        const day = String(date.getDate()).padStart(2, '0')
-                        const month = String(date.getMonth() + 1).padStart(2, '0')
-                        const year = date.getFullYear()
-                        return `${day}/${month}/${year}`
+                        try {
+                          const date = new Date(review.created_at || review.date)
+                          const day = String(date.getDate()).padStart(2, '0')
+                          const month = String(date.getMonth() + 1).padStart(2, '0')
+                          const year = date.getFullYear()
+                          return `${day}/${month}/${year}`
+                        } catch {
+                          return review.created_at || review.date || '—'
+                        }
                       })()}
                     </span>
                   </div>
 
                   {/* Review Images - Horizontal Row */}
                   {review.images && review.images.length > 0 && (
-                    <div className="flex space-x-2 mb-3 overflow-x-auto">
+                    <div className="flex space-x-2 mb-3 overflow-x-auto pb-2">
                       {review.images.slice(0, 6).map((img: any, idx: number) => (
-                        <div key={img.id || idx} className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <div key={img.id || idx} className="w-16 h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                           <img
-                            src={getImageUrl(img.url)}
+                            src={getImageUrl(img.url || img)}
                             alt={`Review image ${idx + 1}`}
                             className="w-full h-full object-cover"
                           />
@@ -896,7 +964,7 @@ export default function ProductDetailPage() {
 
                   {/* Review Text */}
                   {review.text && (
-                    <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
+                    <p className="text-gray-700 text-sm lg:text-base leading-relaxed">
                       {review.text}
                     </p>
                   )}
