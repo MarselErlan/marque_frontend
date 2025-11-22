@@ -544,7 +544,7 @@ export default function CartPage() {
                 {/* 3D Mannequin Button */}
                 <div className="mt-4 md:mt-6">
                   <Button
-                    className="w-full md:w-auto md:px-4 bg-brand/20 md:bg-brand hover:bg-brand/30 md:hover:bg-brand-hover text-brand md:text-white py-2.5 md:py-2 rounded-lg text-sm md:text-sm font-medium flex items-center justify-center gap-2"
+                    className="w-full md:w-auto md:px-4 bg-brand/30 md:bg-brand hover:bg-brand/40 md:hover:bg-brand-hover text-brand md:text-white py-2.5 md:py-2 rounded-lg text-sm md:text-sm font-medium flex items-center justify-center gap-2"
                     onClick={() => {
                       // Navigate to mannequin page or open mannequin feature
                       router.push('/mannequin')
