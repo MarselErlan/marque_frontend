@@ -738,7 +738,14 @@ export const profileApi = {
         status: string
         customer_name: string
         customer_phone: string
+        customer_email?: string | null
+        additional_phone?: string | null
         delivery_address: string
+        delivery_city?: string | null
+        delivery_state?: string | null
+        delivery_postal_code?: string | null
+        delivery_country?: string | null
+        delivery_notes?: string | null
         subtotal: number
         shipping_cost: number
         total_amount: number

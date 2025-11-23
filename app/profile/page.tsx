@@ -1115,13 +1115,45 @@ export default function ProfilePage() {
                       <div className="space-y-4">
                         <div>
                           <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.deliveryAddress')}</h3>
-                          <p className="text-base text-gray-900">{orderDetail.delivery_address || t('orders.noAddress')}</p>
+                          <div className="text-base text-gray-900 space-y-1">
+                            {orderDetail.delivery_address && (
+                              <p className="font-medium">{orderDetail.delivery_address}</p>
+                            )}
+                            {/* Full Address Breakdown */}
+                            {(orderDetail.delivery_city || orderDetail.delivery_state || orderDetail.delivery_postal_code || orderDetail.delivery_country) && (
+                              <div className="text-sm text-gray-600 space-y-0.5">
+                                {orderDetail.delivery_city && <p>{t('addresses.city')}: {orderDetail.delivery_city}</p>}
+                                {orderDetail.delivery_state && <p>{t('addresses.state')}: {orderDetail.delivery_state}</p>}
+                                {orderDetail.delivery_postal_code && <p>{t('addresses.postalCode')}: {orderDetail.delivery_postal_code}</p>}
+                                {orderDetail.delivery_country && <p>{t('orders.country')}: {orderDetail.delivery_country}</p>}
+                              </div>
+                            )}
+                            {!orderDetail.delivery_address && !orderDetail.delivery_city && (
+                              <p className="text-gray-500">{t('orders.noAddress')}</p>
+                            )}
+                          </div>
                         </div>
                         
                         {orderDetail.customer_phone && (
                           <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.contactPhone')}</h3>
                             <p className="text-base text-gray-900">{orderDetail.customer_phone}</p>
+                          </div>
+                        )}
+
+                        {orderDetail.additional_phone && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.additionalPhone')}</h3>
+                            <p className="text-base text-gray-900">{orderDetail.additional_phone}</p>
+                          </div>
+                        )}
+
+                        {orderDetail.delivery_notes && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.deliveryNotes')}</h3>
+                            <p className="text-base text-gray-900 whitespace-pre-wrap bg-gray-50 p-3 rounded-lg border border-gray-200">
+                              {orderDetail.delivery_notes}
+                            </p>
                           </div>
                         )}
 
