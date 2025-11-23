@@ -23,7 +23,7 @@ export default function CartPage() {
   const auth = useAuth()
   const { t } = useLanguage()
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart()
-  const { format, currency, formatDirect, isLoading: isCurrencyLoading } = useCurrency()
+  const { format, currency, formatDirect, isLoading: isCurrencyLoading, market } = useCurrency()
   
   // Store formatted prices for cart items
   const [formattedCartPrices, setFormattedCartPrices] = useState<Record<string, { price: string; originalPrice?: string; total: string }>>({})
@@ -485,7 +485,11 @@ export default function CartPage() {
       // Get selected address details
       const selectedAddress = addresses.find(addr => addr.id === selectedAddressId)
 
-      // Create order via API
+      // Get user's currency for order
+      const userCurrency = currency?.code || 'KGS'
+      console.log('💰 Creating order with currency:', userCurrency, { currency, market })
+      
+      // Create order via API with user's currency
       const order = await ordersApi.create({
         customer_name: profile.full_name || profile.name || 'Покупатель',
         customer_phone: profile.phone,
@@ -498,7 +502,9 @@ export default function CartPage() {
         payment_method_used_id: selectedPaymentMethodId || undefined,
         payment_method: checkoutPaymentMethod,
         requested_delivery_date: formatDeliveryDateForAPI(selectedDeliveryDateObj),
-        use_cart: true
+        use_cart: true,
+        currency: userCurrency,
+        currency_code: userCurrency
       })
 
       // Success!

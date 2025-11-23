@@ -836,6 +836,8 @@ export const ordersApi = {
     payment_method_used_id?: number
     payment_method: string
     use_cart?: boolean
+    currency?: string
+    currency_code?: string
   }) =>
     apiRequest<{
       id: number
