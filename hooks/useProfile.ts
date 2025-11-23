@@ -258,7 +258,7 @@ export const useProfile = () => {
       }
     } catch (error) {
       console.error('Error fetching payment methods:', error)
-      toast.error('Failed to load payment methods')
+      // Silent error - payment methods are optional
     } finally {
       setIsLoadingPayments(false)
     }
@@ -331,7 +331,7 @@ export const useProfile = () => {
       }
     } catch (error) {
       console.error('Error fetching orders:', error)
-      toast.error('Failed to load orders')
+      // Silent error - orders are optional
     } finally {
       setIsLoadingOrders(false)
     }
@@ -365,7 +365,7 @@ export const useProfile = () => {
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)
-      toast.error('Failed to load notifications')
+      // Silent error - notifications are optional
     } finally {
       setIsLoadingNotifications(false)
     }
@@ -476,17 +476,10 @@ export const useProfile = () => {
   }, [fetchPhoneNumbers])
 
   useEffect(() => {
+    // Only fetch profile on initial load, other data is fetched on-demand when logged in
     fetchProfile()
-    fetchAddresses()
-    fetchPaymentMethods()
-    fetchOrders()
-    fetchNotifications()
   }, [
     fetchProfile,
-    fetchAddresses,
-    fetchPaymentMethods,
-    fetchOrders,
-    fetchNotifications,
   ])
 
   return {
