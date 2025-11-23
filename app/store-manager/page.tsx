@@ -186,7 +186,7 @@ export default function AdminDashboard() {
     "dashboard" | "orders" | "order-detail" | "all-orders" | "revenue" | "settings"
   >("dashboard")
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
-  const [orderFilter, setOrderFilter] = useState("Все")
+  const [orderFilter, setOrderFilter] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
   const [selectedOrderStatus, setSelectedOrderStatus] = useState("")
@@ -1664,7 +1664,7 @@ export default function AdminDashboard() {
                   )}
             </Button>
 
-                {(selectedOrder.status === "cancelled" || selectedOrder.status_display === "ОТМЕНЕН") ? (
+                {(selectedOrder.status === "cancelled" || selectedOrder.status_display === t('admin.orders.status.cancelled')) ? (
               <Button
                 variant="outline"
                 className="w-full text-brand border-brand hover:bg-brand-50 bg-transparent"

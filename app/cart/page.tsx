@@ -807,7 +807,7 @@ export default function CartPage() {
 
                     <div className="flex space-x-2">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Дом *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.building')} *</label>
                         <Input
                           type="text"
                           value={newAddress.building}
@@ -818,7 +818,7 @@ export default function CartPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Квартира</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.apartment')}</label>
                         <Input
                           type="text"
                           value={newAddress.apartment}
@@ -831,7 +831,7 @@ export default function CartPage() {
 
                     <div className="flex space-x-2">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Подъезд</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.entrance')}</label>
                         <Input
                           type="text"
                           value={newAddress.entrance}
@@ -841,7 +841,7 @@ export default function CartPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Этаж</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.floor')}</label>
                         <Input
                           type="text"
                           value={newAddress.floor}
@@ -1065,7 +1065,7 @@ export default function CartPage() {
 
                     <div className="flex space-x-2">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Дом *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.building')} *</label>
                         <Input
                           type="text"
                           value={newAddress.building}
@@ -1076,7 +1076,7 @@ export default function CartPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Квартира</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.apartment')}</label>
                         <Input
                           type="text"
                           value={newAddress.apartment}
@@ -1089,7 +1089,7 @@ export default function CartPage() {
 
                     <div className="flex space-x-2">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Подъезд</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.entrance')}</label>
                         <Input
                           type="text"
                           value={newAddress.entrance}
@@ -1099,7 +1099,7 @@ export default function CartPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Этаж</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.floor')}</label>
                         <Input
                           type="text"
                           value={newAddress.floor}
@@ -1184,7 +1184,7 @@ export default function CartPage() {
                   {isCreatingAddress ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Создание...
+                      {t('addresses.creating')}...
                     </>
                   ) : (
                     t('addresses.createAndContinue')

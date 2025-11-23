@@ -134,7 +134,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                     <Search className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
                     <input
                       type="text"
-                      placeholder="Товар, бренд или артикул"
+                      placeholder={t('common.search')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="flex-1 bg-transparent border-0 outline-none text-sm text-gray-700 placeholder-gray-400"

@@ -61,11 +61,11 @@ export default function MarquePage() {
   const [hasMoreProducts, setHasMoreProducts] = useState(true)
 
   const searchSuggestions = [
-    "футболка",
-    "футболка мужская",
-    "футболка женская",
-    "футболка из хлопка",
-    "футболка чёрная",
+    t('home.searchSuggestions.tShirt'),
+    t('home.searchSuggestions.mensTShirt'),
+    t('home.searchSuggestions.womensTShirt'),
+    t('home.searchSuggestions.cottonTShirt'),
+    t('home.searchSuggestions.blackTShirt'),
   ]
 
   // Country codes for phone input
@@ -434,31 +434,31 @@ export default function MarquePage() {
 
   const categories = [
     {
-      title: "Мужчинам",
+      title: t('footer.men'),
       image: "/images/male-model-black.jpg",
       bgColor: "bg-gray-100",
       href: "/category/muzhchinam",
     },
     {
-      title: "Женщинам",
+      title: t('footer.women'),
       image: "/images/female-model-olive.jpg",
       bgColor: "bg-brand-50",
       href: "/category/zhenshchinam",
     },
     {
-      title: "Детям",
+      title: t('footer.kids'),
       image: "/images/kids-yellow-blue.jpg",
       bgColor: "bg-yellow-50",
       href: "/category/detyam",
     },
     {
-      title: "Обувь",
+      title: t('footer.shoes'),
       image: "/images/white-sneakers.jpg",
       bgColor: "bg-gray-50",
       href: "/category/obuv",
     },
     {
-      title: "Спорт",
+      title: t('footer.sport'),
       image: "/images/male-model-hoodie.jpg",
       bgColor: "bg-gray-100",
       href: "/category/sport",

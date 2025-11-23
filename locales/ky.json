@@ -165,7 +165,8 @@
     "noAddresses": "Сизде сакталган даректер жок. Жеткирүү үчүн дарек түзүңүз.",
     "addNewAddress": "+ Жаңы дарек кошуу",
     "defaultLabel": "Негизги",
-    "optional": "милдеттүү эмес"
+    "optional": "милдеттүү эмес",
+    "creating": "Түзүү"
   },
   "payments": {
     "title": "Төлөө ыкмалары",
@@ -322,7 +323,10 @@
     "sortNewest": "Жаңы",
     "sortPriceAsc": "Алгач арзан",
     "sortPriceDesc": "Алгач кымбат",
-    "sortRating": "Рейтинги боюнча"
+    "sortRating": "Рейтинги боюнча",
+    "from": "баштап",
+    "to": "чейин",
+    "price": "Баа"
   },
   "catalog": {
     "title": "Каталог",
@@ -367,6 +371,34 @@
     "kyrgyz": "Кыргызча",
     "english": "Англисче",
     "changedTo": "Тил өзгөртүлдү"
+  },
+  "orderSuccess": {
+    "title": "Буйрутма рассталды жана төлөндү",
+    "trackOrder": "Буйрутманын статусун жеке кабинетте көзөмөлдөңүз"
+  },
+  "error": {
+    "title": "Бир нерсе туура эмес",
+    "message": "Күтүлбөгөн ката кетти. Баракты жаңылап көрүңүз.",
+    "details": "Ката деталдары (dev режими гана)",
+    "refreshPage": "Баракты жаңылоо"
+  },
+  "category": {
+    "notFound": "Категория табылган жок",
+    "notExists": "Суралган категория жок"
+  },
+  "home": {
+    "categories": "Категориялар",
+    "bestSellers": "Эң көп сатылгандар",
+    "noProducts": "Товарлар табылган жок",
+    "noCategories": "Категориялар жок",
+    "tryRefreshOrFilters": "Баракты жаңылап же фильтрлерди өзгөртүп көрүңүз",
+    "searchSuggestions": {
+      "tShirt": "футболка",
+      "mensTShirt": "эркектерге футболка",
+      "womensTShirt": "аялдарга футболка",
+      "cottonTShirt": "пахтадан футболка",
+      "blackTShirt": "кара футболка"
+    }
   },
   "notifications": {
     "title": "Билдирмелер",

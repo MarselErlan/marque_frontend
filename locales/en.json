@@ -159,7 +159,8 @@
     "noAddresses": "You have no saved addresses. Create an address for delivery.",
     "addNewAddress": "+ Add New Address",
     "defaultLabel": "Default",
-    "optional": "optional"
+    "optional": "optional",
+    "creating": "Creating"
   },
   "payments": {
     "title": "Payment Methods",
@@ -316,7 +317,10 @@
     "sortNewest": "Newest",
     "sortPriceAsc": "Price: Low to High",
     "sortPriceDesc": "Price: High to Low",
-    "sortRating": "By Rating"
+    "sortRating": "By Rating",
+    "from": "From",
+    "to": "To",
+    "price": "Price"
   },
   "catalog": {
     "title": "Catalog",
@@ -354,6 +358,34 @@
     "kyrgyz": "Kyrgyz",
     "english": "English",
     "changedTo": "Language changed to"
+  },
+  "orderSuccess": {
+    "title": "Order placed and paid",
+    "trackOrder": "Track order status in your account"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "message": "An unexpected error occurred. Please try refreshing the page.",
+    "details": "Error details (dev mode only)",
+    "refreshPage": "Refresh Page"
+  },
+  "category": {
+    "notFound": "Category not found",
+    "notExists": "The requested category does not exist"
+  },
+  "home": {
+    "categories": "Categories",
+    "bestSellers": "Best Sellers",
+    "noProducts": "No products found",
+    "noCategories": "No categories",
+    "tryRefreshOrFilters": "Try refreshing the page or changing filters",
+    "searchSuggestions": {
+      "tShirt": "t-shirt",
+      "mensTShirt": "men's t-shirt",
+      "womensTShirt": "women's t-shirt",
+      "cottonTShirt": "cotton t-shirt",
+      "blackTShirt": "black t-shirt"
+    }
   },
   "admin": {
     "login": {

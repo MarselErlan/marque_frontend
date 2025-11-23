@@ -162,6 +162,7 @@
     "addressDeleted": "Адрес удален",
     "addressDeleteError": "Ошибка удаления адреса",
     "confirmDelete": "Вы уверены, что хотите удалить этот адрес?",
+    "creating": "Создание",
     "defaultAddress": "Сделать адресом по умолчанию",
     "selectAddress": "Выберите адрес доставки",
     "noAddresses": "У вас нет сохраненных адресов. Создайте адрес для доставки.",
@@ -426,7 +427,14 @@
     "bestSellers": "Хиты продаж",
     "noProducts": "Товары не найдены",
     "noCategories": "Нет категорий",
-    "tryRefreshOrFilters": "Попробуйте обновить страницу или изменить фильтры"
+    "tryRefreshOrFilters": "Попробуйте обновить страницу или изменить фильтры",
+    "searchSuggestions": {
+      "tShirt": "футболка",
+      "mensTShirt": "футболка мужская",
+      "womensTShirt": "футболка женская",
+      "cottonTShirt": "футболка из хлопка",
+      "blackTShirt": "футболка чёрная"
+    }
   },
   "admin": {
     "login": {

@@ -278,7 +278,7 @@ export default function SubcategoryPage({
               }}
               className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm"
             >
-              <span>{sortOptions.find((opt) => opt.value === sortBy)?.label || "По популярности"}</span>
+              <span>{sortOptions.find((opt) => opt.value === sortBy)?.label || t('search.sortPopular')}</span>
               {sortBy !== "popular" && (
                 <button
                   onClick={(e) => {
@@ -502,21 +502,21 @@ export default function SubcategoryPage({
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="от"
+                      placeholder={t('search.from')}
                       value={priceRange.min || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
                     />
                     <input
                       type="number"
-                      placeholder="до"
+                      placeholder={t('search.to')}
                       value={priceRange.max || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    от {Math.floor(filters.price_range.min)} до {Math.ceil(filters.price_range.max)} сом
+                    {t('search.from')} {Math.floor(filters.price_range.min)} {t('search.to')} {Math.ceil(filters.price_range.max)} {t('common.currency')}
                   </p>
                 </div>
               )}
@@ -780,7 +780,7 @@ export default function SubcategoryPage({
                     <div className="flex-1">
                       <input
                         type="number"
-                        placeholder="От"
+                        placeholder={t('search.from')}
                         value={priceRange.min || ''}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                         onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
@@ -790,7 +790,7 @@ export default function SubcategoryPage({
                     <div className="flex-1">
                       <input
                         type="number"
-                        placeholder="До"
+                        placeholder={t('search.to')}
                         value={priceRange.max || ''}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                         onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
@@ -992,25 +992,25 @@ export default function SubcategoryPage({
               {/* Price Range */}
               {filters.price_range && (
                 <div>
-                  <h3 className="font-medium mb-3">Цена (сом)</h3>
+                  <h3 className="font-medium mb-3">{t('search.price')} ({t('common.currency')})</h3>
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="от"
+                      placeholder={t('search.from')}
                       value={priceRange.min || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
                     />
                     <input
                       type="number"
-                      placeholder="до"
+                      placeholder={t('search.to')}
                       value={priceRange.max || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    от {Math.floor(filters.price_range.min)} до {Math.ceil(filters.price_range.max)} сом
+                    {t('search.from')} {Math.floor(filters.price_range.min)} {t('search.to')} {Math.ceil(filters.price_range.max)} {t('common.currency')}
                   </p>
                 </div>
               )}

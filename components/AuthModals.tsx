@@ -76,7 +76,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   className="flex-1 h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
-                  placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || "Номер телефона"}
+                  placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || t('auth.phoneNumber')}
                 />
               </div>
             </div>
