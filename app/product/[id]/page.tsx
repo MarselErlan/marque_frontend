@@ -15,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext"
 import { toast } from "@/lib/toast"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
+import { useCurrency } from "@/hooks/useCurrency"
 
 type GalleryImage = {
   src: string
@@ -82,6 +83,7 @@ export default function ProductDetailPage() {
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
   const { addToCart, cartItemCount } = useCart()
   const { openCatalog } = useCatalog()
+  const { format, currency, currencyCode } = useCurrency()
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -103,6 +105,11 @@ export default function ProductDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
+  // Currency state
+  const [formattedPrice, setFormattedPrice] = useState<string>('')
+  const [formattedOriginalPrice, setFormattedOriginalPrice] = useState<string>('')
+  const [formattedPriceRange, setFormattedPriceRange] = useState<string>('')
+  
   // Load product data from API
   useEffect(() => {
     const loadProduct = async () => {
@@ -113,8 +120,34 @@ export default function ProductDetailPage() {
         const slug = params.id as string
         const productData = await productsApi.getDetail(slug)
         setProduct(productData)
-        if (productData.similar_products) {
-          setSimilarProducts(productData.similar_products)
+        
+        // Format prices with currency conversion
+        if (productData) {
+          const productCurrency = productData.currency?.code || 'KGS'
+          const priceMin = await format(productData.price_min, productCurrency)
+          setFormattedPrice(priceMin)
+          
+          if (productData.original_price_min) {
+            const originalPrice = await format(productData.original_price_min, productCurrency)
+            setFormattedOriginalPrice(originalPrice)
+          }
+          
+          if (productData.price_min !== productData.price_max) {
+            const priceMax = await format(productData.price_max, productCurrency)
+            setFormattedPriceRange(`${priceMin} - ${priceMax}`)
+          }
+          
+          // Format prices for similar products
+          if (productData.similar_products) {
+            const formattedSimilar = await Promise.all(
+              productData.similar_products.map(async (p: any) => {
+                const pCurrency = p.currency?.code || 'KGS'
+                const formattedPrice = await format(p.price_min, pCurrency)
+                return { ...p, formatted_price: formattedPrice }
+              })
+            )
+            setSimilarProducts(formattedSimilar)
+          }
         }
 
         if (productData?.skus?.length) {
@@ -730,17 +763,17 @@ export default function ProductDetailPage() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-bold text-brand">
-                  {product.price_min} сом
+                  {formattedPrice || `${product.price_min} ${currency?.symbol || 'сом'}`}
                 </span>
-                {product.skus?.some((sku: any) => sku.original_price) && (
+                {formattedOriginalPrice && (
                   <span className="text-lg text-gray-400 line-through">
-                    {product.skus.find((sku: any) => sku.original_price)?.original_price} сом
+                    {formattedOriginalPrice}
                   </span>
                 )}
               </div>
-              {product.price_min !== product.price_max && (
+              {formattedPriceRange && (
                 <p className="text-sm text-gray-500 mt-1">
-                  {t('product.priceVaries').replace('{min}', product.price_min).replace('{max}', product.price_max)}
+                  {formattedPriceRange}
                 </p>
               )}
             </div>
@@ -1039,7 +1072,9 @@ export default function ProductDetailPage() {
                   <div className="space-y-1">
                     <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">{similarProduct.title}</h3>
                     <div className="flex items-baseline space-x-2">
-                      <span className="text-base font-bold text-brand">{similarProduct.price_min} сом</span>
+                      <span className="text-base font-bold text-brand">
+                        {similarProduct.formatted_price || `${similarProduct.price_min} ${currency?.symbol || 'сом'}`}
+                      </span>
                     </div>
                     {similarProduct.rating_avg > 0 && (
                       <div className="text-xs text-gray-500">

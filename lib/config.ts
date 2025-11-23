@@ -56,6 +56,11 @@ export const API_CONFIG = {
     STORE_MANAGER_ORDER_CANCEL: '/store-manager/orders',
     STORE_MANAGER_ORDER_RESUME: '/store-manager/orders',
     STORE_MANAGER_REVENUE_ANALYTICS: '/store-manager/revenue/analytics',
+    
+    // Currency
+    CURRENCIES: '/currencies',
+    CURRENCY_CONVERT: '/currencies/convert',
+    MARKET_CURRENCY: '/currencies/market',
   }
 } as const
 

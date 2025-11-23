@@ -1116,5 +1116,61 @@ export const storeManagerApi = {
 }
 
 // Export for convenience
+// Currency API
+export interface Currency {
+  id: number
+  code: string
+  name: string
+  symbol: string
+  exchange_rate: number
+  is_base: boolean
+  market: string
+}
+
+export interface CurrencyConvertResponse {
+  amount: number
+  from_currency: string
+  to_currency: string
+  converted_amount: number
+  exchange_rate: number
+}
+
+export const currencyApi = {
+  /**
+   * Get all active currencies
+   */
+  getCurrencies: async (): Promise<Currency[]> => {
+    return apiRequest<Currency[]>(API_CONFIG.ENDPOINTS.CURRENCIES)
+  },
+
+  /**
+   * Convert amount from one currency to another
+   */
+  convertCurrency: async (
+    amount: number,
+    from: string,
+    to: string
+  ): Promise<CurrencyConvertResponse> => {
+    return apiRequest<CurrencyConvertResponse>(API_CONFIG.ENDPOINTS.CURRENCY_CONVERT, {
+      params: {
+        amount,
+        from,
+        to,
+      },
+    })
+  },
+
+  /**
+   * Get currency for a market
+   */
+  getMarketCurrency: async (market: string): Promise<Currency> => {
+    return apiRequest<Currency>(API_CONFIG.ENDPOINTS.MARKET_CURRENCY, {
+      params: {
+        market,
+      },
+    })
+  },
+}
+
 export { ApiError }
 
