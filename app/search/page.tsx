@@ -15,6 +15,7 @@ import { productsApi } from "@/lib/api"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
 import { API_CONFIG } from "@/lib/config"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function SearchPage() {
   const auth = useAuth()
@@ -23,6 +24,10 @@ export default function SearchPage() {
   const { t } = useLanguage()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { openCatalog } = useCatalog()
+  const { format, currency, isLoading: isCurrencyLoading } = useCurrency()
+  
+  // Store formatted prices
+  const [formattedProductPrices, setFormattedProductPrices] = useState<Record<string, { price: string; originalPrice?: string }>>({})
   
   const sortOptions = [
     { value: "relevance", label: t('search.sortRelevance') },
@@ -194,6 +199,29 @@ export default function SearchPage() {
     
     searchProducts()
   }, [query, currentPage, sortBy, selectedFilters, priceRange, selectedCategory, selectedSubcategory])
+
+  // Format prices when products or currency changes
+  useEffect(() => {
+    const formatAllPrices = async () => {
+      if (!products.length || isCurrencyLoading || !currency) return
+      
+      const formattedPrices: Record<string, { price: string; originalPrice?: string }> = {}
+      await Promise.all(
+        products.map(async (product: any) => {
+          const productCurrency = product.currency?.code || 'KGS'
+          const price = await format(product.price_min || product.price || 0, productCurrency)
+          let originalPrice: string | undefined
+          if (product.original_price_min || product.original_price) {
+            originalPrice = await format(product.original_price_min || product.original_price, productCurrency)
+          }
+          formattedPrices[product.id] = { price, originalPrice }
+        })
+      )
+      setFormattedProductPrices(formattedPrices)
+    }
+    
+    formatAllPrices()
+  }, [products, currency, isCurrencyLoading, format])
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -665,9 +693,15 @@ export default function SearchPage() {
                           {product.title}
                         </h3>
                         <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
-                          <span className="text-base font-bold text-brand">{product.price || product.price_min} сом</span>
-                          {(product.original_price || product.original_price_min) && (
-                            <span className="text-xs text-gray-400 line-through">{product.original_price || product.original_price_min} сом</span>
+                          <span className="text-base font-bold text-brand">
+                            {formattedProductPrices[product.id]?.price || 
+                             (isCurrencyLoading ? `${product.price || product.price_min} ${currency?.symbol || 'сом'}` : 
+                              `${product.price || product.price_min} ${currency?.symbol || 'сом'}`)}
+                          </span>
+                          {formattedProductPrices[product.id]?.originalPrice && (
+                            <span className="text-xs text-gray-400 line-through">
+                              {formattedProductPrices[product.id].originalPrice}
+                            </span>
                           )}
                         </div>
                         {product.sold_count > 0 && (

@@ -10,11 +10,16 @@ import { useWishlist } from "@/hooks/useWishlist"
 import { categoriesApi, productsApi } from "@/lib/api"
 import { getImageUrl } from "@/lib/utils"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const auth = useAuth()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { t } = useLanguage()
+  const { format, currency, isLoading: isCurrencyLoading } = useCurrency()
+  
+  // Store formatted prices
+  const [formattedProductPrices, setFormattedProductPrices] = useState<Record<string, { price: string; originalPrice?: string }>>({})
   
   const [category, setCategory] = useState<any>(null)
   const [subcategories, setSubcategories] = useState<any[]>([])
@@ -78,6 +83,29 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       loadCategory()
     }
   }, [params.slug])
+
+  // Format prices when products or currency changes
+  useEffect(() => {
+    const formatAllPrices = async () => {
+      if (!recommendedProducts.length || isCurrencyLoading || !currency) return
+      
+      const formattedPrices: Record<string, { price: string; originalPrice?: string }> = {}
+      await Promise.all(
+        recommendedProducts.map(async (product: any) => {
+          const productCurrency = product.currency?.code || 'KGS'
+          const price = await format(product.price_min || product.price || 0, productCurrency)
+          let originalPrice: string | undefined
+          if (product.original_price_min) {
+            originalPrice = await format(product.original_price_min, productCurrency)
+          }
+          formattedPrices[product.id] = { price, originalPrice }
+        })
+      )
+      setFormattedProductPrices(formattedPrices)
+    }
+    
+    formatAllPrices()
+  }, [recommendedProducts, currency, isCurrencyLoading, format])
 
   const handleWishlistClick = (e: React.MouseEvent, product: any) => {
     e.preventDefault()
@@ -206,11 +234,13 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                     </h3>
                     <div className="flex items-baseline space-x-2">
                       <span className="text-base font-bold text-brand">
-                        {product.price_min || product.price} сом
+                        {formattedProductPrices[product.id]?.price || 
+                         (isCurrencyLoading ? `${product.price_min || product.price} ${currency?.symbol || 'сом'}` : 
+                          `${product.price_min || product.price} ${currency?.symbol || 'сом'}`)}
                       </span>
-                      {product.original_price_min && (
+                      {formattedProductPrices[product.id]?.originalPrice && (
                         <span className="text-xs text-gray-400 line-through">
-                          {product.original_price_min} сом
+                          {formattedProductPrices[product.id].originalPrice}
                         </span>
                       )}
                     </div>

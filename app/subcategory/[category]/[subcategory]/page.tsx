@@ -13,6 +13,7 @@ import { API_CONFIG } from "@/lib/config"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function SubcategoryPage({
   params,
@@ -24,6 +25,10 @@ export default function SubcategoryPage({
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { openCatalog } = useCatalog()
   const { t } = useLanguage()
+  const { format, currency, isLoading: isCurrencyLoading } = useCurrency()
+  
+  // Store formatted prices
+  const [formattedProductPrices, setFormattedProductPrices] = useState<Record<string, { price: string; originalPrice?: string }>>({})
   
   const sortOptions = [
     { value: "popular", label: t('search.sortPopular') },
@@ -173,6 +178,29 @@ export default function SubcategoryPage({
       loadProducts()
     }
   }, [params.category, params.subcategory, currentPage, sortBy, selectedFilters, priceRange])
+
+  // Format prices when products or currency changes
+  useEffect(() => {
+    const formatAllPrices = async () => {
+      if (!products.length || isCurrencyLoading || !currency) return
+      
+      const formattedPrices: Record<string, { price: string; originalPrice?: string }> = {}
+      await Promise.all(
+        products.map(async (product: any) => {
+          const productCurrency = product.currency?.code || 'KGS'
+          const price = await format(product.price_min || product.price || 0, productCurrency)
+          let originalPrice: string | undefined
+          if (product.original_price_min || product.original_price) {
+            originalPrice = await format(product.original_price_min || product.original_price, productCurrency)
+          }
+          formattedPrices[product.id] = { price, originalPrice }
+        })
+      )
+      setFormattedProductPrices(formattedPrices)
+    }
+    
+    formatAllPrices()
+  }, [products, currency, isCurrencyLoading, format])
 
   const handleWishlistClick = (e: React.MouseEvent, product: any) => {
     e.preventDefault()
@@ -617,9 +645,15 @@ export default function SubcategoryPage({
                           {product.title}
                         </h3>
                         <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
-                      <span className="text-base font-bold text-brand">{product.price || product.price_min} сом</span>
-                      {(product.original_price || product.original_price_min) && (
-                        <span className="text-xs text-gray-400 line-through">{product.original_price || product.original_price_min} сом</span>
+                      <span className="text-base font-bold text-brand">
+                        {formattedProductPrices[product.id]?.price || 
+                         (isCurrencyLoading ? `${product.price || product.price_min} ${currency?.symbol || 'сом'}` : 
+                          `${product.price || product.price_min} ${currency?.symbol || 'сом'}`)}
+                      </span>
+                      {formattedProductPrices[product.id]?.originalPrice && (
+                        <span className="text-xs text-gray-400 line-through">
+                          {formattedProductPrices[product.id].originalPrice}
+                        </span>
                           )}
                         </div>
                         {product.sold_count > 0 && (

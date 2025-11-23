@@ -18,6 +18,7 @@ import { useWishlist } from "@/hooks/useWishlist"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { ProductCardSkeletonGrid } from "@/components/ProductCardSkeleton"
 import { getImageUrl } from "@/lib/utils"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function MarquePage() {
   const router = useRouter()
@@ -26,6 +27,7 @@ export default function MarquePage() {
   const { isLoggedIn } = auth
   const { t } = useLanguage()
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
+  const { format, currency, isLoading: isCurrencyLoading } = useCurrency()
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
@@ -59,6 +61,9 @@ export default function MarquePage() {
   const [apiBanners, setApiBanners] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMoreProducts, setHasMoreProducts] = useState(true)
+  
+  // Store formatted prices for products
+  const [formattedProductPrices, setFormattedProductPrices] = useState<Record<string, { price: string; originalPrice?: string }>>({})
 
   const searchSuggestions = [
     t('home.searchSuggestions.tShirt'),
@@ -98,6 +103,7 @@ export default function MarquePage() {
         try {
           // Use best-sellers API to show products sorted by actual sales
           const productsData = await productsApi.getBestSellers(25)
+          
           console.log('Best sellers products loaded:', productsData?.length || 0, productsData)
           if (productsData && productsData.length > 0) {
             setRandomProducts(productsData)
@@ -153,9 +159,32 @@ export default function MarquePage() {
         setIsLoadingInitial(false)
       }
     }
-    
+
     loadInitialData()
   }, [])
+
+  // Format prices when products or currency changes
+  useEffect(() => {
+    const formatAllPrices = async () => {
+      if (!randomProducts.length || isCurrencyLoading || !currency) return
+      
+      const formattedPrices: Record<string, { price: string; originalPrice?: string }> = {}
+      await Promise.all(
+        randomProducts.map(async (product: any) => {
+          const productCurrency = product.currency?.code || 'KGS'
+          const price = await format(product.price_min || product.price || 0, productCurrency)
+          let originalPrice: string | undefined
+          if (product.original_price_min) {
+            originalPrice = await format(product.original_price_min, productCurrency)
+          }
+          formattedPrices[product.id] = { price, originalPrice }
+        })
+      )
+      setFormattedProductPrices(formattedPrices)
+    }
+    
+    formatAllPrices()
+  }, [randomProducts, currency, isCurrencyLoading, format])
 
   // Load cart count on component mount
   useEffect(() => {
@@ -844,13 +873,15 @@ export default function MarquePage() {
                       <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
                         <span className="text-base font-bold text-brand">
                           {(product.price_min || product.price) > 0 
-                            ? `${product.price_min || product.price} ${t('common.currency')}`
+                            ? (formattedProductPrices[product.id]?.price || 
+                               (isCurrencyLoading ? `${product.price_min || product.price} ${currency?.symbol || 'сом'}` : 
+                                `${product.price_min || product.price} ${currency?.symbol || 'сом'}`))
                             : t('product.priceOnRequest')
                           }
                         </span>
-                        {product.original_price_min && (
+                        {product.original_price_min && formattedProductPrices[product.id]?.originalPrice && (
                           <span className="text-xs text-gray-400 line-through">
-                            {product.original_price_min} {t('common.currency')}
+                            {formattedProductPrices[product.id].originalPrice}
                           </span>
                         )}
                       </div>
