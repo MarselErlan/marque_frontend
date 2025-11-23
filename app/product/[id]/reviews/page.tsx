@@ -6,6 +6,7 @@ import Link from "next/link"
 import { productsApi } from "@/lib/api"
 import { useParams, useRouter } from "next/navigation"
 import { getImageUrl } from "@/lib/utils"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 // Star Rating Component with partial fill support
 const StarRating = ({ rating, size = "w-4 h-4" }: { rating: number; size?: string }) => {
@@ -53,6 +54,7 @@ const StarRating = ({ rating, size = "w-4 h-4" }: { rating: number; size?: strin
 export default function ProductReviewsPage() {
   const params = useParams()
   const router = useRouter()
+  const { t } = useLanguage()
   const [product, setProduct] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -89,7 +91,7 @@ export default function ProductReviewsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка отзывов...</p>
+          <p className="text-gray-600">{t('product.reviews.loading')}</p>
         </div>
       </div>
     )
@@ -101,7 +103,7 @@ export default function ProductReviewsPage() {
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <Button onClick={() => router.back()} variant="outline">
-            Назад
+            {t('common.back')}
           </Button>
         </div>
       </div>
@@ -112,9 +114,9 @@ export default function ProductReviewsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Товар не найден</p>
+          <p className="text-gray-600 mb-4">{t('product.notFound')}</p>
           <Button onClick={() => router.push('/')} variant="outline">
-            На главную
+            {t('common.goToHome')}
           </Button>
         </div>
       </div>
@@ -131,7 +133,7 @@ export default function ProductReviewsPage() {
             className="inline-flex items-center text-brand hover:text-purple-700 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Назад к товару
+            {t('product.reviews.backToProduct')}
           </Link>
           <div className="flex items-center justify-between">
             <div>
@@ -139,7 +141,7 @@ export default function ProductReviewsPage() {
                 {product.title}
               </h1>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
-                <span>Продано {product.sold_count || 0}</span>
+                <span>{t('product.sold')} {product.sold_count || 0}</span>
                 <div className="flex items-center space-x-1">
                   <StarRating rating={product.rating_avg || 0} size="w-4 h-4" />
                   <span>
@@ -154,13 +156,13 @@ export default function ProductReviewsPage() {
         {/* Reviews Section */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-xl lg:text-2xl font-bold text-black mb-6">
-            Все отзывы ({reviews.length})
+            {t('product.reviews.allReviews')} ({reviews.length})
           </h2>
 
           {reviews.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">Пока нет отзывов</p>
-              <p className="text-gray-400 text-sm mt-2">Будьте первым, кто оставит отзыв!</p>
+              <p className="text-gray-500 text-lg">{t('product.noReviews')}</p>
+              <p className="text-gray-400 text-sm mt-2">{t('product.reviews.beFirst')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -174,18 +176,18 @@ export default function ProductReviewsPage() {
                         {review.user_profile_image ? (
                           <img
                             src={getImageUrl(review.user_profile_image)}
-                            alt={review.user_name || "Покупатель"}
+                            alt={review.user_name || t('product.buyer')}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <span className="text-brand font-bold text-lg">
-                            {review.user_name ? review.user_name.charAt(0).toUpperCase() : "П"}
+                            {review.user_name ? review.user_name.charAt(0).toUpperCase() : t('product.buyer').charAt(0).toUpperCase()}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-black truncate mb-1">
-                          {review.user_name || "Покупатель"}
+                          {review.user_name || t('product.buyer')}
                         </h4>
                         {/* Star Rating */}
                         <div className="flex items-center">
@@ -243,7 +245,7 @@ export default function ProductReviewsPage() {
                   {review.is_verified_purchase && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
                       <span className="text-xs text-green-600 font-medium">
-                        ✓ Подтвержденная покупка
+                        ✓ {t('product.reviews.verifiedPurchase')}
                       </span>
                     </div>
                   )}

@@ -210,7 +210,15 @@
     "selectPaymentMethod": "Payment Method",
     "selectPayment": "Select Payment Method",
     "size": "Size",
-    "color": "Color"
+    "color": "Color",
+    "addedToCart": "Item added to cart!",
+    "addToCartError": "Failed to add item",
+    "removedFromCart": "Item removed from cart",
+    "removeFromCartError": "Failed to remove item",
+    "serverError": "Server error. Please try again.",
+    "itemNotFound": "Item not found in cart",
+    "updateQuantityError": "Failed to update quantity",
+    "synced": "Cart synced!"
   },
   "auth": {
     "logout": "Logout",
@@ -317,13 +325,6 @@
     "noCategories": "No categories",
     "noSubcategories": "No subcategories"
   },
-  "wishlist": {
-    "title": "Wishlist",
-    "empty": "List is empty",
-    "addItems": "Go to catalog to add items to wishlist",
-    "toCatalog": "To Catalog",
-    "items": "items"
-  },
   "validation": {
     "enterName": "Enter name",
     "enterCity": "Enter city",
@@ -353,12 +354,6 @@
     "kyrgyz": "Kyrgyz",
     "english": "English",
     "changedTo": "Language changed to"
-  },
-  "notifications": {
-    "title": "Notifications",
-    "empty": "No notifications",
-    "markAllRead": "Mark all as read",
-    "defaultTitle": "Notification"
   },
   "admin": {
     "login": {
@@ -468,7 +463,44 @@
       "dateFilterComingSoon": "Date filtering will be available in the next version",
       "notificationSettingsComingSoon": "Notification settings will be saved in the next version",
       "marketSwitched": "Switched to market"
+    },
+    "market": {
+      "connected": "Connected",
+      "selectMarket": "Select Market",
+      "selectMarketDesc": "Select a market to manage orders and data",
+      "currentMarket": "Current Market",
+      "switchMarket": "Switch Market",
+      "switchWarning": "Switching markets will update all order data",
+      "kg": {
+        "name": "KYRGYZSTAN",
+        "currency": "som KGS"
+      },
+      "us": {
+        "name": "UNITED STATES",
+        "currency": "$ USD"
+      }
     }
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "empty": "List is empty",
+    "addItems": "Go to catalog to add items to wishlist",
+    "toCatalog": "To Catalog",
+    "items": "items",
+    "addedToWishlist": "Item added to wishlist!",
+    "addToWishlistError": "Failed to add to wishlist",
+    "alreadyInWishlist": "Item already in wishlist",
+    "removedFromWishlist": "Item removed from wishlist",
+    "removeFromWishlistError": "Failed to remove from wishlist",
+    "synced": "Wishlist synced!"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all as read",
+    "defaultTitle": "Notification",
+    "markedAsRead": "{count} notifications marked as read",
+    "markAsReadError": "Error marking notifications as read"
   }
 }
 

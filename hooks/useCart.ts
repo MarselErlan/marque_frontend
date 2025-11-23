@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { cartApi } from '@/lib/api'
 import { toast } from '@/lib/toast'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export interface CartItem {
   id: string | number
@@ -16,6 +17,7 @@ export interface CartItem {
 }
 
 export const useCart = () => {
+  const { t } = useLanguage()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [cartItemCount, setCartItemCount] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -108,11 +110,11 @@ export const useCart = () => {
         await loadCart() // Reload cart from backend
         // Dispatch event for real-time update
         window.dispatchEvent(new CustomEvent('cart:refresh'))
-        toast.success('Товар добавлен в корзину!')
+        toast.success(t('cart.addedToCart'))
         return
       } catch (error) {
         console.error('Failed to add to backend cart:', error)
-        toast.error('Не удалось добавить товар')
+        toast.error(t('cart.addToCartError'))
         // Fall back to localStorage
       }
     }
@@ -157,11 +159,11 @@ export const useCart = () => {
         await loadCart() // Reload cart from backend
         // Dispatch event for real-time update
         window.dispatchEvent(new CustomEvent('cart:refresh'))
-        toast.success('Товар удален из корзины')
+        toast.success(t('cart.removedFromCart'))
         return
       } catch (error) {
         console.error('Failed to remove from backend cart:', error)
-        toast.error('Не удалось удалить товар')
+        toast.error(t('cart.removeFromCartError'))
         // Fall back to localStorage
       }
     }
@@ -202,11 +204,11 @@ export const useCart = () => {
         console.error('Failed to update backend cart:', error)
         // Show appropriate error message
         if (error?.status === 500) {
-          toast.error('Ошибка сервера. Попробуйте еще раз.')
+          toast.error(t('cart.serverError'))
         } else if (error?.status === 404) {
-          toast.error('Товар не найден в корзине')
+          toast.error(t('cart.itemNotFound'))
         } else {
-          toast.error('Не удалось обновить количество')
+          toast.error(t('cart.updateQuantityError'))
         }
         // Reload cart to sync with backend state on error
         await loadCart()
@@ -294,7 +296,7 @@ export const useCart = () => {
       // Dispatch event for real-time update
       window.dispatchEvent(new CustomEvent('cart:refresh'))
       
-      toast.success('Корзина синхронизирована!')
+      toast.success(t('cart.synced'))
     } catch (error) {
       console.error('Failed to sync cart:', error)
     }

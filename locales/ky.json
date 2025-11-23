@@ -58,7 +58,13 @@
     "noActiveOrders": "Активдүү буйрутмалар жок",
     "noArchiveOrders": "Архивделген буйрутмалар жок",
     "noDetailAvailable": "Буйрутма деталдары жеткиликсиз",
-    "fetchDetailError": "Буйрутма деталдарын жүктөөдө ката кетти"
+    "fetchDetailError": "Буйрутма деталдарын жүктөөдө ката кетти",
+    "phoneAdded": "Телефон номуру кошулду",
+    "phoneAddError": "Телефон номурун кошууда ката кетти",
+    "phoneUpdated": "Телефон номуру жаңыланды",
+    "phoneUpdateError": "Телефон номурун жаңылоодо ката кетти",
+    "phoneDeleted": "Телефон номуру өчүрүлдү",
+    "phoneDeleteError": "Телефон номурун өчүрүүдө ката кетти"
   },
   "settings": {
     "title": "Жөндөөлөр",
@@ -210,7 +216,15 @@
     "selectPaymentMethod": "Төлөө ыкмасы",
     "selectPayment": "Төлөө ыкмасын тандаңыз",
     "size": "Өлчөм",
-    "color": "Түс"
+    "color": "Түс",
+    "addedToCart": "Товар себетке кошулду!",
+    "addToCartError": "Товарды кошууда ката кетти",
+    "removedFromCart": "Товар себеттен алынып салынды",
+    "removeFromCartError": "Товарды алууда ката кетти",
+    "serverError": "Сервердин катасы. Кайра аракет кылыңыз.",
+    "itemNotFound": "Товар себетте табылган жок",
+    "updateQuantityError": "Санын жаңылоодо ката кетти",
+    "synced": "Себет синхрондаштырылды!"
   },
   "auth": {
     "logout": "Чыгуу",

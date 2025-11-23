@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 export type Market = "kg" | "us"
 
@@ -25,26 +26,27 @@ interface MarketConfig {
   textColor: string
 }
 
-const marketConfigs: Record<Market, MarketConfig> = {
+// Market configs will be translated in component
+const getMarketConfigs = (t: (key: string) => string): Record<Market, MarketConfig> => ({
   kg: {
     flag: "🇰🇬",
-    name: "КЫРГЫЗСТАН",
-    currency: "сом KGS",
-    language: "Русский",
+    name: t('admin.market.kg.name'),
+    currency: t('admin.market.kg.currency'),
+    language: t('languages.russian'),
     dbLabel: "KG DB",
     gradient: "from-green-500 to-green-600",
     textColor: "text-green-600",
   },
   us: {
     flag: "🇺🇸",
-    name: "UNITED STATES",
-    currency: "$ USD",
-    language: "English",
+    name: t('admin.market.us.name'),
+    currency: t('admin.market.us.currency'),
+    language: t('languages.english'),
     dbLabel: "US DB",
     gradient: "from-blue-500 to-blue-600",
     textColor: "text-blue-600",
   },
-}
+})
 
 interface MarketIndicatorProps {
   currentMarket: Market
@@ -59,8 +61,10 @@ export function MarketIndicator({
   showSwitcher = true,
   accessibleMarkets,
 }: MarketIndicatorProps) {
+  const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [selectedMarket, setSelectedMarket] = useState<Market>(currentMarket)
+  const marketConfigs = getMarketConfigs(t)
   const config = marketConfigs[currentMarket]
   const isMarketEnabled = (market: Market) =>
     !accessibleMarkets || accessibleMarkets.includes(market)
@@ -109,7 +113,7 @@ export function MarketIndicator({
         <div className="mt-2 pt-2 border-t border-white/20 flex items-center space-x-2">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-sm shadow-green-300" />
           <span className="text-white/95 text-xs font-semibold drop-shadow-sm">
-            Подключено
+            {t('admin.market.connected')}
           </span>
         </div>
 
@@ -126,9 +130,9 @@ export function MarketIndicator({
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Выбрать рынок</DialogTitle>
+              <DialogTitle>{t('admin.market.selectMarket')}</DialogTitle>
               <DialogDescription>
-                Выберите рынок для управления заказами и данными
+                {t('admin.market.selectMarketDesc')}
               </DialogDescription>
             </DialogHeader>
 
@@ -157,7 +161,7 @@ export function MarketIndicator({
                         {marketConfigs.kg.dbLabel}
                       </div>
                       {!kgEnabled && (
-                        <span className="text-xs text-red-500 font-semibold">Нет доступа</span>
+                        <span className="text-xs text-red-500 font-semibold">{t('admin.errors.noMarketAccess')}</span>
                       )}
                     </div>
                   </Label>
@@ -186,7 +190,7 @@ export function MarketIndicator({
                         {marketConfigs.us.dbLabel}
                       </div>
                       {!usEnabled && (
-                        <span className="text-xs text-red-500 font-semibold">Нет доступа</span>
+                        <span className="text-xs text-red-500 font-semibold">{t('admin.errors.noMarketAccess')}</span>
                       )}
                     </div>
                   </Label>
@@ -200,11 +204,11 @@ export function MarketIndicator({
                   onClick={handleMarketChange}
                   disabled={selectedMarket === currentMarket}
                 >
-                  {selectedMarket === currentMarket ? "Текущий рынок" : "Переключить рынок"}
+                  {selectedMarket === currentMarket ? t('admin.market.currentMarket') : t('admin.market.switchMarket')}
                 </Button>
                 {selectedMarket !== currentMarket && (
                   <p className="text-xs text-center text-amber-600 font-medium">
-                    ⚠️ Переключение рынка обновит все данные заказов
+                    ⚠️ {t('admin.market.switchWarning')}
                   </p>
                 )}
               </div>
@@ -218,6 +222,8 @@ export function MarketIndicator({
 
 // Compact version for mobile header
 export function MarketIndicatorCompact({ currentMarket }: { currentMarket: Market }) {
+  const { t } = useLanguage()
+  const marketConfigs = getMarketConfigs(t)
   const config = marketConfigs[currentMarket]
 
   return (

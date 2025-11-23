@@ -3,8 +3,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { Product } from '@/lib/products'
 import { wishlistApi } from '@/lib/api'
 import { toast } from '@/lib/toast'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export const useWishlist = () => {
+  const { t } = useLanguage()
   const [wishlistItems, setWishlistItems] = useState<Product[]>([])
   const [isClient, setIsClient] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -118,11 +120,11 @@ export const useWishlist = () => {
         await loadWishlist() // Reload wishlist from backend
         // Dispatch event for real-time update
         window.dispatchEvent(new CustomEvent('wishlist:refresh'))
-        toast.success('Товар добавлен в избранное!')
+        toast.success(t('wishlist.addedToWishlist'))
         return
       } catch (error) {
         console.error('Failed to add to backend wishlist:', error)
-        toast.error('Не удалось добавить в избранное')
+        toast.error(t('wishlist.addToWishlistError'))
         // Fall back to localStorage
       }
     }
@@ -130,7 +132,7 @@ export const useWishlist = () => {
     // Add to localStorage wishlist
     setWishlistItems((prevItems) => {
       if (prevItems.find((item) => item.id === product.id)) {
-        toast.info('Товар уже в избранном')
+        toast.info(t('wishlist.alreadyInWishlist'))
         return prevItems // Already in wishlist
       }
       toast.success('Товар добавлен в избранное!')
@@ -160,11 +162,11 @@ export const useWishlist = () => {
         await loadWishlist() // Reload wishlist from backend
         // Dispatch event for real-time update
         window.dispatchEvent(new CustomEvent('wishlist:refresh'))
-        toast.success('Товар удален из избранного')
+        toast.success(t('wishlist.removedFromWishlist'))
         return
       } catch (error) {
         console.error('Failed to remove from backend wishlist:', error)
-        toast.error('Не удалось удалить из избранного')
+        toast.error(t('wishlist.removeFromWishlistError'))
         // Fall back to localStorage
       }
     }
@@ -230,7 +232,7 @@ export const useWishlist = () => {
       // Dispatch event for real-time update
       window.dispatchEvent(new CustomEvent('wishlist:refresh'))
       
-      toast.success('Избранное синхронизировано!')
+      toast.success(t('wishlist.synced'))
     } catch (error) {
       console.error('Failed to sync wishlist:', error)
     }

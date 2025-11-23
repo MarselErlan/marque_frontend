@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { profileApi } from '@/lib/api'
 import { toast } from '@/lib/toast'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export interface Address {
   id: number
@@ -92,6 +93,7 @@ export interface Profile {
 }
 
 export const useProfile = () => {
+  const { t } = useLanguage()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [addresses, setAddresses] = useState<Address[]>([])
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
@@ -131,14 +133,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.updateProfile(data)
       if (response.success) {
-        toast.success('Profile updated successfully')
+        toast.success(t('profile.profileUpdated'))
         await fetchProfile()
         return true
       }
       return false
     } catch (error) {
       console.error('Error updating profile:', error)
-      toast.error('Failed to update profile')
+      toast.error(t('profile.profileUpdateError'))
       return false
     }
   }, [fetchProfile])
@@ -188,14 +190,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.createAddress(addressData)
       if (response.success) {
-        toast.success('Address added successfully')
+        toast.success(t('addresses.addressAdded'))
         await fetchAddresses()
         return true
       }
       return false
     } catch (error) {
       console.error('Error creating address:', error)
-      toast.error('Failed to add address')
+      toast.error(t('addresses.addressAddError'))
       return false
     }
   }, [fetchAddresses])
@@ -219,14 +221,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.updateAddress(id, addressData)
       if (response.success) {
-        toast.success('Address updated successfully')
+        toast.success(t('addresses.addressUpdated'))
         await fetchAddresses()
         return true
       }
       return false
     } catch (error) {
       console.error('Error updating address:', error)
-      toast.error('Failed to update address')
+      toast.error(t('addresses.addressUpdateError'))
       return false
     }
   }, [fetchAddresses])
@@ -236,14 +238,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.deleteAddress(id)
       if (response.success) {
-        toast.success('Address deleted successfully')
+        toast.success(t('addresses.addressDeleted'))
         await fetchAddresses()
         return true
       }
       return false
     } catch (error) {
       console.error('Error deleting address:', error)
-      toast.error('Failed to delete address')
+      toast.error(t('addresses.addressDeleteError'))
       return false
     }
   }, [fetchAddresses])
@@ -275,14 +277,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.createPaymentMethod(paymentData)
       if (response.success) {
-        toast.success('Payment method added successfully')
+        toast.success(t('payments.paymentAdded'))
         await fetchPaymentMethods()
         return true
       }
       return false
     } catch (error) {
       console.error('Error creating payment method:', error)
-      toast.error('Failed to add payment method')
+      toast.error(t('payments.paymentAddError'))
       return false
     }
   }, [fetchPaymentMethods])
@@ -292,14 +294,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.updatePaymentMethod(id, data)
       if (response.success) {
-        toast.success('Payment method updated successfully')
+        toast.success(t('payments.paymentUpdated'))
         await fetchPaymentMethods()
         return true
       }
       return false
     } catch (error) {
       console.error('Error updating payment method:', error)
-      toast.error('Failed to update payment method')
+      toast.error(t('payments.paymentUpdateError'))
       return false
     }
   }, [fetchPaymentMethods])
@@ -309,14 +311,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.deletePaymentMethod(id)
       if (response.success) {
-        toast.success('Payment method deleted successfully')
+        toast.success(t('payments.paymentDeleted'))
         await fetchPaymentMethods()
         return true
       }
       return false
     } catch (error) {
       console.error('Error deleting payment method:', error)
-      toast.error('Failed to delete payment method')
+      toast.error(t('payments.paymentDeleteError'))
       return false
     }
   }, [fetchPaymentMethods])
@@ -342,14 +344,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.cancelOrder(orderId)
       if (response.success) {
-        toast.success('Order cancelled successfully')
+        toast.success(t('orders.orderCancelled'))
         await fetchOrders()
         return true
       }
       return false
     } catch (error) {
       console.error('Error cancelling order:', error)
-      toast.error('Failed to cancel order')
+      toast.error(t('orders.cancelOrderError'))
       return false
     }
   }, [fetchOrders])
@@ -391,14 +393,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.markAllNotificationsRead()
       if (response.success) {
-        toast.success(`${response.count} notifications marked as read`)
+        toast.success(t('notifications.markedAsRead').replace('{count}', response.count.toString()))
         await fetchNotifications()
         return true
       }
       return false
     } catch (error) {
       console.error('Error marking all notifications as read:', error)
-      toast.error('Failed to mark notifications as read')
+      toast.error(t('notifications.markAsReadError'))
       return false
     }
   }, [fetchNotifications])
@@ -427,14 +429,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.createPhoneNumber(phoneData)
       if (response.success) {
-        toast.success('Phone number added successfully')
+        toast.success(t('profile.phoneAdded'))
         await fetchPhoneNumbers()
         return true
       }
       return false
     } catch (error) {
       console.error('Error creating phone number:', error)
-      toast.error('Failed to add phone number')
+      toast.error(t('profile.phoneAddError'))
       return false
     }
   }, [fetchPhoneNumbers])
@@ -447,14 +449,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.updatePhoneNumber(id, phoneData)
       if (response.success) {
-        toast.success('Phone number updated successfully')
+        toast.success(t('profile.phoneUpdated'))
         await fetchPhoneNumbers()
         return true
       }
       return false
     } catch (error) {
       console.error('Error updating phone number:', error)
-      toast.error('Failed to update phone number')
+      toast.error(t('profile.phoneUpdateError'))
       return false
     }
   }, [fetchPhoneNumbers])
@@ -463,14 +465,14 @@ export const useProfile = () => {
     try {
       const response = await profileApi.deletePhoneNumber(id)
       if (response.success) {
-        toast.success('Phone number deleted successfully')
+        toast.success(t('profile.phoneDeleted'))
         await fetchPhoneNumbers()
         return true
       }
       return false
     } catch (error) {
       console.error('Error deleting phone number:', error)
-      toast.error('Failed to delete phone number')
+      toast.error(t('profile.phoneDeleteError'))
       return false
     }
   }, [fetchPhoneNumbers])
