@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export const BottomNavigation = () => {
   const pathname = usePathname()
@@ -14,6 +15,7 @@ export const BottomNavigation = () => {
   const auth = useAuth()
   const { cartItemCount } = useCart()
   const { wishlistItemCount } = useWishlist()
+  const { t } = useLanguage()
 
   const handleAuthClick = () => {
     console.log('🔵 Auth button clicked!', { isLoggedIn: auth.isLoggedIn })
@@ -41,7 +43,7 @@ export const BottomNavigation = () => {
         >
           <div className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${pathname === '/' ? 'text-brand' : 'text-gray-700'}`}>
             <SparklesIcon className="w-6 h-6" strokeWidth={1.5} />
-            <span className="text-xs font-medium">Манекен</span>
+            <span className="text-xs font-medium">{t('nav.mannequin')}</span>
           </div>
         </Link>
 
@@ -59,7 +61,7 @@ export const BottomNavigation = () => {
                 </span>
               )}
             </div>
-            <span className="text-xs font-medium">Избранные</span>
+            <span className="text-xs font-medium">{t('nav.favorites')}</span>
           </div>
         </Link>
 
@@ -77,7 +79,7 @@ export const BottomNavigation = () => {
                 </span>
               )}
             </div>
-            <span className="text-xs font-medium">Корзина</span>
+            <span className="text-xs font-medium">{t('nav.cart')}</span>
           </div>
         </Link>
 
@@ -89,7 +91,7 @@ export const BottomNavigation = () => {
         >
           <div className={`flex flex-col items-center justify-center space-y-1 py-2 px-3 ${pathname === '/profile' ? 'text-brand' : 'text-gray-700'}`}>
             <User className="w-6 h-6" strokeWidth={1.5} />
-            <span className="text-xs font-medium">{auth.isLoggedIn ? 'Профиль' : 'Войти'}</span>
+            <span className="text-xs font-medium">{auth.isLoggedIn ? t('nav.profile') : t('nav.login')}</span>
           </div>
         </button>
       </div>

@@ -189,14 +189,14 @@ export default function CartPage() {
       if (defaultPayment.payment_type === 'card') {
         setCheckoutPaymentMethodDisplay(`${defaultPayment.card_type || 'Card'} ${defaultPayment.card_number_masked || ''}`)
       } else if (defaultPayment.payment_type === 'cash') {
-        setCheckoutPaymentMethodDisplay('Наличные при получении')
+        setCheckoutPaymentMethodDisplay(t('payments.cashOnDelivery'))
       } else {
         setCheckoutPaymentMethodDisplay(defaultPayment.payment_type)
       }
     } else if (paymentMethods && paymentMethods.length === 0 && !selectedPaymentMethodId) {
       // No payment methods saved, default to cash
       setCheckoutPaymentMethod('cash')
-      setCheckoutPaymentMethodDisplay('Наличные при получении')
+      setCheckoutPaymentMethodDisplay(t('payments.cashOnDelivery'))
     }
   }, [paymentMethods, selectedPaymentMethodId])
 
@@ -271,7 +271,7 @@ export default function CartPage() {
     if (paymentMethod.payment_type === 'card') {
       setCheckoutPaymentMethodDisplay(`${paymentMethod.card_type || 'Card'} ${paymentMethod.card_number_masked || ''}`)
     } else if (paymentMethod.payment_type === 'cash') {
-      setCheckoutPaymentMethodDisplay('Наличные при получении')
+      setCheckoutPaymentMethodDisplay(t('payments.cashOnDelivery'))
     } else {
       setCheckoutPaymentMethodDisplay(paymentMethod.payment_type)
     }
@@ -365,14 +365,14 @@ export default function CartPage() {
         setCheckoutStep("payment")
       }
     } else if (!addresses || addresses.length === 0) {
-      toast.error('Пожалуйста, выберите или создайте адрес доставки')
+      toast.error(t('cart.selectOrCreateAddress'))
     }
   }
 
   const handlePaymentSubmit = () => {
     // Just navigate to review step, don't create order yet
     if (!checkoutPaymentMethod) {
-      toast.error('Пожалуйста, выберите способ оплаты')
+      toast.error(t('cart.selectPaymentMethod'))
       return
     }
 
@@ -387,7 +387,7 @@ export default function CartPage() {
 
   const handleConfirmOrder = async () => {
     if (!checkoutPaymentMethod) {
-      toast.error('Пожалуйста, выберите способ оплаты')
+      toast.error(t('cart.selectPaymentMethod'))
       return
     }
 
@@ -460,17 +460,17 @@ export default function CartPage() {
           <div className="flex-1 px-4 md:px-0 pt-4 md:pt-0 pb-4 md:pb-0">
             <div className="mb-4 md:mb-6">
               <h1 className="text-2xl font-bold text-black">{t('cart.title')}</h1>
-              <p className="text-gray-500 text-sm mt-1">{cartItems.length} {cartItems.length === 1 ? 'товар' : cartItems.length < 5 ? 'товара' : 'товаров'}</p>
+              <p className="text-gray-500 text-sm mt-1">{cartItems.length} {cartItems.length === 1 ? t('cart.items') : cartItems.length < 5 ? t('cart.itemsPlural') : t('cart.itemsMany')}</p>
             </div>
 
             {cartItems.length === 0 ? (
               <div className="text-center py-12">
                 <ShoppingCart className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">Ваша корзина пуста</h3>
-                <p className="text-gray-500 mb-6">Добавьте товары в корзину, чтобы сделать заказ</p>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">{t('cart.emptyCartMessage')}</h3>
+                <p className="text-gray-500 mb-6">{t('cart.emptyCartDesc')}</p>
                 <Link href="/">
                   <Button className="bg-brand hover:bg-brand-hover text-white">
-                    Перейти к покупкам
+                    {t('cart.goShopping')}
                   </Button>
                 </Link>
               </div>
@@ -496,8 +496,8 @@ export default function CartPage() {
                           <p className="text-xs text-gray-500 mb-0.5">{item.brand || 'H&M'}</p>
                           <h3 className="font-medium text-black mb-1.5 text-sm leading-tight line-clamp-2">{item.name}</h3>
                           <div className="flex items-center gap-3 text-xs text-gray-600 mb-2">
-                            <span>Размер {item.size}</span>
-                            <span>Цвет {item.color}</span>
+                            <span>{t('cart.size')} {item.size}</span>
+                            <span>{t('cart.color')} {item.color}</span>
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
@@ -532,8 +532,8 @@ export default function CartPage() {
                           </Button>
                         </div>
                         <div className="flex items-center space-x-2 flex-shrink-0">
-                          <span className="text-sm md:text-base font-bold text-brand">{item.price} сом</span>
-                          {item.originalPrice && <span className="text-xs md:text-sm text-gray-400 line-through">{item.originalPrice} сом</span>}
+                          <span className="text-sm md:text-base font-bold text-brand">{item.price} {t('common.currency')}</span>
+                          {item.originalPrice && <span className="text-xs md:text-sm text-gray-400 line-through">{item.originalPrice} {t('common.currency')}</span>}
                         </div>
                       </div>
                     </div>
@@ -570,7 +570,7 @@ export default function CartPage() {
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-black mb-2">Дата доставки</p>
+                    <p className="text-sm font-semibold text-black mb-2">{t('cart.deliveryDate')}</p>
                     <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
                       {deliveryDates.map((date: Date, i: number) => (
                         <button
@@ -583,7 +583,7 @@ export default function CartPage() {
                           onClick={() => setSelectedDeliveryDateIndex(i)}
                         >
                           <span className="font-semibold block">
-                            {i === 0 ? 'Завтра' : i === 1 ? 'Послезавтра' : getDayName(date, i).split(' ')[0]}
+                            {i === 0 ? t('cart.tomorrow') : i === 1 ? t('cart.dayAfterTomorrow') : getDayName(date, i).split(' ')[0]}
                           </span>
                           <span className="text-gray-500 text-xs mt-0.5 block">{formatDeliveryDate(date)}</span>
                         </button>
@@ -600,11 +600,11 @@ export default function CartPage() {
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 mb-0.5">Адрес доставки</p>
+                          <p className="text-xs text-gray-500 mb-0.5">{t('cart.selectDeliveryAddress')}</p>
                           {checkoutAddress ? (
                             <p className="font-semibold text-sm truncate">{checkoutAddress}</p>
                           ) : (
-                            <p className="font-semibold text-sm text-gray-400">Выберите адрес</p>
+                            <p className="font-semibold text-sm text-gray-400">{t('cart.selectAddress')}</p>
                           )}
                         </div>
                       </div>
@@ -617,11 +617,11 @@ export default function CartPage() {
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <CreditCard className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 mb-0.5">Способ оплаты</p>
+                          <p className="text-xs text-gray-500 mb-0.5">{t('cart.selectPaymentMethod')}</p>
                           {checkoutPaymentMethodDisplay ? (
                             <p className="font-semibold text-sm truncate">{checkoutPaymentMethodDisplay}</p>
                           ) : (
-                            <p className="font-semibold text-sm text-gray-400">Выберите способ оплаты</p>
+                            <p className="font-semibold text-sm text-gray-400">{t('cart.selectPayment')}</p>
                           )}
                         </div>
                       </div>
@@ -633,17 +633,17 @@ export default function CartPage() {
                 {/* Order Summary */}
                 <div className="border-t pt-4 space-y-2.5 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Товаров в заказе</span>
+                    <span className="text-gray-600">{t('cart.itemsInOrder')}</span>
                     <span className="text-black font-medium">{cartItems.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{t('cart.subtotal')}</span>
-                    <span className="text-black font-medium">{subtotal.toLocaleString()} сом</span>
+                    <span className="text-black font-medium">{subtotal.toLocaleString()} {t('common.currency')}</span>
                   </div>
                   <div className="border-t pt-2.5 mt-2.5">
                     <div className="flex justify-between text-base font-bold">
                       <span className="text-black">{t('cart.total')}</span>
-                      <span className="text-brand">{total.toLocaleString()} сом</span>
+                      <span className="text-brand">{total.toLocaleString()} {t('common.currency')}</span>
                     </div>
                   </div>
                 </div>
@@ -668,19 +668,19 @@ export default function CartPage() {
             <div>
               <h3 className="text-xl font-bold mb-6">MARQUE</h3>
               <div className="space-y-2">
-                <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                <h4 className="font-semibold text-gray-300 mb-4">{t('footer.popularCategories')}</h4>
                 <div className="space-y-2 text-sm text-gray-400">
-                  <div>Мужчинам</div>
-                  <div>Женщинам</div>
-                  <div>Детям</div>
-                  <div>Спорт</div>
-                  <div>Обувь</div>
-                  <div>Аксессуары</div>
+                  <div>{t('footer.men')}</div>
+                  <div>{t('footer.women')}</div>
+                  <div>{t('footer.kids')}</div>
+                  <div>{t('footer.sport')}</div>
+                  <div>{t('footer.shoes')}</div>
+                  <div>{t('footer.accessories')}</div>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
+              <h4 className="font-semibold text-gray-300 mb-4">{t('footer.brands')}</h4>
               <div className="space-y-2 text-sm text-gray-400">
                 <div>ECCO</div>
                 <div>VANS</div>
@@ -692,8 +692,8 @@ export default function CartPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div>Политика конфиденциальности</div>
-            <div>Пользовательское соглашение</div>
+            <div>{t('footer.privacyPolicy')}</div>
+            <div>{t('footer.termsOfUse')}</div>
           </div>
         </div>
       </footer>
@@ -710,7 +710,7 @@ export default function CartPage() {
       }}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-center text-lg font-semibold">Выберите адрес доставки</DialogTitle>
+            <DialogTitle className="text-center text-lg font-semibold">{t('addresses.selectAddress')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {isLoadingAddresses ? (
@@ -732,16 +732,16 @@ export default function CartPage() {
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
-                  <h3 className="text-lg font-semibold text-black">Добавить адрес</h3>
+                  <h3 className="text-lg font-semibold text-black">{t('addresses.addAddress')}</h3>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Название адреса</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.addressName')}</label>
                   <Input
                     type="text"
                     value={newAddress.label}
                     onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
-                    placeholder="Дом, Работа, и т.д."
+                    placeholder={t('addresses.addressNamePlaceholder')}
                     className="w-full"
                   />
                 </div>
@@ -897,7 +897,7 @@ export default function CartPage() {
                     className="w-4 h-4 text-brand"
                   />
                   <label htmlFor="is_default" className="text-sm text-gray-600">
-                    Сделать адресом по умолчанию
+                    {t('addresses.defaultAddress')}
                   </label>
                 </div>
 
@@ -920,10 +920,10 @@ export default function CartPage() {
                     {isCreatingAddress ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Создание...
+                        {t('common.sending')}
                       </>
                     ) : (
-                      'Добавить адрес'
+                      t('addresses.addAddress')
                     )}
                   </Button>
                   <Button
@@ -934,7 +934,7 @@ export default function CartPage() {
                     }}
                     className="flex-1"
                   >
-                    Отмена
+                    {t('common.cancel')}
                   </Button>
                 </div>
               </div>
@@ -957,7 +957,7 @@ export default function CartPage() {
                           <MapPin className="w-4 h-4 text-gray-500" />
                           <span className="font-semibold text-gray-900">{address.title}</span>
                           {address.is_default && (
-                            <span className="text-xs bg-brand-100 text-brand px-2 py-0.5 rounded">По умолчанию</span>
+                            <span className="text-xs bg-brand-100 text-brand px-2 py-0.5 rounded">{t('addresses.default')}</span>
                           )}
                         </div>
                         <p className="text-sm text-gray-600">{address.full_address}</p>
@@ -976,21 +976,21 @@ export default function CartPage() {
                   className="w-full"
                   onClick={() => setShowAddressForm(true)}
                 >
-                  + Добавить новый адрес
+                  + {t('addresses.addNewAddress')}
                 </Button>
                 <Button
                   className="w-full bg-brand hover:bg-brand-hover text-white"
                   onClick={handleAddressSubmit}
                   disabled={!selectedAddressId}
                 >
-                  Продолжить
+                  {t('common.continue')}
                 </Button>
               </div>
             ) : (
               // No addresses - show creation form matching profile page
               <div className="space-y-4">
                 <p className="text-center text-gray-600 text-sm mb-4">
-                  У вас нет сохраненных адресов. Создайте адрес для доставки.
+                  {t('addresses.noAddresses')}
                 </p>
 
                 <div>
@@ -1179,7 +1179,7 @@ export default function CartPage() {
                       Создание...
                     </>
                   ) : (
-                    'Создать адрес и продолжить'
+                    t('addresses.createAndContinue')
                   )}
                 </Button>
               </div>
@@ -1192,7 +1192,7 @@ export default function CartPage() {
       <Dialog open={checkoutStep === "payment"} onOpenChange={() => setCheckoutStep(null)}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-center text-lg font-semibold">Выберите способ оплаты</DialogTitle>
+            <DialogTitle className="text-center text-lg font-semibold">{t('payments.selectPaymentMethod')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {isLoadingPayments ? (
@@ -1216,10 +1216,10 @@ export default function CartPage() {
                         <div className="flex items-center space-x-2 mb-1">
                           <CreditCard className="w-4 h-4 text-gray-500" />
                           <span className="font-semibold text-gray-900">
-                            {paymentMethod.payment_type === "card" ? "Банковская карта" : paymentMethod.payment_type === "cash" ? "Наличные при получении" : paymentMethod.payment_type}
+                            {paymentMethod.payment_type === "card" ? t('payments.card') : paymentMethod.payment_type === "cash" ? t('payments.cashOnDelivery') : paymentMethod.payment_type}
                           </span>
                           {paymentMethod.is_default && (
-                            <span className="text-xs bg-brand-100 text-brand px-2 py-0.5 rounded">По умолчанию</span>
+                            <span className="text-xs bg-brand-100 text-brand px-2 py-0.5 rounded">{t('payments.defaultMethod')}</span>
                           )}
                         </div>
                         {paymentMethod.payment_type === "card" && (
@@ -1228,7 +1228,7 @@ export default function CartPage() {
                           </p>
                         )}
                         {paymentMethod.payment_type === "cash" && (
-                          <p className="text-sm text-gray-600">Оплата при получении заказа</p>
+                          <p className="text-sm text-gray-600">{t('payments.payOnDelivery')}</p>
                         )}
                       </div>
                       {selectedPaymentMethodId === paymentMethod.id && (
@@ -1241,7 +1241,7 @@ export default function CartPage() {
             ) : (
               <div className="space-y-3">
                 <p className="text-center text-gray-600 text-sm mb-4">
-                  У вас нет сохраненных способов оплаты. Выберите один из вариантов:
+                  {t('payments.noPaymentMethods')}
                 </p>
                 <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-200 rounded-lg hover:border-gray-300">
                   <input
@@ -1251,11 +1251,11 @@ export default function CartPage() {
                     checked={checkoutPaymentMethod === "cash"}
                     onChange={(e) => {
                       setCheckoutPaymentMethod(e.target.value)
-                      setCheckoutPaymentMethodDisplay("Наличные при получении")
+                      setCheckoutPaymentMethodDisplay(t('payments.cashOnDelivery'))
                     }}
                     className="w-4 h-4 text-brand"
                   />
-                  <span>Наличные при получении</span>
+                  <span>{t('payments.cashOnDelivery')}</span>
                 </label>
                 <label className="flex items-center space-x-3 cursor-pointer p-3 border-2 border-gray-200 rounded-lg hover:border-gray-300">
                   <input
@@ -1265,11 +1265,11 @@ export default function CartPage() {
                     checked={checkoutPaymentMethod === "card"}
                     onChange={(e) => {
                       setCheckoutPaymentMethod(e.target.value)
-                      setCheckoutPaymentMethodDisplay("Банковская карта")
+                      setCheckoutPaymentMethodDisplay(t('payments.card'))
                     }}
                     className="w-4 h-4 text-brand"
                   />
-                  <span>Банковская карта (введите данные при оформлении)</span>
+                  <span>{t('payments.cardEnterDetails')}</span>
                 </label>
               </div>
             )}
@@ -1284,12 +1284,12 @@ export default function CartPage() {
                     setCheckoutStep(null)
                   }
                 } else {
-                  toast.error('Пожалуйста, выберите способ оплаты')
+                  toast.error(t('cart.selectPaymentMethod'))
                 }
               }}
               disabled={!checkoutPaymentMethod || isSubmittingOrder}
             >
-              {checkoutAddress ? "Продолжить" : "Сохранить и закрыть"}
+              {checkoutAddress ? t('common.continue') : t('common.saveAndClose')}
             </Button>
           </div>
         </DialogContent>
@@ -1303,12 +1303,12 @@ export default function CartPage() {
       }}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-center text-lg font-semibold">Подтверждение заказа</DialogTitle>
+            <DialogTitle className="text-center text-lg font-semibold">{t('cart.orderConfirmation')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
             {/* Order Items Summary */}
             <div>
-              <h3 className="text-base font-semibold text-black mb-3">Товары в заказе</h3>
+              <h3 className="text-base font-semibold text-black mb-3">{t('cart.itemsInOrder')}</h3>
               <div className="space-y-3">
                 {cartItems.map((item) => (
                   <div key={`${item.id}-${item.size}-${item.color}`} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -1323,10 +1323,10 @@ export default function CartPage() {
                     <div className="flex-1">
                       <p className="text-sm font-medium text-black">{item.name}</p>
                       <p className="text-xs text-gray-500">
-                        Размер: {item.size} | Цвет: {item.color}
+                        {t('cart.size')}: {item.size} | {t('cart.color')}: {item.color}
                       </p>
                       <p className="text-sm font-semibold text-brand mt-1">
-                        {item.price} сом × {item.quantity} = {(item.price * item.quantity).toLocaleString()} сом
+                        {item.price} {t('common.currency')} × {item.quantity} = {(item.price * item.quantity).toLocaleString()} {t('common.currency')}
                       </p>
                     </div>
                   </div>
@@ -1339,33 +1339,33 @@ export default function CartPage() {
               <h3 className="text-base font-semibold text-black mb-3">{t('cart.delivery')}</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Дата доставки:</span>
+                  <span className="text-sm text-gray-600">{t('cart.deliveryDate')}:</span>
                   <span className="text-sm font-medium text-black">
-                    {selectedDeliveryDateIndex === 0 ? 'Завтра' : selectedDeliveryDateIndex === 1 ? 'Послезавтра' : deliveryDates[selectedDeliveryDateIndex].getDate().toString()}{' '}
+                    {selectedDeliveryDateIndex === 0 ? t('cart.tomorrow') : selectedDeliveryDateIndex === 1 ? t('cart.dayAfterTomorrow') : deliveryDates[selectedDeliveryDateIndex].getDate().toString()}{' '}
                     {formatDeliveryDate(selectedDeliveryDateObj)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Адрес доставки:</span>
+                  <span className="text-sm text-gray-600">{t('cart.deliveryAddress')}:</span>
                   <button
                     onClick={() => {
                       setCheckoutStep("address")
                     }}
                     className="text-sm font-medium text-brand hover:underline text-right max-w-[60%] flex items-center gap-1"
                   >
-                    {checkoutAddress || "Не выбран"}
+                    {checkoutAddress || t('cart.notSelected')}
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Способ оплаты:</span>
+                  <span className="text-sm text-gray-600">{t('cart.paymentMethod')}:</span>
                   <button
                     onClick={() => {
                       setCheckoutStep("payment")
                     }}
                     className="text-sm font-medium text-brand hover:underline flex items-center gap-1"
                   >
-                    {checkoutPaymentMethodDisplay || "Не выбран"}
+                    {checkoutPaymentMethodDisplay || t('cart.notSelected')}
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -1378,20 +1378,20 @@ export default function CartPage() {
                 {/* Additional Phone Number */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Дополнительный телефон
+                    {t('orders.additionalPhone')}
                   </label>
                   <Input
                     type="tel"
                     value={additionalPhoneForOrder}
                     onChange={(e) => setAdditionalPhoneForOrder(e.target.value)}
-                    placeholder={profile?.phone ? `Например: ${profile.phone}` : "+996 505 32 53 11"}
+                    placeholder={profile?.phone ? `${t('orders.additionalPhonePlaceholder')} ${profile.phone}` : "+996 505 32 53 11"}
                     className="w-full h-11 text-base border-gray-300 focus:border-brand focus:ring-brand"
                   />
                 </div>
 
                 {/* Order Comment */}
                 <div>
-                  <h3 className="text-base font-semibold text-black mb-3">Комментарий к заказу</h3>
+                  <h3 className="text-base font-semibold text-black mb-3">{t('cart.orderComment')}</h3>
                   <Textarea
                     value={orderComment}
                     onChange={(e) => {
@@ -1400,7 +1400,7 @@ export default function CartPage() {
                         setOrderComment(value)
                       }
                     }}
-                    placeholder="Добавьте комментарий для курьера (например, код от домофона, время доставки и т.д.)"
+                    placeholder={t('cart.orderCommentPlaceholder')}
                     className="w-full min-h-[100px]"
                     maxLength={500}
                   />
@@ -1413,20 +1413,20 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div className="border-t pt-4">
-              <h3 className="text-base font-semibold text-black mb-3">Итого</h3>
+              <h3 className="text-base font-semibold text-black mb-3">{t('cart.total')}</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Товары ({cartItems.length}):</span>
-                  <span className="text-black font-medium">{subtotal.toLocaleString()} сом</span>
+                  <span className="text-gray-600">{t('cart.items')} ({cartItems.length}):</span>
+                  <span className="text-black font-medium">{subtotal.toLocaleString()} {t('common.currency')}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Доставка:</span>
-                  <span className="text-black font-medium">{deliveryCost.toLocaleString()} сом</span>
+                  <span className="text-gray-600">{t('cart.shipping')}:</span>
+                  <span className="text-black font-medium">{deliveryCost.toLocaleString()} {t('common.currency')}</span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between text-base font-bold">
-                    <span className="text-black">Итого к оплате:</span>
-                    <span className="text-brand">{total.toLocaleString()} сом</span>
+                    <span className="text-black">{t('cart.totalToPay')}:</span>
+                    <span className="text-brand">{total.toLocaleString()} {t('common.currency')}</span>
                   </div>
                 </div>
               </div>
@@ -1440,7 +1440,7 @@ export default function CartPage() {
                 onClick={() => setCheckoutStep(null)}
                 disabled={isSubmittingOrder}
               >
-                Отмена
+                {t('common.cancel')}
               </Button>
               <Button
                 className="flex-1 bg-brand hover:bg-brand-hover text-white"
@@ -1450,10 +1450,10 @@ export default function CartPage() {
                 {isSubmittingOrder ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Оформление...
+                    {t('cart.processing')}
                   </>
                 ) : (
-                  'Подтвердить заказ'
+                  t('cart.confirmOrder')
                 )}
               </Button>
             </div>
@@ -1465,37 +1465,37 @@ export default function CartPage() {
       <Dialog open={checkoutStep === "success"} onOpenChange={() => setCheckoutStep(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-lg font-semibold">Заказ оформлен</DialogTitle>
+            <DialogTitle className="text-center text-lg font-semibold">{t('cart.orderPlaced')}</DialogTitle>
           </DialogHeader>
           <div className="text-center py-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Заказ принят к исполнению!</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('cart.orderAccepted')}</h3>
             {orderNumber && (
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <p className="text-sm text-gray-600 mb-1">Номер заказа</p>
+                <p className="text-sm text-gray-600 mb-1">{t('orders.orderNumber')}</p>
                 <p className="text-2xl font-bold text-brand">{orderNumber}</p>
                 {orderTotal > 0 && (
-                  <p className="text-sm text-gray-600 mt-2">Сумма: {orderTotal.toLocaleString()} сом</p>
+                  <p className="text-sm text-gray-600 mt-2">{t('cart.total')}: {orderTotal.toLocaleString()} {t('common.currency')}</p>
                 )}
               </div>
             )}
             <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Телефон:</span>
-                <span className="font-medium text-black">{profile?.phone || "Не указан"}</span>
+                <span className="text-gray-600">{t('orders.phone')}:</span>
+                <span className="font-medium text-black">{profile?.phone || t('common.notSpecified')}</span>
               </div>
               {additionalPhoneForOrder && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Дополнительный телефон:</span>
+                  <span className="text-gray-600">{t('orders.additionalPhone')}:</span>
                   <span className="font-medium text-black">{additionalPhoneForOrder}</span>
                 </div>
               )}
             </div>
-            <p className="text-gray-600 mb-6">Мы отправили детали заказа на ваш номер телефона</p>
+            <p className="text-gray-600 mb-6">{t('cart.orderDetailsSent')}</p>
             <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleOrderComplete}>
-              Перейти в профиль
+              {t('cart.goToProfile')}
             </Button>
           </div>
         </DialogContent>

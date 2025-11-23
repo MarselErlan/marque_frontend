@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useMemo, useRef, ChangeEvent } from "react"
+import { useState, useEffect, useMemo, useRef, ChangeEvent, useCallback } from "react"
 import {
   Search,
   Heart,
@@ -141,21 +141,21 @@ export default function ProfilePage() {
     try {
       console.log('🔴 Profile: Starting logout...')
       await handleLogout()
-      toast.success('Вы успешно вышли из аккаунта')
+      toast.success(t('auth.logoutSuccess'))
       console.log('🔴 Profile: Redirecting to home...')
       
       // Force a hard navigation to ensure auth state is reset
       window.location.href = '/'
     } catch (error) {
       console.error('🔴 Profile: Logout error:', error)
-      toast.error('Ошибка при выходе из аккаунта')
+      toast.error(t('auth.logoutError'))
     }
   }
   
   const [activeTab, setActiveTab] = useState("profile")
   const [orderFilter, setOrderFilter] = useState("active")
-  const [userName, setUserName] = useState("Анна Ахматова")
-  const [phoneNumber, setPhoneNumber] = useState("+996 505 32 53 11")
+  const [userName, setUserName] = useState(t('profile.defaultName'))
+  const [phoneNumber, setPhoneNumber] = useState(t('profile.defaultPhone'))
   const [pendingProfileImage, setPendingProfileImage] = useState<File | null>(null)
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
@@ -230,9 +230,9 @@ export default function ProfilePage() {
     const diffInMs = today.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0)
     const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
 
-    if (diffInDays === 0) return "сегодня"
-    if (diffInDays === 1) return "вчера"
-    return date.toLocaleDateString("ru-RU")
+    if (diffInDays === 0) return t('common.today')
+    if (diffInDays === 1) return t('common.yesterday')
+    return date.toLocaleDateString(language === 'ru' ? 'ru-RU' : language === 'ky' ? 'ky-KG' : 'en-US')
   }
 
   const composeFullAddress = (address: AddressFormState) => {
@@ -240,6 +240,7 @@ export default function ProfilePage() {
       // US format: street, city, state, postalCode
       const parts = [
         address.street?.trim(),
+        address.fullAddress?.trim(), // Added fullAddress for US
         address.city?.trim(),
         address.state?.trim(),
         address.postalCode?.trim(),
@@ -248,11 +249,11 @@ export default function ProfilePage() {
     } else {
       // KG format: street, building, apartment, entrance, floor, city
       const parts = [
-        address.street?.trim() ? `ул. ${address.street.trim()}` : null,
-        address.building?.trim() ? `д. ${address.building.trim()}` : null,
-        address.apartment?.trim() ? `кв. ${address.apartment.trim()}` : null,
-        address.entrance?.trim() ? `подъезд ${address.entrance.trim()}` : null,
-        address.floor?.trim() ? `этаж ${address.floor.trim()}` : null,
+        address.street?.trim() ? `${t('addresses.street')} ${address.street.trim()}` : null,
+        address.building?.trim() ? `${t('addresses.buildingShort')} ${address.building.trim()}` : null,
+        address.apartment?.trim() ? `${t('addresses.apartmentShort')} ${address.apartment.trim()}` : null,
+        address.entrance?.trim() ? `${t('addresses.entrance')} ${address.entrance.trim()}` : null,
+        address.floor?.trim() ? `${t('addresses.floor')} ${address.floor.trim()}` : null,
         address.city?.trim(),
       ].filter(Boolean)
       return parts.join(", ")
@@ -264,20 +265,20 @@ export default function ProfilePage() {
       const createdAt = new Date(notification.created_at)
       const time = Number.isNaN(createdAt.getTime())
         ? ""
-        : createdAt.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
+        : createdAt.toLocaleTimeString(language === 'ru' ? 'ru-RU' : language === 'ky' ? 'ky-KG' : 'en-US', { hour: "2-digit", minute: "2-digit" })
       const dateLabel = Number.isNaN(createdAt.getTime()) ? "" : getNotificationDateLabel(new Date(createdAt))
 
       return {
         id: notification.id,
         type: notification.type || "other",
-        title: notification.title || "Уведомление",
+        title: notification.title || t('notifications.defaultTitle'),
         message: notification.message,
         time,
         date: dateLabel,
         isRead: notification.is_read,
       }
     })
-  }, [backendNotifications])
+  }, [backendNotifications, language, t])
 
   // checkAuthStatus and handleLogout are now handled by the useAuth hook.
 
@@ -292,10 +293,10 @@ export default function ProfilePage() {
     
     // Update user data if logged in
     if (userData) {
-      setUserName(userData.full_name || userData.name || "Анна Ахматова")
-      setPhoneNumber(userData.phone || "+996 505 32 53 11")
+      setUserName(userData.full_name || userData.name || t('profile.defaultName'))
+      setPhoneNumber(userData.phone || t('profile.defaultPhone'))
     }
-  }, [auth.isLoading, auth.isLoggedIn, userData, router])
+  }, [auth.isLoading, auth.isLoggedIn, userData, router, t])
 
 
   useEffect(() => {
@@ -359,22 +360,22 @@ export default function ProfilePage() {
     {} as Record<string, typeof notifications>,
   )
 
-  const statusMeta: Record<string, { label: string; badgeClass: string; textClass: string }> = {
-    pending: { label: "В ожидании", badgeClass: "bg-yellow-100 text-yellow-700", textClass: "text-yellow-700" },
-    confirmed: { label: "Подтвержден", badgeClass: "bg-green-100 text-green-700", textClass: "text-green-700" },
-    processing: { label: "Обрабатывается", badgeClass: "bg-blue-100 text-blue-700", textClass: "text-blue-700" },
-    shipped: { label: "В пути", badgeClass: "bg-purple-100 text-purple-700", textClass: "text-purple-700" },
-    delivered: { label: "Доставлен", badgeClass: "bg-brand/10 text-brand", textClass: "text-brand" },
-    cancelled: { label: "Отменен", badgeClass: "bg-red-100 text-red-700", textClass: "text-red-700" },
-    refunded: { label: "Возврат", badgeClass: "bg-red-100 text-red-700", textClass: "text-red-700" },
-  }
+  const statusMeta: Record<string, { label: string; badgeClass: string; textClass: string }> = useMemo(() => ({
+    pending: { label: t('orders.status.pending'), badgeClass: "bg-yellow-100 text-yellow-700", textClass: "text-yellow-700" },
+    confirmed: { label: t('orders.status.confirmed'), badgeClass: "bg-green-100 text-green-700", textClass: "text-green-700" },
+    processing: { label: t('orders.status.processing'), badgeClass: "bg-blue-100 text-blue-700", textClass: "text-blue-700" },
+    shipped: { label: t('orders.status.shipped'), badgeClass: "bg-purple-100 text-purple-700", textClass: "text-purple-700" },
+    delivered: { label: t('orders.status.delivered'), badgeClass: "bg-brand/10 text-brand", textClass: "text-brand" },
+    cancelled: { label: t('orders.status.cancelled'), badgeClass: "bg-red-100 text-red-700", textClass: "text-red-700" },
+    refunded: { label: t('orders.status.refunded'), badgeClass: "bg-red-100 text-red-700", textClass: "text-red-700" },
+  }), [t])
 
-  const formatDate = (value?: string | null) => {
+  const formatDate = useCallback((value?: string | null) => {
     if (!value) return null
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return null
-    return date.toLocaleDateString("ru-RU")
-  }
+    return date.toLocaleDateString(language === 'ru' ? 'ru-RU' : language === 'ky' ? 'ky-KG' : 'en-US')
+  }, [language])
 
   const orders: UiOrder[] = useMemo(() => {
     return backendOrders.map((order) => {
@@ -411,7 +412,7 @@ export default function ProfilePage() {
         canReview: order.status === "delivered" && !order.has_review,
       }
     })
-  }, [backendOrders])
+  }, [backendOrders, statusMeta, formatDate, t, language])
 
   const filteredOrders = orders.filter((order) => (orderFilter === "active" ? order.isActive : !order.isActive))
 
@@ -440,7 +441,7 @@ export default function ProfilePage() {
   const handleUpdateProfile = async () => {
     const trimmed = userName.trim()
     if (!trimmed) {
-      toast.error("Введите имя")
+      toast.error(t('validation.enterName'))
       return
     }
     
@@ -461,10 +462,10 @@ export default function ProfilePage() {
         await fetchProfile()
       }
       
-      toast.success('Профиль успешно обновлен')
+      toast.success(t('profile.profileUpdated'))
     } catch (error) {
       console.error('Profile update failed', error)
-      toast.error('Не удалось обновить профиль')
+      toast.error(t('profile.profileUpdateError'))
     } finally {
       setIsUpdatingProfile(false)
     }
@@ -473,31 +474,31 @@ export default function ProfilePage() {
 
   const handleAddAddress = async () => {
     if (!newAddress.city.trim()) {
-      toast.error("Введите город")
+      toast.error(t('validation.enterCity'))
       return
     }
 
     if (isUSLocation) {
       if (!newAddress.street.trim()) {
-        toast.error("Введите улицу")
+        toast.error(t('validation.enterStreet'))
         return
       }
       if (!newAddress.state.trim()) {
-        toast.error("Укажите штат/регион")
+        toast.error(t('validation.enterState'))
         return
       }
       if (!newAddress.postalCode.trim()) {
-        toast.error("Укажите почтовый индекс")
+        toast.error(t('validation.enterPostalCode'))
         return
       }
     } else {
       // KG validation
       if (!newAddress.street.trim()) {
-        toast.error("Введите улицу")
+        toast.error(t('validation.enterStreet'))
         return
       }
       if (!newAddress.building.trim()) {
-        toast.error("Введите номер дома")
+        toast.error(t('validation.enterBuilding'))
         return
       }
     }
@@ -505,12 +506,12 @@ export default function ProfilePage() {
     const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
 
     if (!fullAddressValue) {
-      toast.error("Введите полный адрес")
+      toast.error(t('validation.enterFullAddress'))
       return
     }
 
     const success = await createAddress({
-      title: newAddress.label || "Адрес",
+      title: newAddress.label || t('addresses.defaultTitle'),
       full_address: fullAddressValue,
       street: newAddress.street || undefined,
       city: newAddress.city || undefined,
@@ -536,7 +537,7 @@ export default function ProfilePage() {
   const handleEditAddress = (address: BackendAddress) => {
     setEditingAddress(address)
     setNewAddress({
-      label: address.title || "Адрес",
+      label: address.title || t('addresses.defaultTitle'),
       fullAddress: address.full_address || "",
       street: address.street || "",
       city: address.city || "",
@@ -555,31 +556,31 @@ export default function ProfilePage() {
     if (!editingAddress) return
 
     if (!newAddress.city.trim()) {
-      toast.error("Введите город")
+      toast.error(t('validation.enterCity'))
       return
     }
 
     if (isUSLocation) {
       if (!newAddress.street.trim()) {
-        toast.error("Введите улицу")
+        toast.error(t('validation.enterStreet'))
         return
       }
       if (!newAddress.state.trim()) {
-        toast.error("Укажите штат/регион")
+        toast.error(t('validation.enterState'))
         return
       }
       if (!newAddress.postalCode.trim()) {
-        toast.error("Укажите почтовый индекс")
+        toast.error(t('validation.enterPostalCode'))
         return
       }
     } else {
       // KG validation
       if (!newAddress.street.trim()) {
-        toast.error("Введите улицу")
+        toast.error(t('validation.enterStreet'))
         return
       }
       if (!newAddress.building.trim()) {
-        toast.error("Введите номер дома")
+        toast.error(t('validation.enterBuilding'))
         return
       }
     }
@@ -587,12 +588,12 @@ export default function ProfilePage() {
     const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
 
     if (!fullAddressValue) {
-      toast.error("Введите полный адрес")
+      toast.error(t('validation.enterFullAddress'))
       return
     }
 
     const success = await updateAddress(editingAddress.id, {
-      title: newAddress.label || "Адрес",
+      title: newAddress.label || t('addresses.defaultTitle'),
       full_address: fullAddressValue,
       street: newAddress.street || undefined,
       city: newAddress.city || undefined,
@@ -637,19 +638,19 @@ export default function ProfilePage() {
 
   const handleSubmitReview = async () => {
     if (reviewRating === 0) {
-      toast.error("Пожалуйста, поставьте оценку")
+      toast.error(t('product.reviewRatingRequired'))
       return
     }
     if (!reviewText.trim()) {
-      toast.error("Пожалуйста, добавьте текст отзыва")
+      toast.error(t('product.reviewTextRequired'))
       return
     }
     if (!selectedOrder) {
-      toast.error("Заказ не выбран")
+      toast.error(t('product.reviewOrderMissing'))
       return
     }
     if (!selectedProductId) {
-      toast.error("Товар не выбран")
+      toast.error(t('product.reviewProductMissing'))
       return
     }
 
@@ -665,7 +666,7 @@ export default function ProfilePage() {
         images: imageFiles.length > 0 ? imageFiles : undefined,
       })
 
-      toast.success("Отзыв успешно отправлен! Спасибо за вашу оценку.")
+      toast.success(t('product.reviewSubmitted'))
       
       // Reset form
       setShowReviewForm(false)
@@ -678,7 +679,7 @@ export default function ProfilePage() {
       fetchOrders()
     } catch (error: any) {
       console.error('Review submission error:', error)
-      const errorMessage = error?.message || error?.detail || "Не удалось отправить отзыв. Попробуйте еще раз."
+      const errorMessage = error?.message || error?.detail || t('product.reviewSubmitError')
       toast.error(errorMessage)
     } finally {
       setIsSubmittingReview(false)
@@ -687,19 +688,19 @@ export default function ProfilePage() {
 
   const handleAddPayment = async () => {
     if (!newPayment.cardNumber.trim() || !newPayment.expiryDate.trim() || !newPayment.cvv.trim()) {
-      toast.error("Заполните данные карты")
+      toast.error(t('validation.fillCardData'))
       return
     }
 
     const sanitizedNumber = newPayment.cardNumber.replace(/\s/g, "")
     if (sanitizedNumber.length < 13) {
-      toast.error("Неверный номер карты")
+      toast.error(t('validation.invalidCardNumber'))
       return
     }
 
     const [monthRaw, yearRaw] = newPayment.expiryDate.split("/")
     if (!monthRaw || !yearRaw) {
-      toast.error("Укажите срок действия в формате MM/YY")
+      toast.error(t('validation.invalidExpiryFormat'))
       return
     }
 
@@ -797,7 +798,7 @@ export default function ProfilePage() {
           {/* Sidebar - Desktop Only */}
           <div className="hidden lg:block w-64">
             <div className="bg-white rounded-lg p-6">
-              <h1 className="text-2xl font-bold text-black mb-6">Личный кабинет</h1>
+              <h1 className="text-2xl font-bold text-black mb-6">{t('profile.title')}</h1>
               <nav className="space-y-2">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon
@@ -867,14 +868,14 @@ export default function ProfilePage() {
                       {isUpdatingProfile ? (
                         <span className="flex items-center gap-2">
                           <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
-                          Обновление...
+                          {t('profile.updating')}
                         </span>
                       ) : (
-                        "Обновить"
+                        t('profile.update')
                       )}
                     </Button>
                     {pendingProfileImage && (
-                      <p className="text-xs text-gray-500 mt-2">Изображение будет обновлено при сохранении</p>
+                      <p className="text-xs text-gray-500 mt-2">{t('profile.imageWillUpdate')}</p>
                     )}
                   </div>
                 </div>
@@ -882,7 +883,7 @@ export default function ProfilePage() {
                 {/* Profile Form */}
                 <div className="space-y-4 md:space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">ФИО</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">{t('profile.fullName')}</label>
                     <Input
                       type="text"
                       value={userName}
@@ -893,7 +894,7 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">
-                      Номер телефона (нельзя изменить)
+                      {t('profile.phoneCannotChange')}
                     </label>
                     <Input 
                       type="tel" 
@@ -911,7 +912,7 @@ export default function ProfilePage() {
                       className="w-full h-11 md:h-12 flex items-center justify-center gap-2 md:gap-3 text-pink-600 md:text-red-600 border-pink-200 md:border-red-200 bg-pink-50/50 md:bg-transparent hover:bg-pink-50 md:hover:bg-red-50 hover:border-pink-300 md:hover:border-red-300 transition-colors"
                     >
                       <ChevronRight className="w-4 h-4 md:w-5 md:h-5 rotate-180" />
-                      <span className="text-base md:text-lg font-medium">Выйти из аккаунта</span>
+                      <span className="text-base md:text-lg font-medium">{t('profile.logout')}</span>
                     </Button>
                   </div>
                 </div>
@@ -922,8 +923,8 @@ export default function ProfilePage() {
               <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-1">Мои заказы</h2>
-                    <p className="text-gray-600">{activeOrdersCount} активных</p>
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('orders.title')}</h2>
+                    <p className="text-gray-600">{activeOrdersCount} {t('profile.itemsCount')}</p>
                   </div>
                 </div>
 
@@ -934,7 +935,7 @@ export default function ProfilePage() {
                       orderFilter === "active" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
-                    Активные
+                    {t('orders.active')}
                   </button>
                   <button
                     onClick={() => setOrderFilter("archive")}
@@ -942,7 +943,7 @@ export default function ProfilePage() {
                       orderFilter === "archive" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
-                    Архив
+                    {t('orders.archive')}
                   </button>
                 </div>
 
@@ -951,7 +952,7 @@ export default function ProfilePage() {
                     <div key={`${order.id}-${index}`} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
                       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                         <div className="flex items-center space-x-4 mb-3 md:mb-0">
-                          <span className="text-lg font-semibold text-gray-900">Заказ №{order.id}</span>
+                          <span className="text-lg font-semibold text-gray-900">{t('orders.orderNumber')}{order.orderNumber}</span>
                           <span className={`px-3 py-1 rounded-full text-sm font-medium ${order.statusBadgeClass}`}>
                             {order.status}
                           </span>
@@ -977,7 +978,7 @@ export default function ProfilePage() {
 
                       <div className="flex flex-col md:flex-row md:items-center justify-between">
                         <div>
-                          <div className="text-sm text-gray-500 mb-2">Доставка {order.deliveryDate}</div>
+                          <div className="text-sm text-gray-500 mb-2">{t('orders.delivery')} {order.deliveryDate}</div>
                           <div className="text-xl font-semibold text-gray-900">{order.totalLabel}</div>
                         </div>
                         <div className="flex space-x-3 mt-4 md:mt-0">
@@ -1004,7 +1005,7 @@ export default function ProfilePage() {
                             }}
                             className="px-6 py-2 border-gray-300 hover:border-gray-400"
                           >
-                            Детали
+                            {t('orders.details')}
                           </Button>
                           {order.canReview && (
                             <Button
@@ -1022,22 +1023,22 @@ export default function ProfilePage() {
                                     if (firstItem.product_id) {
                                       setSelectedProductId(firstItem.product_id)
                                     } else {
-                                      toast.error("Не удалось определить товар для отзыва")
+                                      toast.error(t('orders.reviewError'))
                                       return
                                     }
                                   } else {
-                                    toast.error("В заказе нет товаров")
+                                    toast.error(t('orders.noItems'))
                                     return
                                   }
                                 } catch (error) {
                                   console.error('Failed to fetch order detail:', error)
-                                  toast.error("Не удалось загрузить детали заказа")
+                                  toast.error(t('profile.fetchDetailError'))
                                   return
                                 }
                                 setShowReviewForm(true)
                               }}
                             >
-                              Оставить отзыв
+                              {t('orders.writeReview')}
                             </Button>
                           )}
                         </div>
@@ -1196,12 +1197,12 @@ export default function ProfilePage() {
                             <div className="text-right">
                               {item.subtotal && (
                                 <p className="text-base font-semibold text-gray-900">
-                                  {item.subtotal} {orderDetail.currency || 'сом'}
+                                  {item.subtotal} {orderDetail.currency || t('common.currency')}
                                 </p>
                               )}
                               {item.price && item.quantity && (
                                 <p className="text-sm text-gray-500">
-                                  {item.price} {orderDetail.currency || 'сом'} × {item.quantity}
+                                  {item.price} {orderDetail.currency || t('common.currency')} × {item.quantity}
                                 </p>
                               )}
                             </div>
@@ -1215,19 +1216,19 @@ export default function ProfilePage() {
                       {orderDetail.subtotal !== undefined && (
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">{t('cart.subtotal')}</span>
-                          <span className="text-gray-900">{orderDetail.subtotal} {orderDetail.currency || 'сом'}</span>
+                          <span className="text-gray-900">{orderDetail.subtotal} {orderDetail.currency || t('common.currency')}</span>
                         </div>
                       )}
                       {orderDetail.shipping_cost !== undefined && (
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">{t('cart.delivery')}</span>
-                          <span className="text-gray-900">{orderDetail.shipping_cost} {orderDetail.currency || 'сом'}</span>
+                          <span className="text-gray-900">{orderDetail.shipping_cost} {orderDetail.currency || t('common.currency')}</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center pt-3 border-t">
                         <span className="text-lg font-semibold text-gray-900">{t('cart.total')}</span>
                         <span className="text-lg font-semibold text-gray-900">
-                          {orderDetail.total_amount || selectedOrder.totalLabel} {orderDetail.currency || 'сом'}
+                          {orderDetail.total_amount || selectedOrder.totalLabel} {orderDetail.currency || t('common.currency')}
                         </span>
                       </div>
                       {selectedOrder.deliveryDate && (
@@ -1345,13 +1346,13 @@ export default function ProfilePage() {
                   <Button variant="ghost" size="sm" onClick={() => setShowReviewForm(false)} className="p-0">
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
-                  <h2 className="text-xl font-semibold text-black">Заказ №{selectedOrder.id}</h2>
+                  <h2 className="text-xl font-semibold text-black">{t('orders.orderNumber')}{selectedOrder.orderNumber}</h2>
                 </div>
 
                 {/* Rating */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Добавьте оценку товару (обязательно)
+                    {t('product.reviewRatingPrompt')}
                   </label>
                   <div className="flex space-x-1">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -1369,12 +1370,12 @@ export default function ProfilePage() {
                 {/* Review Text */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Добавьте отзыв о товаре соответствии, качестве и доставке
+                    {t('product.reviewTextPrompt')}
                   </label>
                   <Textarea
                     value={reviewText}
                     onChange={(e) => setReviewText(e.target.value)}
-                    placeholder="Опишите ваш опыт с товаром..."
+                    placeholder={t('product.reviewTextPlaceholder')}
                     className="w-full h-24"
                   />
                 </div>
@@ -1382,12 +1383,12 @@ export default function ProfilePage() {
                 {/* Photo Upload */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Добавьте фото (необязательно, можно загрузить несколько)
+                    {t('product.reviewPhotoPrompt')}
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                     <div className="text-center">
                       <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-500 mb-2">Загрузите фото товара</p>
+                      <p className="text-sm text-gray-500 mb-2">{t('product.reviewPhotoUploadText')}</p>
                       <input
                         type="file"
                         multiple
@@ -1397,11 +1398,11 @@ export default function ProfilePage() {
                         id="photo-upload"
                       />
                       <label htmlFor="photo-upload" className="cursor-pointer text-brand hover:text-purple-700">
-                        Выберите файлы (можно несколько)
+                        {t('product.reviewSelectFiles')}
                       </label>
                       {reviewPhotos.length > 0 && (
                         <p className="text-xs text-gray-400 mt-2">
-                          Загружено фото: {reviewPhotos.length}. Вы можете добавить еще.
+                          {t('product.reviewPhotosUploaded', { count: reviewPhotos.length })}
                         </p>
                       )}
                     </div>
@@ -1414,7 +1415,7 @@ export default function ProfilePage() {
                         <div key={photo.id} className="relative">
                           <img
                             src={getImageUrl(photo.url) || "/images/product_placeholder_adobe.png"}
-                            alt="Review photo"
+                            alt={t('product.reviewPhotoAlt')}
                             className="w-full h-16 object-cover rounded"
                           />
                           <button
@@ -1438,10 +1439,10 @@ export default function ProfilePage() {
                   {isSubmittingReview ? (
                     <span className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Отправка...
+                      {t('common.sending')}
                     </span>
                   ) : (
-                    "Отправить отзыв"
+                    t('product.submitReview')
                   )}
                 </Button>
 
@@ -1457,8 +1458,8 @@ export default function ProfilePage() {
                       />
                     ))}
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">Доставка {selectedOrder.deliveryDate}</p>
-                  <p className="text-sm text-brand cursor-pointer hover:underline">Написать отзыв</p>
+                  <p className="text-sm text-gray-500 mt-2">{t('orders.delivery')} {selectedOrder.deliveryDate}</p>
+                  <p className="text-sm text-brand cursor-pointer hover:underline">{t('orders.writeReview')}</p>
                 </div>
               </div>
             )}
@@ -1466,8 +1467,8 @@ export default function ProfilePage() {
             {activeTab === "addresses" && !showAddressForm && (
               <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">Адреса доставки</h2>
-                  <p className="text-gray-600">{backendAddresses.length} адреса</p>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('addresses.title')}</h2>
+                  <p className="text-gray-600">{backendAddresses.length} {t('addresses.count', { count: backendAddresses.length })}</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
@@ -1477,7 +1478,7 @@ export default function ProfilePage() {
                       className="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
                     >
                       <div>
-                        <p className="text-lg font-medium text-gray-900 mb-1">{address.title || "Адрес"}</p>
+                        <p className="text-lg font-medium text-gray-900 mb-1">{address.title || t('addresses.defaultTitle')}</p>
                         <p className="text-gray-600">{address.full_address}</p>
                         {(address.city || address.state || address.postal_code) && (
                           <p className="text-sm text-gray-500 mt-1">
@@ -1511,7 +1512,7 @@ export default function ProfilePage() {
                   onClick={() => setShowAddressForm(true)}
                   className="w-full h-12 bg-brand hover:bg-brand-hover text-white text-lg font-medium rounded-lg transition-colors"
                 >
-                  Добавить адрес
+                  {t('addresses.addAddress')}
                 </Button>
               </div>
             )}
@@ -1532,18 +1533,18 @@ export default function ProfilePage() {
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                   <h2 className="text-xl font-semibold text-black">
-                    {editingAddress ? "Редактировать адрес" : "Добавить адрес"}
+                    {editingAddress ? t('addresses.editAddress') : t('addresses.addAddress')}
                   </h2>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Название адреса</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.addressName')}</label>
                     <Input
                       type="text"
                       value={newAddress.label}
                       onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
-                      placeholder="Дом, Работа, и т.д."
+                      placeholder={t('addresses.addressNamePlaceholder')}
                       className="w-full"
                     />
                   </div>
@@ -1551,23 +1552,23 @@ export default function ProfilePage() {
                   {isUSLocation ? (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Street address *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.streetAddress')} *</label>
                         <Input
                           type="text"
                           value={newAddress.street}
                           onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                          placeholder="123 Main St"
+                          placeholder={t('addresses.streetAddressPlaceholder')}
                           className="w-full"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Full address (optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.fullAddress')} ({t('common.optional')})</label>
                         <Input
                           type="text"
                           value={newAddress.fullAddress}
                           onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
-                          placeholder="123 Main St, Suite 5"
+                          placeholder={t('addresses.fullAddressPlaceholder')}
                           className="w-full"
                         />
                       </div>
@@ -1576,24 +1577,24 @@ export default function ProfilePage() {
                     <>
                       {/* KG User Address Form - Matching mobile design */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.city')} *</label>
                         <Input
                           type="text"
                           value={newAddress.city}
                           onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                          placeholder="Бишкек"
+                          placeholder={t('addresses.cityPlaceholder')}
                           className="w-full"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Улица *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.street')} *</label>
                         <Input
                           type="text"
                           value={newAddress.street}
                           onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                          placeholder="Юнусалиева"
+                          placeholder={t('addresses.streetPlaceholder')}
                           className="w-full"
                           required
                         />
@@ -1601,23 +1602,23 @@ export default function ProfilePage() {
 
                       <div className="flex space-x-2">
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Дом *</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.building')} *</label>
                           <Input
                             type="text"
                             value={newAddress.building}
                             onChange={(e) => setNewAddress({ ...newAddress, building: e.target.value })}
-                            placeholder="23"
+                            placeholder={t('addresses.buildingPlaceholder')}
                             className="w-full"
                             required
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Квартира</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.apartment')}</label>
                           <Input
                             type="text"
                             value={newAddress.apartment}
                             onChange={(e) => setNewAddress({ ...newAddress, apartment: e.target.value })}
-                            placeholder="12"
+                            placeholder={t('addresses.apartmentPlaceholder')}
                             className="w-full"
                           />
                         </div>
@@ -1625,22 +1626,22 @@ export default function ProfilePage() {
 
                       <div className="flex space-x-2">
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Подъезд</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.entrance')}</label>
                           <Input
                             type="text"
                             value={newAddress.entrance}
                             onChange={(e) => setNewAddress({ ...newAddress, entrance: e.target.value })}
-                            placeholder="1"
+                            placeholder={t('addresses.entrancePlaceholder')}
                             className="w-full"
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Этаж</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.floor')}</label>
                           <Input
                             type="text"
                             value={newAddress.floor}
                             onChange={(e) => setNewAddress({ ...newAddress, floor: e.target.value })}
-                            placeholder="5"
+                            placeholder={t('addresses.floorPlaceholder')}
                             className="w-full"
                           />
                         </div>
@@ -1651,36 +1652,36 @@ export default function ProfilePage() {
                   {isUSLocation && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.city')} *</label>
                         <Input
                           type="text"
                           value={newAddress.city}
                           onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                          placeholder="Chicago"
+                          placeholder={t('addresses.cityPlaceholderUS')}
                           className="w-full"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Штат / Регион *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.state')} *</label>
                         <Input
                           type="text"
                           value={newAddress.state}
                           onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                          placeholder="IL"
+                          placeholder={t('addresses.statePlaceholder')}
                           className="w-full"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">ZIP / Почтовый индекс *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.postalCode')} *</label>
                         <Input
                           type="text"
                           value={newAddress.postalCode}
                           onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
-                          placeholder="60074"
+                          placeholder={t('addresses.postalCodePlaceholder')}
                           className="w-full"
                           required
                         />
@@ -1704,7 +1705,7 @@ export default function ProfilePage() {
                             !newAddress.building.trim()))
                       }
                     >
-                      {editingAddress ? "Сохранить изменения" : "Добавить адрес"}
+                      {editingAddress ? t('common.saveChanges') : t('addresses.addAddress')}
                     </Button>
                     <Button
                       variant="outline"
@@ -1715,7 +1716,7 @@ export default function ProfilePage() {
                       }}
                       className="flex-1"
                     >
-                      Отмена
+                      {t('common.cancel')}
                     </Button>
                   </div>
                 </div>
@@ -1725,8 +1726,8 @@ export default function ProfilePage() {
             {activeTab === "payments" && !showPaymentForm && (
               <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">Способы оплаты</h2>
-                  <p className="text-gray-600">{backendPaymentMethods.length} способа</p>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('payments.title')}</h2>
+                  <p className="text-gray-600">{backendPaymentMethods.length} {t('payments.count', { count: backendPaymentMethods.length })}</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
@@ -1737,15 +1738,15 @@ export default function ProfilePage() {
                     >
                       <div>
                         <p className="text-lg font-medium text-gray-900 mb-1">
-                          {payment.payment_type === "card" ? "Банковская карта" : payment.payment_type}
+                          {payment.payment_type === "card" ? t('payments.card') : payment.payment_type}
                         </p>
                         <p className="text-gray-600">
-                          {payment.card_type ? payment.card_type.toUpperCase() : "Карта"}{" "}
+                          {payment.card_type ? payment.card_type.toUpperCase() : t('payments.card')}{" "}
                           {payment.card_number_masked || ""}
                         </p>
                         {payment.is_default && (
                           <span className="inline-block mt-2 text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded">
-                            Основной способ
+                            {t('payments.defaultMethod')}
                           </span>
                         )}
                       </div>
@@ -1767,7 +1768,7 @@ export default function ProfilePage() {
                   onClick={() => setShowPaymentForm(true)}
                   className="w-full h-12 bg-brand hover:bg-brand-hover text-white text-lg font-medium rounded-lg transition-colors"
                 >
-                  Добавить способ оплаты
+                  {t('payments.addPayment')}
                 </Button>
               </div>
             )}
@@ -1787,13 +1788,13 @@ export default function ProfilePage() {
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                   <h2 className="text-xl font-semibold text-black">
-                    Добавить способ оплаты
+                    {t('payments.addPayment')}
                   </h2>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Номер карты *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('payments.cardNumber')} *</label>
                     <Input
                       type="text"
                       value={newPayment.cardNumber}
@@ -1802,7 +1803,7 @@ export default function ProfilePage() {
                         const formatted = value.replace(/(\d{4})(?=\d)/g, "$1 ")
                         setNewPayment({ ...newPayment, cardNumber: formatted })
                       }}
-                      placeholder="1234 5678 9012 3456"
+                      placeholder={t('payments.cardNumberPlaceholder')}
                       className="w-full"
                       maxLength={19}
                       required
@@ -1811,7 +1812,7 @@ export default function ProfilePage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Срок действия *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('payments.expiryDate')} *</label>
                       <Input
                         type="text"
                         value={newPayment.expiryDate}
@@ -1820,7 +1821,7 @@ export default function ProfilePage() {
                           const formatted = value.replace(/(\d{2})(?=\d)/, "$1/")
                           setNewPayment({ ...newPayment, expiryDate: formatted })
                         }}
-                        placeholder="MM/YY"
+                        placeholder={t('payments.expiryDatePlaceholder')}
                         className="w-full"
                         maxLength={5}
                         required
@@ -1828,7 +1829,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">CVV *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('payments.cvv')} *</label>
                       <Input
                         type="text"
                         value={newPayment.cvv}
@@ -1836,7 +1837,7 @@ export default function ProfilePage() {
                           const value = e.target.value.replace(/\D/g, "").slice(0, 3)
                           setNewPayment({ ...newPayment, cvv: value })
                         }}
-                        placeholder="123"
+                        placeholder={t('payments.cvvPlaceholder')}
                         className="w-full"
                         maxLength={3}
                         required
@@ -1845,12 +1846,12 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Имя владельца карты</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('payments.cardholderName')}</label>
                     <Input
                       type="text"
                       value={newPayment.cardholderName}
                       onChange={(e) => setNewPayment({ ...newPayment, cardholderName: e.target.value })}
-                      placeholder="IVAN PETROV"
+                      placeholder={t('payments.cardholderNamePlaceholder')}
                       className="w-full"
                     />
                   </div>
@@ -1863,7 +1864,7 @@ export default function ProfilePage() {
                         !newPayment.cardNumber.trim() || !newPayment.expiryDate.trim() || !newPayment.cvv.trim()
                       }
                     >
-                      Добавить карту
+                      {t('payments.addCard')}
                     </Button>
                     <Button
                       variant="outline"
@@ -1873,7 +1874,7 @@ export default function ProfilePage() {
                       }}
                       className="flex-1"
                     >
-                      Отмена
+                      {t('common.cancel')}
                     </Button>
                   </div>
                 </div>
@@ -1898,7 +1899,7 @@ export default function ProfilePage() {
                       <button
                         onClick={() => {
                           setLanguage('ru')
-                          toast.success('Язык изменен на Русский')
+                          toast.success(t('languages.changedTo', { language: t('languages.russian') }))
                         }}
                         className={`flex items-center justify-center gap-3 px-6 py-4 border-2 rounded-lg transition-colors ${
                           language === 'ru'
@@ -1912,7 +1913,7 @@ export default function ProfilePage() {
                       <button
                         onClick={() => {
                           setLanguage('ky')
-                          toast.success('Тил Кыргызчага өзгөртүлдү')
+                          toast.success(t('languages.changedTo', { language: t('languages.kyrgyz') }))
                         }}
                         className={`flex items-center justify-center gap-3 px-6 py-4 border-2 rounded-lg transition-colors ${
                           language === 'ky'
@@ -1926,7 +1927,7 @@ export default function ProfilePage() {
                       <button
                         onClick={() => {
                           setLanguage('en')
-                          toast.success('Language changed to English')
+                          toast.success(t('languages.changedTo', { language: t('languages.english') }))
                         }}
                         className={`flex items-center justify-center gap-3 px-6 py-4 border-2 rounded-lg transition-colors ${
                           language === 'en'
@@ -2005,20 +2006,20 @@ export default function ProfilePage() {
               <h3 className="text-2xl font-bold mb-8">MARQUE</h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                  <h4 className="font-semibold text-gray-300 mb-4">{t('footer.popularCategories')}</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
-                    <div className="hover:text-white cursor-pointer transition-colors">Мужчинам</div>
-                    <div className="hover:text-white cursor-pointer transition-colors">Женщинам</div>
-                    <div className="hover:text-white cursor-pointer transition-colors">Детям</div>
-                    <div className="hover:text-white cursor-pointer transition-colors">Спорт</div>
-                    <div className="hover:text-white cursor-pointer transition-colors">Обувь</div>
-                    <div className="hover:text-white cursor-pointer transition-colors">Аксессуары</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">{t('footer.men')}</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">{t('footer.women')}</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">{t('footer.kids')}</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">{t('footer.sport')}</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">{t('footer.shoes')}</div>
+                    <div className="hover:text-white cursor-pointer transition-colors">{t('footer.accessories')}</div>
                   </div>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
+              <h4 className="font-semibold text-gray-300 mb-4">{t('footer.brands')}</h4>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
                 <div className="hover:text-white cursor-pointer transition-colors">ECCO</div>
                 <div className="hover:text-white cursor-pointer transition-colors">VANS</div>
@@ -2030,8 +2031,8 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div className="hover:text-white cursor-pointer transition-colors">Политика конфиденциальности</div>
-            <div className="hover:text-white cursor-pointer transition-colors">Условия пользования</div>
+            <div className="hover:text-white cursor-pointer transition-colors">{t('footer.privacyPolicy')}</div>
+            <div className="hover:text-white cursor-pointer transition-colors">{t('footer.termsOfUse')}</div>
           </div>
         </div>
       </footer>
