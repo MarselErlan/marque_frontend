@@ -17,6 +17,7 @@ import { MarketIndicator, MarketIndicatorCompact, type Market } from "@/componen
 import { storeManagerApi, ApiError } from "@/lib/api"
 import { toast } from "@/lib/toast"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { useCurrency } from "@/hooks/useCurrency"
 // Map backend status to frontend display status - will be translated in component
 const mapBackendStatusToFrontend = (status: string, t: (key: string) => string): string => {
   const statusMap: Record<string, string> = {
@@ -69,6 +70,13 @@ export default function AdminDashboard() {
   const auth = useAuth()
   const router = useRouter()
   const { t, language: currentLanguage, setLanguage } = useLanguage()
+  const { format, currency, formatDirect, isLoading: isCurrencyLoading } = useCurrency()
+  
+  // Store formatted order prices
+  const [formattedOrderPrices, setFormattedOrderPrices] = useState<{
+    itemPrices: Record<number, { price: string; subtotal: string }>
+    total: string
+  } | null>(null)
   
   // Manager status
   const [managerStatus, setManagerStatus] = useState<{
@@ -636,6 +644,38 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enablePolling, auth.isLoggedIn, currentView])
   
+  // Format order prices when selectedOrder or currency changes
+  useEffect(() => {
+    const formatOrderPrices = async () => {
+      if (!selectedOrder || isCurrencyLoading || !currency) {
+        setFormattedOrderPrices(null)
+        return
+      }
+      
+      const orderCurrency = selectedOrder.currency || 'KGS'
+      const itemPrices: Record<number, { price: string; subtotal: string }> = {}
+      
+      if (selectedOrder.items) {
+        await Promise.all(
+          selectedOrder.items.map(async (item: any) => {
+            const price = item.price ? await format(item.price, orderCurrency) : ''
+            const subtotal = item.subtotal ? await format(item.subtotal, orderCurrency) : ''
+            itemPrices[item.id || 0] = { price, subtotal }
+          })
+        )
+      }
+      
+      const total = selectedOrder.total_amount ? await format(selectedOrder.total_amount, orderCurrency) : ''
+      
+      setFormattedOrderPrices({
+        itemPrices,
+        total,
+      })
+    }
+    
+    formatOrderPrices()
+  }, [selectedOrder, currency, isCurrencyLoading, format])
+
   // Handle market change
   const handleMarketChange = (newMarket: Market) => {
     if (accessibleMarkets && !accessibleMarkets.includes(newMarket)) {
@@ -1534,7 +1574,11 @@ export default function AdminDashboard() {
                     {item.size && <p className="text-sm text-gray-500">{t('admin.orders.size')} {item.size}</p>}
                     {item.color && <p className="text-sm text-gray-500">{t('admin.orders.color')} {item.color}</p>}
                         <p className="text-sm font-medium text-gray-900">
-                          {item.price} {selectedOrder.currency} x {item.quantity} = {item.subtotal} {selectedOrder.currency}
+                          {formattedOrderPrices?.itemPrices[item.id || 0]?.price || 
+                           (isCurrencyLoading ? `${item.price} ${selectedOrder.currency}` : 
+                            `${item.price} ${selectedOrder.currency}`)} x {item.quantity} = {formattedOrderPrices?.itemPrices[item.id || 0]?.subtotal || 
+                           (isCurrencyLoading ? `${item.subtotal} ${selectedOrder.currency}` : 
+                            `${item.subtotal} ${selectedOrder.currency}`)}
                         </p>
                   </div>
                 </div>
@@ -1644,7 +1688,11 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t('admin.orders.total')}</span>
-                  <span className="font-medium">{selectedOrder.amount || `${selectedOrder.total_amount} ${selectedOrder.currency}`}</span>
+                  <span className="font-medium">
+                    {formattedOrderPrices?.total || 
+                     (isCurrencyLoading ? (selectedOrder.amount || `${selectedOrder.total_amount} ${selectedOrder.currency}`) : 
+                      (selectedOrder.amount || `${selectedOrder.total_amount} ${selectedOrder.currency}`))}
+                  </span>
             </div>
           </div>
 

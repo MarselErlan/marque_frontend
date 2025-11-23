@@ -41,6 +41,7 @@ import { AuthModals } from "@/components/AuthModals"
 import { getImageUrl } from "@/lib/utils"
 import { toast } from "sonner"
 import { ordersApi, profileApi } from "@/lib/api"
+import { useCurrency } from "@/hooks/useCurrency"
 
 interface ReviewPhoto {
   id: number
@@ -108,6 +109,16 @@ export default function ProfilePage() {
   const { isLoggedIn, userData, handleLogout } = auth
   const { wishlistItemCount } = useWishlist()
   const { language, setLanguage, t } = useLanguage()
+  const { format, currency, formatDirect, isLoading: isCurrencyLoading } = useCurrency()
+  
+  // Store formatted order prices
+  const [formattedOrderPrices, setFormattedOrderPrices] = useState<Record<string, {
+    itemPrices: Record<number, { price: string; subtotal: string }>
+    subtotal: string
+    shipping: string
+    total: string
+  }>>({})
+  
   const {
     profile,
     isLoadingProfile,
@@ -340,6 +351,41 @@ export default function ProfilePage() {
       setOrderDetail(null)
     }
   }, [selectedOrder, showReviewForm])
+
+  // Format order prices when orderDetail or currency changes
+  useEffect(() => {
+    const formatOrderPrices = async () => {
+      if (!orderDetail || isCurrencyLoading || !currency) return
+      
+      const orderCurrency = orderDetail.currency || 'KGS'
+      const itemPrices: Record<number, { price: string; subtotal: string }> = {}
+      
+      if (orderDetail.items) {
+        await Promise.all(
+          orderDetail.items.map(async (item: any) => {
+            const price = item.price ? await format(item.price, orderCurrency) : ''
+            const subtotal = item.subtotal ? await format(item.subtotal, orderCurrency) : ''
+            itemPrices[item.id || 0] = { price, subtotal }
+          })
+        )
+      }
+      
+      const subtotal = orderDetail.subtotal !== undefined ? await format(orderDetail.subtotal, orderCurrency) : ''
+      const shipping = orderDetail.shipping_cost !== undefined ? await format(orderDetail.shipping_cost, orderCurrency) : ''
+      const total = orderDetail.total_amount ? await format(orderDetail.total_amount, orderCurrency) : ''
+      
+      setFormattedOrderPrices({
+        [orderDetail.id || selectedOrder?.id || '']: {
+          itemPrices,
+          subtotal,
+          shipping,
+          total,
+        }
+      })
+    }
+    
+    formatOrderPrices()
+  }, [orderDetail, currency, isCurrencyLoading, format, selectedOrder])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
@@ -1197,12 +1243,16 @@ export default function ProfilePage() {
                             <div className="text-right">
                               {item.subtotal && (
                                 <p className="text-base font-semibold text-gray-900">
-                                  {item.subtotal} {orderDetail.currency || t('common.currency')}
+                                  {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.itemPrices[item.id || 0]?.subtotal || 
+                                   (isCurrencyLoading ? `${item.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
+                                    `${item.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
                                 </p>
                               )}
                               {item.price && item.quantity && (
                                 <p className="text-sm text-gray-500">
-                                  {item.price} {orderDetail.currency || t('common.currency')} × {item.quantity}
+                                  {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.itemPrices[item.id || 0]?.price || 
+                                   (isCurrencyLoading ? `${item.price} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
+                                    `${item.price} ${orderDetail.currency || currency?.symbol || 'сом'}`)} × {item.quantity}
                                 </p>
                               )}
                             </div>
@@ -1216,19 +1266,29 @@ export default function ProfilePage() {
                       {orderDetail.subtotal !== undefined && (
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">{t('cart.subtotal')}</span>
-                          <span className="text-gray-900">{orderDetail.subtotal} {orderDetail.currency || t('common.currency')}</span>
+                          <span className="text-gray-900">
+                            {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.subtotal || 
+                             (isCurrencyLoading ? `${orderDetail.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
+                              `${orderDetail.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
+                          </span>
                         </div>
                       )}
                       {orderDetail.shipping_cost !== undefined && (
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">{t('cart.delivery')}</span>
-                          <span className="text-gray-900">{orderDetail.shipping_cost} {orderDetail.currency || t('common.currency')}</span>
+                          <span className="text-gray-900">
+                            {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.shipping || 
+                             (isCurrencyLoading ? `${orderDetail.shipping_cost} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
+                              `${orderDetail.shipping_cost} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
+                          </span>
                         </div>
                       )}
                       <div className="flex justify-between items-center pt-3 border-t">
                         <span className="text-lg font-semibold text-gray-900">{t('cart.total')}</span>
                         <span className="text-lg font-semibold text-gray-900">
-                          {orderDetail.total_amount || selectedOrder.totalLabel} {orderDetail.currency || t('common.currency')}
+                          {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.total || 
+                           (isCurrencyLoading ? `${orderDetail.total_amount || selectedOrder.totalLabel} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
+                            `${orderDetail.total_amount || selectedOrder.totalLabel} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
                         </span>
                       </div>
                       {selectedOrder.deliveryDate && (

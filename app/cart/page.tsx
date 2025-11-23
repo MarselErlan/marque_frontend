@@ -16,12 +16,17 @@ import { useLanguage } from "@/contexts/LanguageContext"
 import { getImageUrl } from "@/lib/utils"
 import { ordersApi, authApi } from "@/lib/api"
 import { toast } from "@/lib/toast"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function CartPage() {
   const router = useRouter()
   const auth = useAuth()
   const { t } = useLanguage()
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart()
+  const { format, currency, formatDirect, isLoading: isCurrencyLoading } = useCurrency()
+  
+  // Store formatted prices for cart items
+  const [formattedCartPrices, setFormattedCartPrices] = useState<Record<string, { price: string; originalPrice?: string; total: string }>>({})
   const { 
     addresses, 
     fetchAddresses, 
@@ -207,6 +212,73 @@ export default function CartPage() {
       setCheckoutPaymentMethodDisplay(t('payments.cashOnDelivery'))
     }
   }, [paymentMethods, selectedPaymentMethodId])
+
+  // Format cart item prices when cart items or currency changes
+  useEffect(() => {
+    const formatCartPrices = async () => {
+      if (!cartItems.length || isCurrencyLoading || !currency) return
+      
+      const formattedPrices: Record<string, { price: string; originalPrice?: string; total: string }> = {}
+      await Promise.all(
+        cartItems.map(async (item: any) => {
+          // Get product currency from item (if available) or default to KGS
+          const productCurrency = item.currency?.code || item.productCurrency || 'KGS'
+          const price = await format(item.price, productCurrency)
+          let originalPrice: string | undefined
+          if (item.originalPrice) {
+            originalPrice = await format(item.originalPrice, productCurrency)
+          }
+          const total = await format(item.price * item.quantity, productCurrency)
+          formattedPrices[item.id] = { price, originalPrice, total }
+        })
+      )
+      setFormattedCartPrices(formattedPrices)
+    }
+    
+    formatCartPrices()
+  }, [cartItems, currency, isCurrencyLoading, format])
+
+  // Calculate subtotal and total (in user's currency)
+  const [formattedSubtotal, setFormattedSubtotal] = useState<string>('')
+  const [formattedTotal, setFormattedTotal] = useState<string>('')
+  const [formattedDeliveryCost, setFormattedDeliveryCost] = useState<string>('')
+  
+  useEffect(() => {
+    const calculateTotals = async () => {
+      if (!cartItems.length || isCurrencyLoading || !currency) {
+        const rawSubtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        setFormattedSubtotal(`${rawSubtotal.toLocaleString()} ${currency?.symbol || 'сом'}`)
+        setFormattedTotal(`${(rawSubtotal + deliveryCost).toLocaleString()} ${currency?.symbol || 'сом'}`)
+        setFormattedDeliveryCost(`${deliveryCost.toLocaleString()} ${currency?.symbol || 'сом'}`)
+        return
+      }
+      
+      // Convert each item's total to user currency and sum
+      let subtotalInUserCurrency = 0
+      await Promise.all(
+        cartItems.map(async (item: any) => {
+          const productCurrency = item.currency?.code || item.productCurrency || 'KGS'
+          if (productCurrency !== currency.code) {
+            const converted = await format(item.price * item.quantity, productCurrency)
+            // Extract number from formatted string
+            const num = parseFloat(converted.replace(/[^\d.-]/g, ''))
+            subtotalInUserCurrency += num
+          } else {
+            subtotalInUserCurrency += item.price * item.quantity
+          }
+        })
+      )
+      
+      // Format totals
+      setFormattedSubtotal(formatDirect(subtotalInUserCurrency, currency.code, currency.symbol))
+      const deliveryCostConverted = await format(deliveryCost, 'KGS') // Delivery cost is in KGS
+      const deliveryNum = parseFloat(deliveryCostConverted.replace(/[^\d.-]/g, ''))
+      setFormattedDeliveryCost(deliveryCostConverted)
+      setFormattedTotal(formatDirect(subtotalInUserCurrency + deliveryNum, currency.code, currency.symbol))
+    }
+    
+    calculateTotals()
+  }, [cartItems, deliveryCost, currency, isCurrencyLoading, format, formatDirect])
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const taxes = Math.round(subtotal * taxRate)
@@ -540,8 +612,16 @@ export default function CartPage() {
                           </Button>
                         </div>
                         <div className="flex items-center space-x-2 flex-shrink-0">
-                          <span className="text-sm md:text-base font-bold text-brand">{item.price} {t('common.currency')}</span>
-                          {item.originalPrice && <span className="text-xs md:text-sm text-gray-400 line-through">{item.originalPrice} {t('common.currency')}</span>}
+                          <span className="text-sm md:text-base font-bold text-brand">
+                            {formattedCartPrices[item.id]?.price || 
+                             (isCurrencyLoading ? `${item.price} ${currency?.symbol || 'сом'}` : 
+                              `${item.price} ${currency?.symbol || 'сом'}`)}
+                          </span>
+                          {formattedCartPrices[item.id]?.originalPrice && (
+                            <span className="text-xs md:text-sm text-gray-400 line-through">
+                              {formattedCartPrices[item.id].originalPrice}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -646,12 +726,16 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{t('cart.subtotal')}</span>
-                    <span className="text-black font-medium">{subtotal.toLocaleString()} {t('common.currency')}</span>
+                    <span className="text-black font-medium">
+                      {formattedSubtotal || `${subtotal.toLocaleString()} ${currency?.symbol || 'сом'}`}
+                    </span>
                   </div>
                   <div className="border-t pt-2.5 mt-2.5">
                     <div className="flex justify-between text-base font-bold">
                       <span className="text-black">{t('cart.total')}</span>
-                      <span className="text-brand">{total.toLocaleString()} {t('common.currency')}</span>
+                      <span className="text-brand">
+                        {formattedTotal || `${total.toLocaleString()} ${currency?.symbol || 'сом'}`}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1334,7 +1418,7 @@ export default function CartPage() {
                         {t('cart.size')}: {item.size} | {t('cart.color')}: {item.color}
                       </p>
                       <p className="text-sm font-semibold text-brand mt-1">
-                        {item.price} {t('common.currency')} × {item.quantity} = {(item.price * item.quantity).toLocaleString()} {t('common.currency')}
+                        {formattedCartPrices[item.id]?.price || `${item.price} ${currency?.symbol || 'сом'}`} × {item.quantity} = {formattedCartPrices[item.id]?.total || `${(item.price * item.quantity).toLocaleString()} ${currency?.symbol || 'сом'}`}
                       </p>
                     </div>
                   </div>
@@ -1425,16 +1509,22 @@ export default function CartPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">{t('cart.items')} ({cartItems.length}):</span>
-                  <span className="text-black font-medium">{subtotal.toLocaleString()} {t('common.currency')}</span>
+                  <span className="text-black font-medium">
+                    {formattedSubtotal || `${subtotal.toLocaleString()} ${currency?.symbol || 'сом'}`}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">{t('cart.shipping')}:</span>
-                  <span className="text-black font-medium">{deliveryCost.toLocaleString()} {t('common.currency')}</span>
+                  <span className="text-black font-medium">
+                    {formattedDeliveryCost || `${deliveryCost.toLocaleString()} ${currency?.symbol || 'сом'}`}
+                  </span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between text-base font-bold">
                     <span className="text-black">{t('cart.totalToPay')}:</span>
-                    <span className="text-brand">{total.toLocaleString()} {t('common.currency')}</span>
+                    <span className="text-brand">
+                      {formattedTotal || `${total.toLocaleString()} ${currency?.symbol || 'сом'}`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1485,7 +1575,9 @@ export default function CartPage() {
                 <p className="text-sm text-gray-600 mb-1">{t('orders.orderNumber')}</p>
                 <p className="text-2xl font-bold text-brand">{orderNumber}</p>
                 {orderTotal > 0 && (
-                  <p className="text-sm text-gray-600 mt-2">{t('cart.total')}: {orderTotal.toLocaleString()} {t('common.currency')}</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {t('cart.total')}: {formattedTotal || `${orderTotal.toLocaleString()} ${currency?.symbol || 'сом'}`}
+                  </p>
                 )}
               </div>
             )}
