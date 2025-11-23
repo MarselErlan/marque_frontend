@@ -165,6 +165,8 @@ export default function ProfilePage() {
   
   // Authentication states are now managed by the useAuth hook.
   const [selectedOrder, setSelectedOrder] = useState<UiOrder | null>(null)
+  const [orderDetail, setOrderDetail] = useState<any>(null)
+  const [isLoadingOrderDetail, setIsLoadingOrderDetail] = useState(false)
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState("")
@@ -315,6 +317,28 @@ export default function ProfilePage() {
       fetchOrders()
       fetchNotifications()
   }, [auth.isLoggedIn, auth.isLoading, fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications])
+
+  // Fetch order detail when selectedOrder changes
+  useEffect(() => {
+    if (selectedOrder && !showReviewForm) {
+      const fetchOrderDetail = async () => {
+        setIsLoadingOrderDetail(true)
+        try {
+          const detail = await profileApi.getOrderDetail(selectedOrder.id)
+          if (detail.success && detail.order) {
+            setOrderDetail(detail.order)
+          }
+        } catch (error) {
+          console.error('Failed to fetch order detail:', error)
+        } finally {
+          setIsLoadingOrderDetail(false)
+        }
+      }
+      fetchOrderDetail()
+    } else {
+      setOrderDetail(null)
+    }
+  }, [selectedOrder, showReviewForm])
 
   const filteredNotifications = notifications.filter((notification) => {
     if (notificationFilter === "all") return true
@@ -1027,72 +1051,259 @@ export default function ProfilePage() {
             {activeTab === "orders" && selectedOrder && !showReviewForm && (
               <div className="bg-white rounded-lg p-6">
                 <div className="flex items-center space-x-4 mb-6">
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(null)} className="p-0">
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    setSelectedOrder(null)
+                    setOrderDetail(null)
+                  }} className="p-0">
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
-                  <h2 className="text-xl font-semibold text-black">Заказ №{selectedOrder.id}</h2>
+                  <h2 className="text-xl font-semibold text-black">{t('orders.orderNumber')}{orderDetail?.order_number || selectedOrder.id}</h2>
                   <span className={`px-2 py-1 rounded text-xs font-medium ${selectedOrder.statusBadgeClass}`}>
-                    {selectedOrder.status}
+                    {statusMeta[selectedOrder.status]?.label || selectedOrder.status}
                   </span>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  {selectedOrder.items.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                      <img
-                        src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-medium">{item.name}</h3>
-                        <p className="text-sm text-gray-500">Размер: {item.size}</p>
-                        <p className="text-sm text-gray-500">Цвет: {item.color}</p>
+                {isLoadingOrderDetail ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-brand" />
+                    <span className="ml-2 text-gray-600">{t('common.loading')}</span>
+                  </div>
+                ) : orderDetail ? (
+                  <>
+                    {/* Order Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      {/* Order Date & Timeline */}
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.orderDate')}</h3>
+                          <p className="text-base text-gray-900">{formatDate(orderDetail.order_date) || orderDetail.order_date}</p>
+                        </div>
+                        
+                        {/* Status Timeline */}
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.statusHistory')}</h3>
+                          <div className="space-y-2">
+                            {orderDetail.order_date && (
+                              <div className="flex items-center text-sm">
+                                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                <span className="text-gray-600">{t('orders.status.pending')}: {formatDate(orderDetail.order_date) || orderDetail.order_date}</span>
+                              </div>
+                            )}
+                            {orderDetail.confirmed_date && (
+                              <div className="flex items-center text-sm">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                                <span className="text-gray-600">{t('orders.status.confirmed')}: {formatDate(orderDetail.confirmed_date)}</span>
+                              </div>
+                            )}
+                            {orderDetail.shipped_date && (
+                              <div className="flex items-center text-sm">
+                                <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                                <span className="text-gray-600">{t('orders.status.shipped')}: {formatDate(orderDetail.shipped_date)}</span>
+                              </div>
+                            )}
+                            {orderDetail.delivered_date && (
+                              <div className="flex items-center text-sm">
+                                <div className="w-2 h-2 bg-brand rounded-full mr-2"></div>
+                                <span className="text-gray-600">{t('orders.status.delivered')}: {formatDate(orderDetail.delivered_date)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Delivery & Payment Info */}
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.deliveryAddress')}</h3>
+                          <p className="text-base text-gray-900">{orderDetail.delivery_address || t('orders.noAddress')}</p>
+                        </div>
+                        
+                        {orderDetail.customer_phone && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.contactPhone')}</h3>
+                            <p className="text-base text-gray-900">{orderDetail.customer_phone}</p>
+                          </div>
+                        )}
+
+                        {orderDetail.payment_method && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-2">{t('orders.paymentMethod')}</h3>
+                            <p className="text-base text-gray-900">
+                              {orderDetail.payment_method === 'card' ? t('payments.card') : 
+                               orderDetail.payment_method === 'cash_on_delivery' ? t('payments.cashOnDelivery') :
+                               orderDetail.payment_method}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
 
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-lg font-semibold">Итого: {selectedOrder.totalLabel}</span>
-                    <span className="text-sm text-gray-500">Доставка {selectedOrder.deliveryDate}</span>
-                  </div>
+                    {/* Order Items */}
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.items')}</h3>
+                      <div className="space-y-4">
+                        {(orderDetail.items || selectedOrder.items).map((item: any, index: number) => (
+                          <div key={item.id || index} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                            <img
+                              src={getImageUrl(item.image_url || item.image) || "/images/product_placeholder_adobe.png"}
+                              alt={item.product_name || item.name}
+                              className="w-20 h-20 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <h3 className="font-medium text-gray-900">{item.product_name || item.name}</h3>
+                              {item.size && (
+                                <p className="text-sm text-gray-500">{t('orders.size')}: {item.size}</p>
+                              )}
+                              {item.color && (
+                                <p className="text-sm text-gray-500">{t('orders.color')}: {item.color}</p>
+                              )}
+                              {item.quantity && (
+                                <p className="text-sm text-gray-500">{t('orders.quantity')}: {item.quantity}</p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              {item.subtotal && (
+                                <p className="text-base font-semibold text-gray-900">
+                                  {item.subtotal} {orderDetail.currency || 'сом'}
+                                </p>
+                              )}
+                              {item.price && item.quantity && (
+                                <p className="text-sm text-gray-500">
+                                  {item.price} {orderDetail.currency || 'сом'} × {item.quantity}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                  {selectedOrder.canReview && !selectedOrder.hasReview && (
-                    <Button
-                      className="bg-brand hover:bg-brand-hover text-white"
-                      onClick={async () => {
-                        try {
-                          const orderDetail = await profileApi.getOrderDetail(selectedOrder.id)
-                          if (orderDetail.order?.items && orderDetail.order.items.length > 0) {
-                            const firstItem = orderDetail.order.items[0] as any
-                            if (firstItem.product_id) {
-                              setSelectedProductId(firstItem.product_id)
-                            } else {
-                              toast.error("Не удалось определить товар для отзыва")
+                    {/* Order Summary */}
+                    <div className="border-t pt-4 space-y-3">
+                      {orderDetail.subtotal !== undefined && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">{t('cart.subtotal')}</span>
+                          <span className="text-gray-900">{orderDetail.subtotal} {orderDetail.currency || 'сом'}</span>
+                        </div>
+                      )}
+                      {orderDetail.shipping_cost !== undefined && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">{t('cart.delivery')}</span>
+                          <span className="text-gray-900">{orderDetail.shipping_cost} {orderDetail.currency || 'сом'}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center pt-3 border-t">
+                        <span className="text-lg font-semibold text-gray-900">{t('cart.total')}</span>
+                        <span className="text-lg font-semibold text-gray-900">
+                          {orderDetail.total_amount || selectedOrder.totalLabel} {orderDetail.currency || 'сом'}
+                        </span>
+                      </div>
+                      {selectedOrder.deliveryDate && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">{t('orders.estimatedDelivery')}</span>
+                          <span className="text-sm text-gray-500">{selectedOrder.deliveryDate}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Review Button */}
+                    {selectedOrder.canReview && !selectedOrder.hasReview && (
+                      <div className="mt-6">
+                        <Button
+                          className="w-full bg-brand hover:bg-brand-hover text-white"
+                          onClick={async () => {
+                            try {
+                              if (orderDetail.items && orderDetail.items.length > 0) {
+                                const firstItem = orderDetail.items[0] as any
+                                if (firstItem.product_id) {
+                                  setSelectedProductId(firstItem.product_id)
+                                } else {
+                                  toast.error(t('orders.reviewError'))
+                                  return
+                                }
+                                if (orderDetail.has_review) {
+                                  setSelectedOrder({ ...selectedOrder, hasReview: true, canReview: false })
+                                }
+                              } else {
+                                toast.error(t('orders.noItems'))
+                                return
+                              }
+                            } catch (error) {
+                              console.error('Failed to process review:', error)
+                              toast.error(t('orders.reviewError'))
                               return
                             }
-                            // Update selectedOrder with has_review status
-                            if (orderDetail.order.has_review) {
-                              setSelectedOrder({ ...selectedOrder, hasReview: true, canReview: false })
+                            setShowReviewForm(true)
+                          }}
+                        >
+                          {t('orders.writeReview')}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* Fallback to basic order info if detail not loaded */
+                  <>
+                    <div className="space-y-4 mb-6">
+                      {selectedOrder.items.map((item) => (
+                        <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                          <img
+                            src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
+                            alt={item.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div className="flex-1">
+                            <h3 className="font-medium">{item.name}</h3>
+                            {item.size && <p className="text-sm text-gray-500">{t('orders.size')}: {item.size}</p>}
+                            {item.color && <p className="text-sm text-gray-500">{t('orders.color')}: {item.color}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-lg font-semibold">{t('cart.total')}: {selectedOrder.totalLabel}</span>
+                        {selectedOrder.deliveryDate && (
+                          <span className="text-sm text-gray-500">{t('orders.estimatedDelivery')}: {selectedOrder.deliveryDate}</span>
+                        )}
+                      </div>
+
+                      {selectedOrder.canReview && !selectedOrder.hasReview && (
+                        <Button
+                          className="bg-brand hover:bg-brand-hover text-white"
+                          onClick={async () => {
+                            try {
+                              const detail = await profileApi.getOrderDetail(selectedOrder.id)
+                              if (detail.order?.items && detail.order.items.length > 0) {
+                                const firstItem = detail.order.items[0] as any
+                                if (firstItem.product_id) {
+                                  setSelectedProductId(firstItem.product_id)
+                                } else {
+                                  toast.error(t('orders.reviewError'))
+                                  return
+                                }
+                                if (detail.order.has_review) {
+                                  setSelectedOrder({ ...selectedOrder, hasReview: true, canReview: false })
+                                }
+                              } else {
+                                toast.error(t('orders.noItems'))
+                                return
+                              }
+                            } catch (error) {
+                              console.error('Failed to fetch order detail:', error)
+                              toast.error(t('orders.reviewError'))
+                              return
                             }
-                          } else {
-                            toast.error("В заказе нет товаров")
-                            return
-                          }
-                        } catch (error) {
-                          console.error('Failed to fetch order detail:', error)
-                          toast.error("Не удалось загрузить детали заказа")
-                          return
-                        }
-                        setShowReviewForm(true)
-                      }}
-                    >
-                      Написать отзыв
-                    </Button>
-                  )}
-                </div>
+                            setShowReviewForm(true)
+                          }}
+                        >
+                          {t('orders.writeReview')}
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
