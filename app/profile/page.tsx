@@ -29,6 +29,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { useWishlist } from "@/hooks/useWishlist"
+import { useLanguage } from "@/contexts/LanguageContext"
 import {
   useProfile,
   Address as BackendAddress,
@@ -106,6 +107,7 @@ export default function ProfilePage() {
   const auth = useAuth()
   const { isLoggedIn, userData, handleLogout } = auth
   const { wishlistItemCount } = useWishlist()
+  const { language, setLanguage, t } = useLanguage()
   const {
     profile,
     isLoadingProfile,
@@ -697,13 +699,13 @@ export default function ProfilePage() {
     await deletePaymentMethod(paymentId)
   }
 
-  const sidebarItems = [
-    { id: "profile", label: "Профиль", icon: User },
-    { id: "orders", label: "Заказы", icon: Package },
-    { id: "addresses", label: "Адреса доставки", icon: MapPin },
-    { id: "payments", label: "Способы оплаты", icon: CreditCard },
-    { id: "settings", label: "Настройки", icon: Settings },
-  ]
+  const sidebarItems = useMemo(() => [
+    { id: "profile", label: t('profile.myProfile'), icon: User },
+    { id: "orders", label: t('profile.orders'), icon: Package },
+    { id: "addresses", label: t('profile.addresses'), icon: MapPin },
+    { id: "payments", label: t('profile.payments'), icon: CreditCard },
+    { id: "settings", label: t('profile.settings'), icon: Settings },
+  ], [t])
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
@@ -730,13 +732,13 @@ export default function ProfilePage() {
   };
 
 
-  const mobileTabItems = [
-    { id: "profile", label: "Профиль" },
-    { id: "orders", label: "Заказы" },
-    { id: "addresses", label: "Адреса доставки" },
-    { id: "payments", label: "Способы оплаты" },
-    { id: "settings", label: "Настройки" },
-  ]
+  const mobileTabItems = useMemo(() => [
+    { id: "profile", label: t('profile.myProfile') },
+    { id: "orders", label: t('profile.orders') },
+    { id: "addresses", label: t('profile.addresses') },
+    { id: "payments", label: t('profile.payments') },
+    { id: "settings", label: t('profile.settings') },
+  ], [t])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1638,8 +1640,8 @@ export default function ProfilePage() {
             {activeTab === "settings" && (
               <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
                 <div className="mb-8">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">Настройки</h2>
-                  <p className="text-gray-600">Управление настройками аккаунта</p>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('settings.title')}</h2>
+                  <p className="text-gray-600">{t('settings.subtitle')}</p>
                 </div>
 
                 <div className="space-y-6">
@@ -1647,29 +1649,50 @@ export default function ProfilePage() {
                   <div>
                     <h3 className="text-lg font-medium text-black mb-4 flex items-center gap-2">
                       <Languages className="w-5 h-5 text-brand" />
-                      Язык интерфейса
+                      {t('settings.language')}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <button
-                        onClick={() => toast.info("Язык будет изменен в следующей версии")}
-                        className="flex items-center justify-center gap-3 px-6 py-4 border-2 border-brand bg-brand/5 rounded-lg hover:bg-brand/10 transition-colors"
+                        onClick={() => {
+                          setLanguage('ru')
+                          toast.success('Язык изменен на Русский')
+                        }}
+                        className={`flex items-center justify-center gap-3 px-6 py-4 border-2 rounded-lg transition-colors ${
+                          language === 'ru'
+                            ? 'border-brand bg-brand/5 hover:bg-brand/10'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
                       >
                         <span className="text-lg">🇷🇺</span>
-                        <span className="font-medium text-gray-900">Русский</span>
+                        <span className="font-medium text-gray-900">{t('languages.russian')}</span>
                       </button>
                       <button
-                        onClick={() => toast.info("Язык будет изменен в следующей версии")}
-                        className="flex items-center justify-center gap-3 px-6 py-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                        onClick={() => {
+                          setLanguage('ky')
+                          toast.success('Тил Кыргызчага өзгөртүлдү')
+                        }}
+                        className={`flex items-center justify-center gap-3 px-6 py-4 border-2 rounded-lg transition-colors ${
+                          language === 'ky'
+                            ? 'border-brand bg-brand/5 hover:bg-brand/10'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
                       >
                         <span className="text-lg">🇰🇬</span>
-                        <span className="font-medium text-gray-900">Кыргызча</span>
+                        <span className="font-medium text-gray-900">{t('languages.kyrgyz')}</span>
                       </button>
                       <button
-                        onClick={() => toast.info("Язык будет изменен в следующей версии")}
-                        className="flex items-center justify-center gap-3 px-6 py-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                        onClick={() => {
+                          setLanguage('en')
+                          toast.success('Language changed to English')
+                        }}
+                        className={`flex items-center justify-center gap-3 px-6 py-4 border-2 rounded-lg transition-colors ${
+                          language === 'en'
+                            ? 'border-brand bg-brand/5 hover:bg-brand/10'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
                       >
                         <span className="text-lg">🇬🇧</span>
-                        <span className="font-medium text-gray-900">English</span>
+                        <span className="font-medium text-gray-900">{t('languages.english')}</span>
                       </button>
                     </div>
                   </div>
@@ -1678,13 +1701,13 @@ export default function ProfilePage() {
                   <div className="pt-6 border-t border-gray-200">
                     <h3 className="text-lg font-medium text-black mb-4 flex items-center gap-2">
                       <Bell className="w-5 h-5 text-brand" />
-                      Уведомления
+                      {t('settings.notifications')}
                     </h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="text-sm font-medium text-black">Обновления заказов</p>
-                          <p className="text-xs text-gray-500">Получать уведомления о статусе заказов</p>
+                          <p className="text-sm font-medium text-black">{t('settings.orderUpdates')}</p>
+                          <p className="text-xs text-gray-500">{t('settings.orderUpdatesDesc')}</p>
                         </div>
                         <button
                           onClick={() =>
@@ -1704,8 +1727,8 @@ export default function ProfilePage() {
 
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div>
-                          <p className="text-sm font-medium text-black">Акции и скидки</p>
-                          <p className="text-xs text-gray-500">Получать уведомления о новых предложениях</p>
+                          <p className="text-sm font-medium text-black">{t('settings.salesPromotions')}</p>
+                          <p className="text-xs text-gray-500">{t('settings.salesPromotionsDesc')}</p>
                         </div>
                         <button
                           onClick={() =>

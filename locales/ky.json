@@ -1,0 +1,111 @@
+{
+  "common": {
+    "search": "Товар, бренд же артикул",
+    "mannequin": "Манекен",
+    "favorites": "Тандалгандар",
+    "cart": "Себет",
+    "login": "Кирүү",
+    "profile": "Профиль",
+    "catalog": "Каталог",
+    "loading": "Жүктөлүүдө...",
+    "error": "Ката",
+    "save": "Сактоо",
+    "cancel": "Жокко чыгаруу",
+    "delete": "Өчүрүү",
+    "edit": "Өзгөртүү",
+    "close": "Жабуу",
+    "yes": "Ооба",
+    "no": "Жок",
+    "continue": "Улантуу",
+    "back": "Артка"
+  },
+  "profile": {
+    "title": "Жеке кабинет",
+    "myProfile": "Профиль",
+    "orders": "Буйрутмалар",
+    "addresses": "Жеткирүү дареги",
+    "payments": "Төлөө ыкмалары",
+    "settings": "Жөндөөлөр",
+    "logout": "Аккаунттан чыгуу",
+    "fullName": "Аты-жөнү",
+    "phone": "Телефон номери",
+    "phoneCannotChange": "Телефон номери (өзгөртүүгө болбойт)",
+    "update": "Жаңыртуу",
+    "updating": "Жаңыртылууда...",
+    "profileUpdated": "Профиль жаңыртылды",
+    "imageWillUpdate": "Сүрөт сактоодо жаңыртылат"
+  },
+  "settings": {
+    "title": "Жөндөөлөр",
+    "subtitle": "Аккаунттун жөндөөлөрүн башкаруу",
+    "language": "Интерфейс тили",
+    "notifications": "Билдирмелер",
+    "orderUpdates": "Буйрутма жаңыртуулары",
+    "orderUpdatesDesc": "Буйрутманын статусу жөнүндө билдирмелерди алуу",
+    "salesPromotions": "Акциялар жана арзандатуулар",
+    "salesPromotionsDesc": "Жаңы сунуштар жөнүндө билдирмелерди алуу",
+    "languageWillChange": "Тил кийинки версияда өзгөртүлөт"
+  },
+  "orders": {
+    "title": "Менин буйрутмаларым",
+    "active": "Активдүү",
+    "archive": "Архив",
+    "orderNumber": "Буйрутма №",
+    "delivery": "Жеткирүү",
+    "total": "Жалпы",
+    "details": "Деталдар",
+    "writeReview": "Пикир калтыруу",
+    "size": "Өлчөм",
+    "color": "Түс",
+    "status": {
+      "pending": "Күтүүдө",
+      "confirmed": "Ырасталды",
+      "processing": "Иштетүүдө",
+      "shipped": "Жөнөтүлдү",
+      "delivered": "Жеткирилди",
+      "cancelled": "Жокко чыгарылды"
+    }
+  },
+  "addresses": {
+    "title": "Жеткирүү дарегтери",
+    "addAddress": "Дарек кошуу",
+    "editAddress": "Даректи өзгөртүү",
+    "addressName": "Дарек аталышы",
+    "city": "Шаар",
+    "street": "Көчө",
+    "building": "Үй",
+    "apartment": "Батир",
+    "entrance": "Подъезд",
+    "floor": "Кабат",
+    "fullAddress": "Толук дарек",
+    "state": "Штат / Аймак",
+    "postalCode": "ZIP / Почта индекси",
+    "required": "милдеттүү"
+  },
+  "payments": {
+    "title": "Төлөө ыкмалары",
+    "addPayment": "Төлөө ыкмасын кошуу",
+    "cardNumber": "Карта номери",
+    "expiryDate": "Жарактуулук мөөнөтү",
+    "cvv": "CVV",
+    "cardholderName": "Карта ээсинин аты",
+    "cashOnDelivery": "Алууда накталай",
+    "card": "Банк картасы"
+  },
+  "cart": {
+    "title": "Себет",
+    "emptyCart": "Себет бош",
+    "subtotal": "Товарлардын суммасы",
+    "delivery": "Жеткирүү",
+    "total": "Жалпы",
+    "checkout": "Тариздөөгө өтүү",
+    "remove": "Өчүрүү",
+    "mannequin3D": "3D манекен"
+  },
+  "languages": {
+    "russian": "Орусча",
+    "kyrgyz": "Кыргызча",
+    "english": "Англисче"
+  }
+}
+

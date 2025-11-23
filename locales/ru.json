@@ -1,0 +1,111 @@
+{
+  "common": {
+    "search": "Товар, бренд или артикул",
+    "mannequin": "Манекен",
+    "favorites": "Избранные",
+    "cart": "Корзина",
+    "login": "Войти",
+    "profile": "Профиль",
+    "catalog": "Каталог",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "close": "Закрыть",
+    "yes": "Да",
+    "no": "Нет",
+    "continue": "Продолжить",
+    "back": "Назад"
+  },
+  "profile": {
+    "title": "Личный кабинет",
+    "myProfile": "Профиль",
+    "orders": "Заказы",
+    "addresses": "Адреса доставки",
+    "payments": "Способы оплаты",
+    "settings": "Настройки",
+    "logout": "Выйти из аккаунта",
+    "fullName": "ФИО",
+    "phone": "Номер телефона",
+    "phoneCannotChange": "Номер телефона (нельзя изменить)",
+    "update": "Обновить",
+    "updating": "Обновление...",
+    "profileUpdated": "Профиль обновлен",
+    "imageWillUpdate": "Изображение будет обновлено при сохранении"
+  },
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Управление настройками аккаунта",
+    "language": "Язык интерфейса",
+    "notifications": "Уведомления",
+    "orderUpdates": "Обновления заказов",
+    "orderUpdatesDesc": "Получать уведомления о статусе заказов",
+    "salesPromotions": "Акции и скидки",
+    "salesPromotionsDesc": "Получать уведомления о новых предложениях",
+    "languageWillChange": "Язык будет изменен в следующей версии"
+  },
+  "orders": {
+    "title": "Мои заказы",
+    "active": "Активные",
+    "archive": "Архив",
+    "orderNumber": "Заказ №",
+    "delivery": "Доставка",
+    "total": "Итого",
+    "details": "Детали",
+    "writeReview": "Оставить отзыв",
+    "size": "Размер",
+    "color": "Цвет",
+    "status": {
+      "pending": "В ожидании",
+      "confirmed": "Подтвержден",
+      "processing": "В обработке",
+      "shipped": "Отправлен",
+      "delivered": "Доставлен",
+      "cancelled": "Отменен"
+    }
+  },
+  "addresses": {
+    "title": "Адреса доставки",
+    "addAddress": "Добавить адрес",
+    "editAddress": "Редактировать адрес",
+    "addressName": "Название адреса",
+    "city": "Город",
+    "street": "Улица",
+    "building": "Дом",
+    "apartment": "Квартира",
+    "entrance": "Подъезд",
+    "floor": "Этаж",
+    "fullAddress": "Полный адрес",
+    "state": "Штат / Регион",
+    "postalCode": "ZIP / Почтовый индекс",
+    "required": "обязательно"
+  },
+  "payments": {
+    "title": "Способы оплаты",
+    "addPayment": "Добавить способ оплаты",
+    "cardNumber": "Номер карты",
+    "expiryDate": "Срок действия",
+    "cvv": "CVV",
+    "cardholderName": "Имя владельца карты",
+    "cashOnDelivery": "Наличные при получении",
+    "card": "Банковская карта"
+  },
+  "cart": {
+    "title": "Корзина",
+    "emptyCart": "Корзина пуста",
+    "subtotal": "Товары на сумму",
+    "delivery": "Доставка",
+    "total": "Итого",
+    "checkout": "Перейти к оформлению",
+    "remove": "Удалить",
+    "mannequin3D": "3D манекен"
+  },
+  "languages": {
+    "russian": "Русский",
+    "kyrgyz": "Кыргызча",
+    "english": "English"
+  }
+}
+

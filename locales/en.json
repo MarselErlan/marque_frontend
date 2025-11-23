@@ -1,0 +1,111 @@
+{
+  "common": {
+    "search": "Product, brand or SKU",
+    "mannequin": "Mannequin",
+    "favorites": "Favorites",
+    "cart": "Cart",
+    "login": "Login",
+    "profile": "Profile",
+    "catalog": "Catalog",
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "continue": "Continue",
+    "back": "Back"
+  },
+  "profile": {
+    "title": "My Account",
+    "myProfile": "Profile",
+    "orders": "Orders",
+    "addresses": "Delivery Addresses",
+    "payments": "Payment Methods",
+    "settings": "Settings",
+    "logout": "Logout",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "phoneCannotChange": "Phone Number (cannot be changed)",
+    "update": "Update",
+    "updating": "Updating...",
+    "profileUpdated": "Profile updated",
+    "imageWillUpdate": "Image will be updated upon saving"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings",
+    "language": "Interface Language",
+    "notifications": "Notifications",
+    "orderUpdates": "Order Updates",
+    "orderUpdatesDesc": "Receive notifications about order status",
+    "salesPromotions": "Sales & Promotions",
+    "salesPromotionsDesc": "Receive notifications about new offers",
+    "languageWillChange": "Language will be changed in the next version"
+  },
+  "orders": {
+    "title": "My Orders",
+    "active": "Active",
+    "archive": "Archive",
+    "orderNumber": "Order #",
+    "delivery": "Delivery",
+    "total": "Total",
+    "details": "Details",
+    "writeReview": "Write a Review",
+    "size": "Size",
+    "color": "Color",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "addresses": {
+    "title": "Delivery Addresses",
+    "addAddress": "Add Address",
+    "editAddress": "Edit Address",
+    "addressName": "Address Name",
+    "city": "City",
+    "street": "Street",
+    "building": "Building",
+    "apartment": "Apartment",
+    "entrance": "Entrance",
+    "floor": "Floor",
+    "fullAddress": "Full Address",
+    "state": "State / Region",
+    "postalCode": "ZIP / Postal Code",
+    "required": "required"
+  },
+  "payments": {
+    "title": "Payment Methods",
+    "addPayment": "Add Payment Method",
+    "cardNumber": "Card Number",
+    "expiryDate": "Expiry Date",
+    "cvv": "CVV",
+    "cardholderName": "Cardholder Name",
+    "cashOnDelivery": "Cash on Delivery",
+    "card": "Bank Card"
+  },
+  "cart": {
+    "title": "Cart",
+    "emptyCart": "Cart is empty",
+    "subtotal": "Subtotal",
+    "delivery": "Delivery",
+    "total": "Total",
+    "checkout": "Proceed to Checkout",
+    "remove": "Remove",
+    "mannequin3D": "3D Mannequin"
+  },
+  "languages": {
+    "russian": "Russian",
+    "kyrgyz": "Kyrgyz",
+    "english": "English"
+  }
+}
+

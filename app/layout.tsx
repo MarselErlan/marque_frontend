@@ -5,6 +5,7 @@ import { Inter } from "next/font/google"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { CatalogProvider } from "@/contexts/CatalogContext"
+import { LanguageProvider } from "@/contexts/LanguageContext"
 import { GlobalCatalogWrapper } from "@/components/GlobalCatalogWrapper"
 import { Header } from "@/components/Header"
 import "./globals.css"
@@ -32,21 +33,23 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={`font-sans antialiased min-h-screen bg-background text-foreground`}>
-        <CatalogProvider>
-          <ErrorBoundary>
-            {/* Global Header - appears on all pages */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-              <Header />
-            </header>
-            
-            {/* Page Content */}
-            <main>
-              {children}
-            </main>
-          </ErrorBoundary>
-          <GlobalCatalogWrapper />
-          <Toaster richColors position="top-right" />
-        </CatalogProvider>
+        <LanguageProvider>
+          <CatalogProvider>
+            <ErrorBoundary>
+              {/* Global Header - appears on all pages */}
+              <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+                <Header />
+              </header>
+              
+              {/* Page Content */}
+              <main>
+                {children}
+              </main>
+            </ErrorBoundary>
+            <GlobalCatalogWrapper />
+            <Toaster richColors position="top-right" />
+          </CatalogProvider>
+        </LanguageProvider>
       </body>
     </html>
   )
