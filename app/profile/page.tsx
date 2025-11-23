@@ -355,17 +355,25 @@ export default function ProfilePage() {
   // Format order prices when orderDetail or currency changes
   useEffect(() => {
     const formatOrderPrices = async () => {
-      if (!orderDetail || isCurrencyLoading || !currency) return
+      if (!orderDetail || isCurrencyLoading || !currency) {
+        console.log('⏳ Waiting for order detail or currency:', { orderDetail: !!orderDetail, isCurrencyLoading, currency: !!currency })
+        return
+      }
       
       const orderCurrency = orderDetail.currency || 'KGS'
+      const orderKey = orderDetail.id || orderDetail.order_number || selectedOrder?.id || 'default'
+      console.log('💰 Formatting order prices:', { orderKey, orderCurrency, userCurrency: currency.code })
+      
       const itemPrices: Record<number, { price: string; subtotal: string }> = {}
       
-      if (orderDetail.items) {
+      if (orderDetail.items && orderDetail.items.length > 0) {
         await Promise.all(
-          orderDetail.items.map(async (item: any) => {
+          orderDetail.items.map(async (item: any, index: number) => {
+            const itemId = item.id || index
             const price = item.price ? await format(item.price, orderCurrency) : ''
             const subtotal = item.subtotal ? await format(item.subtotal, orderCurrency) : ''
-            itemPrices[item.id || 0] = { price, subtotal }
+            itemPrices[itemId] = { price, subtotal }
+            console.log('💰 Formatted item price:', { itemId, originalPrice: item.price, formattedPrice: price, originalSubtotal: item.subtotal, formattedSubtotal: subtotal })
           })
         )
       }
@@ -374,8 +382,10 @@ export default function ProfilePage() {
       const shipping = orderDetail.shipping_cost !== undefined ? await format(orderDetail.shipping_cost, orderCurrency) : ''
       const total = orderDetail.total_amount ? await format(orderDetail.total_amount, orderCurrency) : ''
       
+      console.log('💰 Formatted order totals:', { subtotal, shipping, total })
+      
       setFormattedOrderPrices({
-        [orderDetail.id || selectedOrder?.id || '']: {
+        [orderKey]: {
           itemPrices,
           subtotal,
           shipping,
@@ -1243,16 +1253,22 @@ export default function ProfilePage() {
                             <div className="text-right">
                               {item.subtotal && (
                                 <p className="text-base font-semibold text-gray-900">
-                                  {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.itemPrices[item.id || 0]?.subtotal || 
-                                   (isCurrencyLoading ? `${item.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
-                                    `${item.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
+                                  {(() => {
+                                    const orderKey = orderDetail?.id || orderDetail?.order_number || selectedOrder?.id || 'default'
+                                    const itemId = item.id || 0
+                                    const formatted = formattedOrderPrices[orderKey]?.itemPrices[itemId]?.subtotal
+                                    return formatted || (isCurrencyLoading ? `${item.subtotal} ${orderDetail?.currency || currency?.symbol || 'сом'}` : `${item.subtotal} ${orderDetail?.currency || currency?.symbol || 'сом'}`)
+                                  })()}
                                 </p>
                               )}
                               {item.price && item.quantity && (
                                 <p className="text-sm text-gray-500">
-                                  {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.itemPrices[item.id || 0]?.price || 
-                                   (isCurrencyLoading ? `${item.price} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
-                                    `${item.price} ${orderDetail.currency || currency?.symbol || 'сом'}`)} × {item.quantity}
+                                  {(() => {
+                                    const orderKey = orderDetail?.id || orderDetail?.order_number || selectedOrder?.id || 'default'
+                                    const itemId = item.id || 0
+                                    const formatted = formattedOrderPrices[orderKey]?.itemPrices[itemId]?.price
+                                    return formatted || (isCurrencyLoading ? `${item.price} ${orderDetail?.currency || currency?.symbol || 'сом'}` : `${item.price} ${orderDetail?.currency || currency?.symbol || 'сом'}`)
+                                  })()} × {item.quantity}
                                 </p>
                               )}
                             </div>
@@ -1267,9 +1283,11 @@ export default function ProfilePage() {
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">{t('cart.subtotal')}</span>
                           <span className="text-gray-900">
-                            {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.subtotal || 
-                             (isCurrencyLoading ? `${orderDetail.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
-                              `${orderDetail.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
+                            {(() => {
+                              const orderKey = orderDetail?.id || orderDetail?.order_number || selectedOrder?.id || 'default'
+                              const formatted = formattedOrderPrices[orderKey]?.subtotal
+                              return formatted || (isCurrencyLoading ? `${orderDetail.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}` : `${orderDetail.subtotal} ${orderDetail.currency || currency?.symbol || 'сом'}`)
+                            })()}
                           </span>
                         </div>
                       )}
@@ -1277,18 +1295,22 @@ export default function ProfilePage() {
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">{t('cart.delivery')}</span>
                           <span className="text-gray-900">
-                            {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.shipping || 
-                             (isCurrencyLoading ? `${orderDetail.shipping_cost} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
-                              `${orderDetail.shipping_cost} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
+                            {(() => {
+                              const orderKey = orderDetail?.id || orderDetail?.order_number || selectedOrder?.id || 'default'
+                              const formatted = formattedOrderPrices[orderKey]?.shipping
+                              return formatted || (isCurrencyLoading ? `${orderDetail.shipping_cost} ${orderDetail.currency || currency?.symbol || 'сом'}` : `${orderDetail.shipping_cost} ${orderDetail.currency || currency?.symbol || 'сом'}`)
+                            })()}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between items-center pt-3 border-t">
                         <span className="text-lg font-semibold text-gray-900">{t('cart.total')}</span>
                         <span className="text-lg font-semibold text-gray-900">
-                          {formattedOrderPrices[orderDetail.id || selectedOrder?.id || '']?.total || 
-                           (isCurrencyLoading ? `${orderDetail.total_amount || selectedOrder.totalLabel} ${orderDetail.currency || currency?.symbol || 'сом'}` : 
-                            `${orderDetail.total_amount || selectedOrder.totalLabel} ${orderDetail.currency || currency?.symbol || 'сом'}`)}
+                          {(() => {
+                            const orderKey = orderDetail?.id || orderDetail?.order_number || selectedOrder?.id || 'default'
+                            const formatted = formattedOrderPrices[orderKey]?.total
+                            return formatted || (isCurrencyLoading ? `${orderDetail.total_amount || selectedOrder.totalLabel} ${orderDetail.currency || currency?.symbol || 'сом'}` : `${orderDetail.total_amount || selectedOrder.totalLabel} ${orderDetail.currency || currency?.symbol || 'сом'}`)
+                          })()}
                         </span>
                       </div>
                       {selectedOrder.deliveryDate && (

@@ -9,17 +9,42 @@ import { useWishlist } from "@/hooks/useWishlist"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { AuthModals } from "@/components/AuthModals"
 import { getImageUrl } from "@/lib/utils"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function WishlistPage() {
   const router = useRouter()
   const auth = useAuth()
   const { t } = useLanguage()
   const { wishlistItems, removeFromWishlist } = useWishlist()
+  const { format, currency, isLoading: isCurrencyLoading } = useCurrency()
   const [isClient, setIsClient] = useState(false)
+  
+  // Store formatted prices
+  const [formattedProductPrices, setFormattedProductPrices] = useState<Record<string, string>>({})
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // Format prices when wishlist items or currency changes
+  useEffect(() => {
+    const formatAllPrices = async () => {
+      if (!wishlistItems.length || isCurrencyLoading || !currency) return
+      
+      const formattedPrices: Record<string, string> = {}
+      await Promise.all(
+        wishlistItems.map(async (product: any) => {
+          const productCurrency = product.currency?.code || 'KGS'
+          const productPrice = product.price || (product as any).price_min || 0
+          const price = await format(productPrice, productCurrency)
+          formattedPrices[product.id] = price
+        })
+      )
+      setFormattedProductPrices(formattedPrices)
+    }
+    
+    formatAllPrices()
+  }, [wishlistItems, currency, isCurrencyLoading, format])
 
   if (!isClient) {
     return null;
@@ -87,7 +112,11 @@ export default function WishlistPage() {
                   </h3>
                   
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-base font-bold text-brand">{product.price} {t('common.currency')}</span>
+                    <span className="text-base font-bold text-brand">
+                      {formattedProductPrices[product.id] || 
+                       (isCurrencyLoading ? `${product.price || (product as any).price_min || 0} ${currency?.symbol || 'сом'}` : 
+                        `${product.price || (product as any).price_min || 0} ${currency?.symbol || 'сом'}`)}
+                    </span>
                   </div>
                   
                   <div className="text-xs text-gray-500">{t('product.sold')} {product.salesCount || 23}</div>
