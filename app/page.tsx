@@ -341,7 +341,7 @@ export default function MarquePage() {
         <div className="fixed inset-y-0 left-0 w-80 bg-white shadow-xl z-50 overflow-y-auto animate-in slide-in-from-left duration-300">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-black">Каталог</h2>
+            <h2 className="text-xl font-bold text-black">{t('common.catalog')}</h2>
             <button 
               onClick={() => setShowCatalog(false)}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -790,8 +790,8 @@ export default function MarquePage() {
               <ProductCardSkeletonGrid count={12} />
             ) : randomProducts.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg mb-2">Товары не найдены</p>
-                <p className="text-gray-400 text-sm">Попробуйте обновить страницу или изменить фильтры</p>
+                <p className="text-gray-500 text-lg mb-2">{t('home.noProducts')}</p>
+                <p className="text-gray-400 text-sm">{t('home.tryRefreshOrFilters')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-x-1 gap-y-0.5 md:gap-4" style={{minHeight: '1156px'}}>
@@ -844,13 +844,13 @@ export default function MarquePage() {
                       <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
                         <span className="text-base font-bold text-brand">
                           {(product.price_min || product.price) > 0 
-                            ? `${product.price_min || product.price} сом`
-                            : 'Цена по запросу'
+                            ? `${product.price_min || product.price} ${t('common.currency')}`
+                            : t('product.priceOnRequest')
                           }
                         </span>
                         {product.original_price_min && (
                           <span className="text-xs text-gray-400 line-through">
-                            {product.original_price_min} сом
+                            {product.original_price_min} {t('common.currency')}
                           </span>
                         )}
                       </div>

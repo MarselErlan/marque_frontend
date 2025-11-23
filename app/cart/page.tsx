@@ -58,9 +58,17 @@ export default function CartPage() {
   
   // Get day name for date display
   const getDayName = (date: Date, index: number) => {
-    if (index === 0) return 'Завтра'
-    if (index === 1) return 'Послезавтра'
-    const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+    if (index === 0) return t('cart.tomorrow')
+    if (index === 1) return t('cart.dayAfterTomorrow')
+    const days = [
+      t('common.sunday'),
+      t('common.monday'),
+      t('common.tuesday'),
+      t('common.wednesday'),
+      t('common.thursday'),
+      t('common.friday'),
+      t('common.saturday')
+    ]
     return days[date.getDay()]
   }
 
@@ -286,31 +294,31 @@ export default function CartPage() {
   const handleCreateAddress = async () => {
     // Validation matching profile page
     if (!newAddress.city.trim()) {
-      toast.error('Введите город')
+      toast.error(t('validation.enterCity'))
       return
     }
 
     if (isUSLocation) {
       if (!newAddress.street.trim()) {
-        toast.error("Введите адрес")
+        toast.error(t('validation.enterStreet'))
         return
       }
       if (!newAddress.state.trim()) {
-        toast.error("Введите штат/регион")
+        toast.error(t('validation.enterState'))
         return
       }
       if (!newAddress.postalCode.trim()) {
-        toast.error("Укажите почтовый индекс")
+        toast.error(t('validation.enterPostalCode'))
         return
       }
     } else {
       // KG validation
       if (!newAddress.street.trim()) {
-        toast.error("Введите улицу")
+        toast.error(t('validation.enterStreet'))
         return
       }
       if (!newAddress.building.trim()) {
-        toast.error("Введите номер дома")
+        toast.error(t('validation.enterBuilding'))
         return
       }
     }
@@ -318,14 +326,14 @@ export default function CartPage() {
     const fullAddressValue = (newAddress.fullAddress || composeFullAddress(newAddress)).trim()
 
     if (!fullAddressValue) {
-      toast.error("Введите полный адрес")
+      toast.error(t('validation.enterFullAddress'))
       return
     }
 
     setIsCreatingAddress(true)
     try {
       const success = await createAddress({
-        title: newAddress.label || 'Дом',
+        title: newAddress.label || t('addresses.defaultTitle'),
         full_address: fullAddressValue,
         street: newAddress.street || undefined,
         city: newAddress.city,
@@ -377,7 +385,7 @@ export default function CartPage() {
     }
 
     if (!checkoutAddress) {
-      toast.error('Пожалуйста, укажите адрес доставки')
+      toast.error(t('cart.selectDeliveryAddress'))
       return
     }
 
@@ -392,7 +400,7 @@ export default function CartPage() {
     }
 
     if (!checkoutAddress) {
-      toast.error('Пожалуйста, укажите адрес доставки')
+      toast.error(t('cart.selectDeliveryAddress'))
       return
     }
 
@@ -429,11 +437,11 @@ export default function CartPage() {
       // Clear cart from localStorage
       clearCart()
       
-      toast.success(`Заказ ${order.order_number} успешно создан!`)
+      toast.success(`${t('cart.orderCreatedSuccess')} ${order.order_number}`)
       
     } catch (error: any) {
       console.error('Order creation failed:', error)
-      toast.error(error.message || 'Ошибка при оформлении заказа. Попробуйте еще раз.')
+      toast.error(error.message || t('cart.orderCreateError'))
     } finally {
       setIsSubmittingOrder(false)
     }

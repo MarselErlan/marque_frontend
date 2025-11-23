@@ -147,7 +147,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
             {/* Main Categories List */}
             <nav className="px-4 py-2">
               {loadingCategories ? (
-                <div className="text-center py-8 text-gray-500">Загрузка...</div>
+                <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
               ) : filteredCategories.length > 0 ? (
                 filteredCategories.map((category) => (
                   <button
@@ -183,7 +183,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
             {/* Subcategories List */}
             <div className="px-4 py-2">
               {loadingSubcategories ? (
-                <div className="text-center py-8 text-gray-500">Загрузка...</div>
+                <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
               ) : apiSubcategories.length > 0 ? (
                 apiSubcategories.map((subcat) => (
                   <Link
@@ -286,7 +286,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
             {/* Subcategories List */}
             <div className="p-4">
               {loadingSubcategories ? (
-                <div className="text-center py-8 text-gray-500">Загрузка...</div>
+                <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
               ) : apiSubcategories.length > 0 ? (
                 apiSubcategories.map((subcat) => (
                   <Link

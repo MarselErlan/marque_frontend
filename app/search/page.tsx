@@ -351,7 +351,7 @@ export default function SearchPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
-            Все фильтры
+            {t('search.allFilters')}
           </button>
 
           {/* Category Dropdown */}
@@ -371,7 +371,7 @@ export default function SearchPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
-                <span>{selectedCategory ? allCategories.find(c => c.slug === selectedCategory)?.name || 'Категория' : 'Категория'}</span>
+                <span>{selectedCategory ? allCategories.find(c => c.slug === selectedCategory)?.name || t('search.category') : t('search.category')}</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               {showCategoryDropdown && (
@@ -387,7 +387,7 @@ export default function SearchPage() {
                       !selectedCategory ? 'bg-gray-50 text-brand font-medium' : ''
                     }`}
                   >
-                    Все категории
+                    {t('search.allCategories')}
                   </button>
                   {allCategories.map((cat) => (
                     <button
@@ -424,7 +424,7 @@ export default function SearchPage() {
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                <span>{selectedSubcategory ? allSubcategories.find(s => s.slug === selectedSubcategory)?.name || 'Подкатегория' : 'Подкатегория'}</span>
+                <span>{selectedSubcategory ? allSubcategories.find(s => s.slug === selectedSubcategory)?.name || t('search.subcategory') : t('search.subcategory')}</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               {showSubcategoryDropdown && (
@@ -439,7 +439,7 @@ export default function SearchPage() {
                       !selectedSubcategory ? 'bg-gray-50 text-brand font-medium' : ''
                     }`}
                   >
-                    Все подкатегории
+                    {t('search.allSubcategories')}
                   </button>
                   {allSubcategories.map((subcat: any) => (
                     <button
@@ -475,7 +475,7 @@ export default function SearchPage() {
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                <span>Размер</span>
+                <span>{t('search.size')}</span>
                 {selectedFilters.sizes && selectedFilters.sizes.length > 0 && (
                   <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {selectedFilters.sizes.length}
@@ -523,7 +523,7 @@ export default function SearchPage() {
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                <span>Цена</span>
+                <span>{t('search.price')}</span>
                 {(priceRange.min || priceRange.max) && (
                   <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     1
@@ -533,11 +533,11 @@ export default function SearchPage() {
               </button>
               {showPriceDropdown && (
                 <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[280px]">
-                  <h4 className="font-medium mb-3 text-sm">Цена (сом)</h4>
+                  <h4 className="font-medium mb-3 text-sm">{t('search.price')} ({t('common.currency')})</h4>
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="от"
+                      placeholder={t('search.from')}
                       value={priceRange.min || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
@@ -545,7 +545,7 @@ export default function SearchPage() {
                     />
                     <input
                       type="number"
-                      placeholder="до"
+                      placeholder={t('search.to')}
                       value={priceRange.max || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
@@ -553,7 +553,7 @@ export default function SearchPage() {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    от {Math.floor(filters.price_range.min)} до {Math.ceil(filters.price_range.max)} сом
+                    {t('search.from')} {Math.floor(filters.price_range.min)} {t('search.to')} {Math.ceil(filters.price_range.max)} {t('common.currency')}
                   </p>
                 </div>
               )}
@@ -574,7 +574,7 @@ export default function SearchPage() {
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                <span>Цвет</span>
+                <span>{t('search.color')}</span>
                 {selectedFilters.colors && selectedFilters.colors.length > 0 && (
                   <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {selectedFilters.colors.length}
@@ -618,7 +618,7 @@ export default function SearchPage() {
               }}
               className="px-4 py-2 text-brand hover:text-brand-hover text-sm font-medium"
             >
-              Сбросить
+              {t('search.reset')}
             </button>
           )}
         </div>
@@ -743,7 +743,7 @@ export default function SearchPage() {
               </>
             ) : (
               <div className="text-center py-20">
-            <p className="text-gray-500 mb-4">Товары не найдены по запросу "{query}"</p>
+            <p className="text-gray-500 mb-4">{t('search.noProductsFound')} "{query}"</p>
                   <Button 
                     variant="outline"
                     onClick={() => {
@@ -754,7 +754,7 @@ export default function SearchPage() {
                       setCurrentPage(1)
                     }}
                   >
-                    Сбросить фильтры
+                    {t('search.resetFilters')}
                   </Button>
           </div>
         )}
@@ -773,7 +773,7 @@ export default function SearchPage() {
           <div className="fixed inset-y-0 left-0 w-80 bg-white z-40 overflow-y-auto shadow-2xl border-r border-gray-200">
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Все фильтры</h2>
+              <h2 className="text-xl font-bold">{t('search.allFilters')}</h2>
               <button 
                 onClick={() => setShowAllFiltersModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-full"
@@ -789,7 +789,7 @@ export default function SearchPage() {
               {/* Category Filter - Dynamic from API */}
               {allCategories.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-3">Категория</h3>
+                  <h3 className="font-medium mb-3">{t('search.category')}</h3>
                   <div className="space-y-2">
                     <button
                       onClick={() => {
@@ -801,7 +801,7 @@ export default function SearchPage() {
                         !selectedCategory ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
-                      Все категории
+                      {t('search.allCategories')}
                     </button>
                     {(allCategories.length > 0 ? allCategories : [{name: 'test kg category 1', slug: 'test kg category 1'}]).map((cat) => (
                         <button
@@ -825,7 +825,7 @@ export default function SearchPage() {
               {/* Subcategory Filter - Dynamic from API */}
               {selectedCategory && allSubcategories.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-3">Подкатегория</h3>
+                  <h3 className="font-medium mb-3">{t('search.subcategory')}</h3>
                   <div className="space-y-2">
                     <button
                       onClick={() => {
@@ -836,7 +836,7 @@ export default function SearchPage() {
                         !selectedSubcategory ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
-                      Все подкатегории
+                      {t('search.allSubcategories')}
                     </button>
                     {allSubcategories.map((subcat: any) => (
                       <button
@@ -859,7 +859,7 @@ export default function SearchPage() {
               {/* Brand Filter */}
               {filters.available_brands && filters.available_brands.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-3">Бренд</h3>
+                  <h3 className="font-medium mb-3">{t('search.brand')}</h3>
                   <div className="space-y-2">
                     {filters.available_brands.map((brand: any) => (
                       <label key={brand.slug} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -877,25 +877,25 @@ export default function SearchPage() {
               {/* Price Range */}
               {filters.price_range && (
                 <div>
-                  <h3 className="font-medium mb-3">Цена (сом)</h3>
+                  <h3 className="font-medium mb-3">{t('search.price')} ({t('common.currency')})</h3>
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="от"
+                      placeholder={t('search.from')}
                       value={priceRange.min || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
                     />
                     <input
                       type="number"
-                      placeholder="до"
+                      placeholder={t('search.to')}
                       value={priceRange.max || ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
                       onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    от {Math.floor(filters.price_range.min)} до {Math.ceil(filters.price_range.max)} сом
+                    {t('search.from')} {Math.floor(filters.price_range.min)} {t('search.to')} {Math.ceil(filters.price_range.max)} {t('common.currency')}
                   </p>
                 </div>
               )}
@@ -903,7 +903,7 @@ export default function SearchPage() {
               {/* Size Filter */}
               {filters.available_sizes && filters.available_sizes.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-3">Размер</h3>
+                  <h3 className="font-medium mb-3">{t('search.size')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {filters.available_sizes.map((size: string) => (
                       <button
@@ -928,7 +928,7 @@ export default function SearchPage() {
               {/* Color Filter */}
               {filters.available_colors && filters.available_colors.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-3">Цвет</h3>
+                  <h3 className="font-medium mb-3">{t('search.color')}</h3>
                   <div className="space-y-2">
                     {filters.available_colors.map((color: string) => (
                       <label key={color} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -957,13 +957,13 @@ export default function SearchPage() {
                   setCurrentPage(1)
                 }}
               >
-                Сбросить
+                {t('search.reset')}
               </Button>
               <Button
                 className="flex-1 bg-brand hover:bg-brand-hover text-white"
                 onClick={() => setShowAllFiltersModal(false)}
               >
-                Применить
+                {t('search.apply')}
               </Button>
           </div>
         </div>
@@ -977,19 +977,19 @@ export default function SearchPage() {
             <div>
               <h3 className="text-xl font-bold mb-6">MARQUE</h3>
               <div className="space-y-2">
-                <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                <h4 className="font-semibold text-gray-300 mb-4">{t('footer.popularCategories')}</h4>
                 <div className="space-y-2 text-sm text-gray-400">
-                  <div>Мужчинам</div>
-                  <div>Женщинам</div>
-                  <div>Детям</div>
-                  <div>Спорт</div>
-                  <div>Обувь</div>
-                  <div>Аксессуары</div>
+                  <div>{t('footer.men')}</div>
+                  <div>{t('footer.women')}</div>
+                  <div>{t('footer.kids')}</div>
+                  <div>{t('footer.sport')}</div>
+                  <div>{t('footer.shoes')}</div>
+                  <div>{t('footer.accessories')}</div>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
+              <h4 className="font-semibold text-gray-300 mb-4">{t('footer.brands')}</h4>
               <div className="space-y-2 text-sm text-gray-400">
                 <div>ECCO</div>
                 <div>VANS</div>
@@ -1001,8 +1001,8 @@ export default function SearchPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div>Политика конфиденциальности</div>
-            <div>Пользовательское соглашение</div>
+            <div>{t('footer.privacyPolicy')}</div>
+            <div>{t('footer.termsOfUse')}</div>
           </div>
         </div>
       </footer>

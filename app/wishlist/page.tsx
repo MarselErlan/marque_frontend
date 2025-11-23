@@ -87,7 +87,7 @@ export default function WishlistPage() {
                   </h3>
                   
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-base font-bold text-brand">{product.price} сом</span>
+                    <span className="text-base font-bold text-brand">{product.price} {t('common.currency')}</span>
                   </div>
                   
                   <div className="text-xs text-gray-500">{t('product.sold')} {product.salesCount || 23}</div>
@@ -105,19 +105,19 @@ export default function WishlistPage() {
             <div>
               <h3 className="text-xl font-bold mb-6">MARQUE</h3>
               <div className="space-y-2">
-                <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                <h4 className="font-semibold text-gray-300 mb-4">{t('footer.popularCategories')}</h4>
                 <div className="space-y-2 text-sm text-gray-400">
-                  <div>Мужчинам</div>
-                  <div>Женщинам</div>
-                  <div>Детям</div>
-                  <div>Спорт</div>
-                  <div>Обувь</div>
-                  <div>Аксессуары</div>
+                  <div>{t('footer.men')}</div>
+                  <div>{t('footer.women')}</div>
+                  <div>{t('footer.kids')}</div>
+                  <div>{t('footer.sport')}</div>
+                  <div>{t('footer.shoes')}</div>
+                  <div>{t('footer.accessories')}</div>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
+              <h4 className="font-semibold text-gray-300 mb-4">{t('footer.brands')}</h4>
               <div className="space-y-2 text-sm text-gray-400">
                 <div>ECCO</div>
                 <div>VANS</div>
@@ -129,8 +129,8 @@ export default function WishlistPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div>Политика конфиденциальности</div>
-            <div>Пользовательское соглашение</div>
+            <div>{t('footer.privacyPolicy')}</div>
+            <div>{t('footer.termsOfUse')}</div>
           </div>
         </div>
       </footer>
