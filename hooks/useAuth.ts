@@ -163,7 +163,36 @@ export const useAuth = () => {
       localStorage.setItem('authToken', authData.access_token || authData.token)
       localStorage.setItem('sessionId', authData.session_id || '')
       localStorage.setItem('expiresInMinutes', expiresInMinutes.toString())
-      const resolvedLocation = authData.location || authData.market || 'KG'
+      
+      // Determine market from backend response or phone number
+      let resolvedLocation = authData.location || authData.market
+      
+      // If backend didn't provide market, infer from phone number
+      if (!resolvedLocation && userData.phone) {
+        if (userData.phone.startsWith('+1') || userData.phone.startsWith('1')) {
+          resolvedLocation = 'US'
+        } else if (userData.phone.startsWith('+996') || userData.phone.startsWith('996')) {
+          resolvedLocation = 'KG'
+        }
+      }
+      
+      // Normalize to uppercase
+      resolvedLocation = (resolvedLocation || 'KG').toUpperCase()
+      
+      // Ensure it's 'US' or 'KG'
+      if (resolvedLocation === 'UNITED STATES' || resolvedLocation.includes('US')) {
+        resolvedLocation = 'US'
+      } else if (resolvedLocation === 'KYRGYZSTAN' || resolvedLocation.includes('KG')) {
+        resolvedLocation = 'KG'
+      } else {
+        resolvedLocation = 'KG' // Default
+      }
+      
+      console.log('🌍 Setting market in localStorage:', resolvedLocation, {
+        fromBackend: authData.location || authData.market,
+        fromPhone: userData.phone,
+      })
+      
       localStorage.setItem('market', resolvedLocation)
       localStorage.setItem('location', resolvedLocation)
       localStorage.setItem('userData', JSON.stringify(userData))
@@ -292,6 +321,25 @@ export const useAuth = () => {
         
         // New backend response format - simpler structure
         if (data.access_token && data.user) {
+          // Determine market from country code if backend didn't provide it
+          let market = data.location || data.market
+          if (!market) {
+            // Infer from country code
+            if (countryCode === '+1') {
+              market = 'US'
+            } else if (countryCode === '+996') {
+              market = 'KG'
+            } else {
+              // Fallback: check phone number
+              const phone = data.user.phone || fullPhoneNumber
+              if (phone.startsWith('+1') || phone.startsWith('1')) {
+                market = 'US'
+              } else {
+                market = 'KG'
+              }
+            }
+          }
+          
           // Update user data with new fields from backend
           const userData = {
             id: data.user.id,
@@ -300,14 +348,22 @@ export const useAuth = () => {
             full_name: data.user.full_name,
             is_active: data.user.is_active,
             is_verified: data.user.is_verified,
-            location: data.location || data.market || 'KG',
-            market: data.market,
+            location: market,
+            market: market,
+          }
+          
+          // Ensure market is in the auth data
+          const authDataWithMarket = {
+            ...data,
+            location: market,
+            market: market,
           }
           
           console.log("🔐 User data:", userData)
+          console.log("🔐 Market determined:", market, { fromBackend: data.location || data.market, fromCountryCode: countryCode })
           console.log("🔐 Is new user:", data.is_new_user)
           
-          handleLogin(userData, data)
+          handleLogin(userData, authDataWithMarket)
         }
         setIsSmsModalOpen(false)
         setSmsCode("")

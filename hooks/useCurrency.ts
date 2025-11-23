@@ -35,8 +35,14 @@ export function useCurrency(): UseCurrencyReturn {
       setIsLoading(true)
       try {
         const userMarket = getUserMarket()
+        console.log('🌍 Detected user market:', userMarket, {
+          market: localStorage.getItem('market'),
+          location: localStorage.getItem('location'),
+          userData: localStorage.getItem('userData'),
+        })
         setMarket(userMarket)
         const userCurrency = await getCurrencyForMarket(userMarket)
+        console.log('💱 Loaded currency:', userCurrency)
         setCurrency(userCurrency)
       } catch (error) {
         console.error('Failed to load currency:', error)
@@ -53,11 +59,18 @@ export function useCurrency(): UseCurrencyReturn {
     }
     window.addEventListener('storage', handleStorageChange)
     
+    // Listen for auth login events
+    const handleAuthLogin = () => {
+      loadCurrency()
+    }
+    window.addEventListener('auth:login', handleAuthLogin)
+    
     // Also check periodically (in case localStorage changes in same tab)
-    const interval = setInterval(loadCurrency, 10000) // Check every 10 seconds
+    const interval = setInterval(loadCurrency, 5000) // Check every 5 seconds
 
     return () => {
       window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('auth:login', handleAuthLogin)
       clearInterval(interval)
     }
   }, [])

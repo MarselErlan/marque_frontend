@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
   const { addToCart, cartItemCount } = useCart()
   const { openCatalog } = useCatalog()
-  const { format, currency, currencyCode } = useCurrency()
+  const { format, currency, currencyCode, market } = useCurrency()
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -124,7 +124,15 @@ export default function ProductDetailPage() {
         // Format prices with currency conversion
         if (productData) {
           const productCurrency = productData.currency?.code || 'KGS'
+          console.log('💰 Formatting prices:', {
+            productCurrency,
+            priceMin: productData.price_min,
+            userCurrency: currency?.code,
+            market,
+          })
+          
           const priceMin = await format(productData.price_min, productCurrency)
+          console.log('💰 Formatted price:', priceMin)
           setFormattedPrice(priceMin)
           
           if (productData.original_price_min) {

@@ -14,17 +14,51 @@ let currencyCacheTime: number = 0
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 /**
- * Get user's market from localStorage
+ * Get user's market from localStorage or phone number
  */
 export function getUserMarket(): 'KG' | 'US' {
   if (typeof window === 'undefined') return 'KG'
   
-  const market = localStorage.getItem('market') || localStorage.getItem('location') || 'KG'
-  const normalized = market.toUpperCase()
+  // First, try to get from localStorage
+  let market = localStorage.getItem('market') || localStorage.getItem('location')
   
-  if (normalized === 'UNITED STATES' || normalized.includes('US')) {
-    return 'US'
-  } else if (normalized === 'KYRGYZSTAN' || normalized.includes('KG')) {
+  if (market) {
+    const normalized = market.toUpperCase().trim()
+    
+    // Check for US variations
+    if (normalized === 'US' || normalized === 'UNITED STATES' || normalized.includes('US')) {
+      return 'US'
+    }
+    // Check for KG variations
+    if (normalized === 'KG' || normalized === 'KGS' || normalized === 'KYRGYZSTAN' || normalized.includes('KG')) {
+      return 'KG'
+    }
+  }
+  
+  // Fallback: Check user's phone number from localStorage
+  const userDataStr = localStorage.getItem('userData')
+  if (userDataStr) {
+    try {
+      const userData = JSON.parse(userDataStr)
+      const phone = userData.phone || ''
+      
+      // Check phone country code
+      if (phone.startsWith('+1') || phone.startsWith('1')) {
+        return 'US'
+      }
+      if (phone.startsWith('+996') || phone.startsWith('996')) {
+        return 'KG'
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+  }
+  
+  // Final fallback: Check auth token or session
+  const authToken = localStorage.getItem('authToken')
+  if (authToken) {
+    // If user is logged in but no market set, default to KG
+    // This should be set by backend during login
     return 'KG'
   }
   
