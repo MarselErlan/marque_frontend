@@ -212,11 +212,6 @@
     "size": "Size",
     "color": "Color"
   },
-  "languages": {
-    "russian": "Russian",
-    "kyrgyz": "Kyrgyz",
-    "english": "English"
-  },
   "auth": {
     "logout": "Logout",
     "logoutSuccess": "You have successfully logged out",
@@ -357,13 +352,123 @@
     "russian": "Russian",
     "kyrgyz": "Kyrgyz",
     "english": "English",
-    "changedTo": "Language changed to {language}"
+    "changedTo": "Language changed to"
   },
   "notifications": {
     "title": "Notifications",
     "empty": "No notifications",
     "markAllRead": "Mark all as read",
     "defaultTitle": "Notification"
+  },
+  "admin": {
+    "login": {
+      "title": "Admin Panel",
+      "subtitle": "Login to access store management",
+      "success": "Login successful"
+    },
+    "loading": {
+      "redirecting": "Redirecting to login page...",
+      "checkingAccess": "Checking access..."
+    },
+    "dashboard": {
+      "welcome": "Welcome,",
+      "administrator": "Administrator",
+      "revenue": "Revenue",
+      "revenueAllTime": "Revenue information for all time",
+      "revenueToday": "Revenue for today",
+      "users": "Users",
+      "totalUsers": "Total registered users",
+      "todayOrders": "Today's Orders",
+      "todayOrdersDesc": "List of orders for the last 24 hours"
+    },
+    "orders": {
+      "order": "Order",
+      "count": "orders",
+      "notFound": "Orders not found",
+      "searchPlaceholder": "Order #, phone number, address",
+      "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "processing": "In Transit",
+        "delivered": "Delivered"
+      },
+      "delivery": "Delivery",
+      "deliveryDate": "Delivery Date",
+      "deliveryAddress": "Delivery Address",
+      "orderItems": "Order Items",
+      "orderComment": "Order Comment",
+      "size": "Size",
+      "color": "Color",
+      "phone": "Phone",
+      "dateTime": "Date and Time",
+      "statusLabel": "Status",
+      "total": "Total",
+      "changeStatus": "Change Status",
+      "updating": "Updating...",
+      "statusUpdated": "Order status updated",
+      "cancelOrder": "Cancel Order",
+      "cancel": "Cancel",
+      "resumeOrder": "Resume Order",
+      "resume": "Resume",
+      "resuming": "Resuming",
+      "confirmCancel": "Are you sure you want to cancel this order?",
+      "confirmResume": "Are you sure you want to resume this order?",
+      "orderCancelled": "Order cancelled",
+      "orderResumed": "Order resumed",
+      "loadMore": "Load More",
+      "dateRange": "Date Range",
+      "status": {
+        "pending": "Pending",
+        "confirmed": "CONFIRMED",
+        "processing": "IN TRANSIT",
+        "shipped": "Shipped",
+        "delivered": "DELIVERED",
+        "cancelled": "CANCELLED"
+      }
+    },
+    "settings": {
+      "administrator": "Administrator",
+      "role": {
+        "admin": "Administrator",
+        "manager": "Manager",
+        "viewer": "Viewer"
+      },
+      "realTimeUpdates": "Real-time Updates",
+      "realTimeUpdatesDesc": "Automatic data update every 30 seconds",
+      "darkTheme": "Dark Theme",
+      "notifications": "Notifications",
+      "notifyNewOrders": "Receive notifications about new orders",
+      "notifyStatusChanges": "Notifications about order status changes",
+      "dailyReport": "Daily revenue report via Email",
+      "notifyDeliveryErrors": "Notifications about delivery errors",
+      "confirmLogout": "Log out of account?"
+    },
+    "errors": {
+      "accessDenied": "Access Denied",
+      "notManager": "You are not a store manager",
+      "notManagerAccess": "You are not a store manager. Contact an administrator for access.",
+      "inactiveAccount": "Your manager account is inactive",
+      "timeout": "Status check timeout. Please refresh the page.",
+      "checkStatusFailed": "Error checking manager status",
+      "loadStatsFailed": "Error loading statistics",
+      "loadOrdersFailed": "Error loading orders",
+      "loadOrderFailed": "Error loading order",
+      "loadAnalyticsFailed": "Error loading analytics",
+      "noMarketAccess": "You don't have access to this market",
+      "updateStatusFailed": "Error updating status",
+      "cancelOrderFailed": "Error cancelling order",
+      "resumeOrderFailed": "Error resuming order",
+      "authFailed": "Authentication error. Please try logging in again."
+    },
+    "actions": {
+      "logoutAndLogin": "Log out and login with another account",
+      "goToHome": "Go to home page"
+    },
+    "info": {
+      "dateFilterComingSoon": "Date filtering will be available in the next version",
+      "notificationSettingsComingSoon": "Notification settings will be saved in the next version",
+      "marketSwitched": "Switched to market"
+    }
   }
 }
 

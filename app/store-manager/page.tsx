@@ -68,7 +68,7 @@ const mapBackendStatusForModal = (status: string, t: (key: string) => string): s
 export default function AdminDashboard() {
   const auth = useAuth()
   const router = useRouter()
-  const { t } = useLanguage()
+  const { t, language: currentLanguage, setLanguage } = useLanguage()
   
   // Manager status
   const [managerStatus, setManagerStatus] = useState<{
@@ -196,7 +196,13 @@ export default function AdminDashboard() {
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false)
   const [isResumeConfirmOpen, setIsResumeConfirmOpen] = useState(false)
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
-  const [selectedLanguage, setSelectedLanguage] = useState("Русский")
+  // Sync selectedLanguage with actual language from context
+  const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage)
+  
+  // Update selectedLanguage when language changes
+  useEffect(() => {
+    setSelectedLanguage(currentLanguage)
+  }, [currentLanguage])
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [notificationSettings, setNotificationSettings] = useState({
     newOrders: true,
@@ -1875,7 +1881,10 @@ export default function AdminDashboard() {
                       ? "bg-white text-gray-900 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
-                  onClick={() => setSelectedLanguage(language.code)}
+                  onClick={() => {
+                    setLanguage(language.code as 'ru' | 'ky' | 'en')
+                    toast.success(`${t('languages.changedTo')} ${language.label}`)
+                  }}
                 >
                   {language.label}
                 </button>

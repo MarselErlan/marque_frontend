@@ -397,7 +397,7 @@
     "russian": "Русский",
     "kyrgyz": "Кыргызча",
     "english": "English",
-    "changedTo": "Язык изменен на {language}"
+    "changedTo": "Язык изменен на"
   },
   "orderSuccess": {
     "title": "Заказ оформлен и оплачен",
