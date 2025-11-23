@@ -164,33 +164,28 @@ export const useAuth = () => {
       localStorage.setItem('sessionId', authData.session_id || '')
       localStorage.setItem('expiresInMinutes', expiresInMinutes.toString())
       
-      // Determine market from backend response or phone number
-      let resolvedLocation = authData.location || authData.market
-      
-      // If backend didn't provide market, infer from phone number
-      if (!resolvedLocation && userData.phone) {
-        if (userData.phone.startsWith('+1') || userData.phone.startsWith('1')) {
-          resolvedLocation = 'US'
-        } else if (userData.phone.startsWith('+996') || userData.phone.startsWith('996')) {
-          resolvedLocation = 'KG'
-        }
-      }
+      // Use location from user data (backend provides this)
+      // Priority: userData.location > userData.market > authData.location > authData.market
+      let resolvedLocation = userData.location || userData.market || authData.location || authData.market
       
       // Normalize to uppercase
-      resolvedLocation = (resolvedLocation || 'KG').toUpperCase()
+      resolvedLocation = (resolvedLocation || 'KG').toUpperCase().trim()
       
-      // Ensure it's 'US' or 'KG'
-      if (resolvedLocation === 'UNITED STATES' || resolvedLocation.includes('US')) {
+      // Normalize location values to 'US' or 'KG'
+      if (resolvedLocation === 'UNITED STATES' || resolvedLocation === 'US' || resolvedLocation.includes('US')) {
         resolvedLocation = 'US'
-      } else if (resolvedLocation === 'KYRGYZSTAN' || resolvedLocation.includes('KG')) {
+      } else if (resolvedLocation === 'KYRGYZSTAN' || resolvedLocation === 'KG' || resolvedLocation === 'KGS' || resolvedLocation.includes('KG')) {
         resolvedLocation = 'KG'
       } else {
-        resolvedLocation = 'KG' // Default
+        resolvedLocation = 'KG' // Default fallback
       }
       
       console.log('🌍 Setting market in localStorage:', resolvedLocation, {
-        fromBackend: authData.location || authData.market,
-        fromPhone: userData.phone,
+        userDataLocation: userData.location,
+        userDataMarket: userData.market,
+        authDataLocation: authData.location,
+        authDataMarket: authData.market,
+        finalLocation: resolvedLocation,
       })
       
       localStorage.setItem('market', resolvedLocation)
@@ -321,22 +316,28 @@ export const useAuth = () => {
         
         // New backend response format - simpler structure
         if (data.access_token && data.user) {
-          // Determine market from country code if backend didn't provide it
-          let market = data.location || data.market
-          if (!market) {
-            // Infer from country code
+          // Use location from user object (backend provides this based on user's profile)
+          // Priority: data.user.location > data.user.market > data.location > data.market
+          let market = data.user.location || data.user.market || data.location || data.market
+          
+          // Normalize location values
+          if (market) {
+            market = market.toUpperCase().trim()
+            if (market === 'UNITED STATES' || market === 'US' || market.includes('US')) {
+              market = 'US'
+            } else if (market === 'KYRGYZSTAN' || market === 'KG' || market === 'KGS' || market.includes('KG')) {
+              market = 'KG'
+            } else {
+              market = 'KG' // Default fallback
+            }
+          } else {
+            // Only infer from country code if backend didn't provide location
             if (countryCode === '+1') {
               market = 'US'
             } else if (countryCode === '+996') {
               market = 'KG'
             } else {
-              // Fallback: check phone number
-              const phone = data.user.phone || fullPhoneNumber
-              if (phone.startsWith('+1') || phone.startsWith('1')) {
-                market = 'US'
-              } else {
-                market = 'KG'
-              }
+              market = 'KG' // Default
             }
           }
           
@@ -348,7 +349,7 @@ export const useAuth = () => {
             full_name: data.user.full_name,
             is_active: data.user.is_active,
             is_verified: data.user.is_verified,
-            location: market,
+            location: market, // Use normalized market
             market: market,
           }
           
@@ -360,7 +361,13 @@ export const useAuth = () => {
           }
           
           console.log("🔐 User data:", userData)
-          console.log("🔐 Market determined:", market, { fromBackend: data.location || data.market, fromCountryCode: countryCode })
+          console.log("🔐 Market from backend:", {
+            userLocation: data.user.location,
+            userMarket: data.user.market,
+            responseLocation: data.location,
+            responseMarket: data.market,
+            finalMarket: market,
+          })
           console.log("🔐 Is new user:", data.is_new_user)
           
           handleLogin(userData, authDataWithMarket)

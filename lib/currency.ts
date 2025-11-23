@@ -19,7 +19,7 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 export function getUserMarket(): 'KG' | 'US' {
   if (typeof window === 'undefined') return 'KG'
   
-  // First, try to get from localStorage
+  // First, try to get from localStorage (set during login from user data)
   let market = localStorage.getItem('market') || localStorage.getItem('location')
   
   if (market) {
@@ -35,19 +35,22 @@ export function getUserMarket(): 'KG' | 'US' {
     }
   }
   
-  // Fallback: Check user's phone number from localStorage
+  // Fallback: Check user's location from userData (from backend)
   const userDataStr = localStorage.getItem('userData')
   if (userDataStr) {
     try {
       const userData = JSON.parse(userDataStr)
-      const phone = userData.phone || ''
+      // Use location from user data (backend provides this)
+      const userLocation = userData.location || userData.market
       
-      // Check phone country code
-      if (phone.startsWith('+1') || phone.startsWith('1')) {
-        return 'US'
-      }
-      if (phone.startsWith('+996') || phone.startsWith('996')) {
-        return 'KG'
+      if (userLocation) {
+        const normalized = userLocation.toUpperCase().trim()
+        if (normalized === 'US' || normalized === 'UNITED STATES' || normalized.includes('US')) {
+          return 'US'
+        }
+        if (normalized === 'KG' || normalized === 'KGS' || normalized === 'KYRGYZSTAN' || normalized.includes('KG')) {
+          return 'KG'
+        }
       }
     } catch (e) {
       // Ignore parse errors
