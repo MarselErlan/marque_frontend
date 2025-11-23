@@ -19,6 +19,8 @@ import {
   Edit,
   Loader2,
   ChevronRight,
+  Settings,
+  Languages,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -700,7 +702,7 @@ export default function ProfilePage() {
     { id: "orders", label: "Заказы", icon: Package },
     { id: "addresses", label: "Адреса доставки", icon: MapPin },
     { id: "payments", label: "Способы оплаты", icon: CreditCard },
-    { id: "notifications", label: "Уведомления", icon: Bell },
+    { id: "settings", label: "Настройки", icon: Settings },
   ]
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -733,7 +735,7 @@ export default function ProfilePage() {
     { id: "orders", label: "Заказы" },
     { id: "addresses", label: "Адреса доставки" },
     { id: "payments", label: "Способы оплаты" },
-    { id: "notifications", label: "Уведомления" },
+    { id: "settings", label: "Настройки" },
   ]
 
   return (
@@ -1633,159 +1635,93 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {activeTab === "notifications" && (
+            {activeTab === "settings" && (
               <div className="bg-white md:bg-white rounded-lg p-4 md:p-6 lg:p-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-1">Настройки</h2>
+                  <p className="text-gray-600">Управление настройками аккаунта</p>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Language Selection */}
                   <div>
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-1">Уведомления</h2>
-                  </div>
-
-                  {/* Notification Settings Toggle */}
-                  <div className="flex items-center gap-4 mt-4 sm:mt-0">
-                    <button
-                      onClick={() =>
-                        setNotificationSettings((prev) => ({ ...prev, emailNotifications: !prev.emailNotifications }))
-                      }
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        notificationSettings.emailNotifications
-                          ? "bg-brand text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      <Bell className="w-4 h-4" />
-                      Email
-                    </button>
-                    <button
-                      onClick={() =>
-                        setNotificationSettings((prev) => ({ ...prev, pushNotifications: !prev.pushNotifications }))
-                      }
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        notificationSettings.pushNotifications
-                          ? "bg-brand text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      <Bell className="w-4 h-4" />
-                      Push
-                    </button>
-                  </div>
-                </div>
-
-                {/* Filter Tabs */}
-                <div className="flex gap-1 mb-8 bg-gray-100 p-1 rounded-lg">
-                  <button
-                    onClick={() => setNotificationFilter("all")}
-                    className={`flex-1 px-6 py-3 rounded-md text-sm font-medium transition-colors ${
-                      notificationFilter === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    Все
-                  </button>
-                  <button
-                    onClick={() => setNotificationFilter("orders")}
-                    className={`flex-1 px-6 py-3 rounded-md text-sm font-medium transition-colors ${
-                      notificationFilter === "orders"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    Заказы
-                  </button>
-                  <button
-                    onClick={() => setNotificationFilter("sales")}
-                    className={`flex-1 px-6 py-3 rounded-md text-sm font-medium transition-colors ${
-                      notificationFilter === "sales"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    Акции
-                  </button>
-                </div>
-
-                {/* Notifications List */}
-                <div className="space-y-8">
-                  {Object.entries(groupedNotifications).map(([date, dateNotifications]) => (
-                    <div key={date}>
-                      <h3 className="text-sm font-medium text-gray-500 mb-4 lowercase">{date}</h3>
-                      <div className="space-y-4">
-                        {dateNotifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors"
-                          >
-                            <div className="w-12 h-12 bg-brand/10 rounded-lg flex items-center justify-center">
-                              <Bell className="w-6 h-6 text-brand" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-base font-medium text-gray-900">{notification.title}</p>
-                              {notification.message && (
-                                <p className="text-sm text-gray-600 mt-1 line-clamp-3">{notification.message}</p>
-                              )}
-                              <p className="text-sm text-gray-500 mt-1">{notification.time}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {filteredNotifications.length === 0 && (
-                  <div className="text-center py-12">
-                    <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">
-                      {notificationFilter === "all"
-                        ? "У вас пока нет уведомлений"
-                        : `Нет уведомлений в категории "${notificationFilter === "orders" ? "Заказы" : "Акции"}"`}
-                    </p>
-                  </div>
-                )}
-
-                {/* Notification Settings */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-medium text-black mb-4">Настройки уведомлений</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-black">Обновления заказов</p>
-                        <p className="text-xs text-gray-500">Получать уведомления о статусе заказов</p>
-                      </div>
+                    <h3 className="text-lg font-medium text-black mb-4 flex items-center gap-2">
+                      <Languages className="w-5 h-5 text-brand" />
+                      Язык интерфейса
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <button
-                        onClick={() =>
-                          setNotificationSettings((prev) => ({ ...prev, orderUpdates: !prev.orderUpdates }))
-                        }
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          notificationSettings.orderUpdates ? "bg-purple-600" : "bg-gray-200"
-                        }`}
+                        onClick={() => toast.info("Язык будет изменен в следующей версии")}
+                        className="flex items-center justify-center gap-3 px-6 py-4 border-2 border-brand bg-brand/5 rounded-lg hover:bg-brand/10 transition-colors"
                       >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            notificationSettings.orderUpdates ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
+                        <span className="text-lg">🇷🇺</span>
+                        <span className="font-medium text-gray-900">Русский</span>
+                      </button>
+                      <button
+                        onClick={() => toast.info("Язык будет изменен в следующей версии")}
+                        className="flex items-center justify-center gap-3 px-6 py-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="text-lg">🇰🇬</span>
+                        <span className="font-medium text-gray-900">Кыргызча</span>
+                      </button>
+                      <button
+                        onClick={() => toast.info("Язык будет изменен в следующей версии")}
+                        className="flex items-center justify-center gap-3 px-6 py-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="text-lg">🇬🇧</span>
+                        <span className="font-medium text-gray-900">English</span>
                       </button>
                     </div>
+                  </div>
 
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-black">Акции и скидки</p>
-                        <p className="text-xs text-gray-500">Получать уведомления о новых предложениях</p>
-                      </div>
-                      <button
-                        onClick={() =>
-                          setNotificationSettings((prev) => ({ ...prev, salesPromotions: !prev.salesPromotions }))
-                        }
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          notificationSettings.salesPromotions ? "bg-purple-600" : "bg-gray-200"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            notificationSettings.salesPromotions ? "translate-x-6" : "translate-x-1"
+                  {/* Notification Settings */}
+                  <div className="pt-6 border-t border-gray-200">
+                    <h3 className="text-lg font-medium text-black mb-4 flex items-center gap-2">
+                      <Bell className="w-5 h-5 text-brand" />
+                      Уведомления
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium text-black">Обновления заказов</p>
+                          <p className="text-xs text-gray-500">Получать уведомления о статусе заказов</p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setNotificationSettings((prev) => ({ ...prev, orderUpdates: !prev.orderUpdates }))
+                          }
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            notificationSettings.orderUpdates ? "bg-brand" : "bg-gray-200"
                           }`}
-                        />
-                      </button>
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              notificationSettings.orderUpdates ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium text-black">Акции и скидки</p>
+                          <p className="text-xs text-gray-500">Получать уведомления о новых предложениях</p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setNotificationSettings((prev) => ({ ...prev, salesPromotions: !prev.salesPromotions }))
+                          }
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            notificationSettings.salesPromotions ? "bg-brand" : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              notificationSettings.salesPromotions ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
