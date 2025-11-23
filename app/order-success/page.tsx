@@ -5,9 +5,11 @@ import { Receipt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 export default function OrderSuccessPage() {
   const auth = useAuth()
+  const { t } = useLanguage()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -20,17 +22,17 @@ export default function OrderSuccessPage() {
             <Receipt className="w-16 h-16 text-gray-400 mx-auto" />
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Заказ оформлен и оплачен</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('orderSuccess.title')}</h1>
 
-          <p className="text-gray-600 mb-8">Отслеживайте статус заказа в личном кабинете</p>
+          <p className="text-gray-600 mb-8">{t('orderSuccess.trackOrder')}</p>
 
           <div className="flex space-x-4 justify-center">
             <Link href="/profile">
-              <Button className="bg-brand hover:bg-brand-hover text-white px-8 py-3">Личный кабинет</Button>
+              <Button className="bg-brand hover:bg-brand-hover text-white px-8 py-3">{t('profile.title')}</Button>
             </Link>
             <Link href="/">
               <Button variant="outline" className="px-8 py-3 bg-transparent">
-                На главную
+                {t('common.goToHome')}
               </Button>
             </Link>
           </div>
@@ -46,43 +48,43 @@ export default function OrderSuccessPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Популярные категории</h4>
+              <h4 className="font-semibold mb-4">{t('footer.popularCategories')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
                 <li>
                   <Link href="/category/men" className="hover:text-white">
-                    Мужчинам
+                    {t('footer.men')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/category/women" className="hover:text-white">
-                    Женщинам
+                    {t('footer.women')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/category/children" className="hover:text-white">
-                    Детям
+                    {t('footer.kids')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/category/sport" className="hover:text-white">
-                    Спорт
+                    {t('footer.sport')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/category/shoes" className="hover:text-white">
-                    Обувь
+                    {t('footer.shoes')}
                   </Link>
                 </li>
                 <li>
                   <Link href="/category/accessories" className="hover:text-white">
-                    Аксессуары
+                    {t('footer.accessories')}
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Бренды</h4>
+              <h4 className="font-semibold mb-4">{t('footer.brands')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
                 <li>
                   <Link href="#" className="hover:text-white">
@@ -119,8 +121,8 @@ export default function OrderSuccessPage() {
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <p>Политика конфиденциальности</p>
-            <p>Условия пользования</p>
+            <p>{t('footer.privacyPolicy')}</p>
+            <p>{t('footer.termsOfUse')}</p>
           </div>
         </div>
       </footer>

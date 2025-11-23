@@ -9,10 +9,12 @@ import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { categoriesApi, productsApi } from "@/lib/api"
 import { getImageUrl } from "@/lib/utils"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const auth = useAuth()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+  const { t } = useLanguage()
   
   const [category, setCategory] = useState<any>(null)
   const [subcategories, setSubcategories] = useState<any[]>([])
@@ -111,11 +113,11 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       <div className="min-h-screen bg-gray-50">
         <AuthModals {...auth} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Категория не найдена</h1>
-          <p className="text-gray-600 mb-8">{error || 'Запрошенная категория не существует'}</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('category.notFound')}</h1>
+          <p className="text-gray-600 mb-8">{error || t('category.notExists')}</p>
           <Link href="/">
             <Button className="bg-brand hover:bg-brand-hover text-white">
-              Вернуться на главную
+              {t('common.goToHome')}
             </Button>
           </Link>
         </main>
@@ -230,19 +232,19 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             <div>
               <h3 className="text-xl font-bold mb-6">MARQUE</h3>
               <div className="space-y-2">
-                <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                <h4 className="font-semibold text-gray-300 mb-4">{t('footer.popularCategories')}</h4>
                 <div className="space-y-2 text-sm text-gray-400">
-                  <div>Мужчинам</div>
-                  <div>Женщинам</div>
-                  <div>Детям</div>
-                  <div>Спорт</div>
-                  <div>Обувь</div>
-                  <div>Аксессуары</div>
+                  <div>{t('footer.men')}</div>
+                  <div>{t('footer.women')}</div>
+                  <div>{t('footer.kids')}</div>
+                  <div>{t('footer.sport')}</div>
+                  <div>{t('footer.shoes')}</div>
+                  <div>{t('footer.accessories')}</div>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
+              <h4 className="font-semibold text-gray-300 mb-4">{t('footer.brands')}</h4>
               <div className="space-y-2 text-sm text-gray-400">
                 <div>ECCO</div>
                 <div>VANS</div>
@@ -254,8 +256,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div>Политика конфиденциальности</div>
-            <div>Пользовательское соглашение</div>
+            <div>{t('footer.privacyPolicy')}</div>
+            <div>{t('footer.termsOfUse')}</div>
           </div>
         </div>
       </footer>

@@ -12,14 +12,7 @@ import { useWishlist } from "@/hooks/useWishlist"
 import { API_CONFIG } from "@/lib/config"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
-
-const sortOptions = [
-  { value: "popular", label: "По популярности" },
-  { value: "newest", label: "Новинки" },
-  { value: "price_asc", label: "Сначала дешёвые" },
-  { value: "price_desc", label: "Сначала дорогие" },
-  { value: "rating", label: "По рейтингу" },
-]
+import { useLanguage } from "@/contexts/LanguageContext"
 
 export default function SubcategoryPage({
   params,
@@ -30,6 +23,15 @@ export default function SubcategoryPage({
   const router = useRouter()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { openCatalog } = useCatalog()
+  const { t } = useLanguage()
+  
+  const sortOptions = [
+    { value: "popular", label: t('search.sortPopular') },
+    { value: "newest", label: t('search.sortNewest') },
+    { value: "price_asc", label: t('search.sortPriceAsc') },
+    { value: "price_desc", label: t('search.sortPriceDesc') },
+    { value: "rating", label: t('search.sortRating') },
+  ]
   
   // API State
   const [category, setCategory] = useState<any>(null)
@@ -216,11 +218,11 @@ export default function SubcategoryPage({
       <div className="min-h-screen bg-gray-50">
         <AuthModals {...auth} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Категория не найдена</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('category.notFound')}</h1>
           <p className="text-gray-600 mb-8">{error}</p>
           <Link href="/">
             <Button className="bg-brand hover:bg-brand-hover text-white">
-              Вернуться на главную
+              {t('common.goToHome')}
             </Button>
           </Link>
         </main>
@@ -328,7 +330,7 @@ export default function SubcategoryPage({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
-            Все фильтры
+            {t('search.allFilters')}
           </button>
         </div>
 
@@ -372,7 +374,7 @@ export default function SubcategoryPage({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
-            Все фильтры
+            {t('search.allFilters')}
           </button>
 
           {/* Category Dropdown */}
@@ -446,7 +448,7 @@ export default function SubcategoryPage({
                 onClick={() => setShowSizeDropdown(!showSizeDropdown)}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                <span>Размер</span>
+                <span>{t('search.size')}</span>
                 {selectedFilters.sizes && selectedFilters.sizes.length > 0 && (
                   <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {selectedFilters.sizes.length}
@@ -486,7 +488,7 @@ export default function SubcategoryPage({
                 onClick={() => setShowPriceDropdown(!showPriceDropdown)}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                <span>Цена</span>
+                <span>{t('search.price')}</span>
                 {(priceRange.min || priceRange.max) && (
                   <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     1
@@ -496,7 +498,7 @@ export default function SubcategoryPage({
               </button>
               {showPriceDropdown && (
                 <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[280px]">
-                  <h4 className="font-medium mb-3 text-sm">Цена (сом)</h4>
+                  <h4 className="font-medium mb-3 text-sm">{t('search.price')} ({t('common.currency')})</h4>
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -528,7 +530,7 @@ export default function SubcategoryPage({
                 onClick={() => setShowColorDropdown(!showColorDropdown)}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                <span>Цвет</span>
+                <span>{t('search.color')}</span>
                 {selectedFilters.colors && selectedFilters.colors.length > 0 && (
                   <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {selectedFilters.colors.length}
@@ -565,7 +567,7 @@ export default function SubcategoryPage({
                 }}
               className="px-4 py-2 text-brand hover:text-brand-hover text-sm font-medium"
             >
-              Сбросить
+              {t('search.reset')}
                       </button>
                 )}
             </div>
@@ -693,7 +695,7 @@ export default function SubcategoryPage({
               </>
             ) : (
               <div className="text-center py-20">
-                <p className="text-gray-500 mb-4">Товары не найдены</p>
+                <p className="text-gray-500 mb-4">{t('search.noProductsFound')}</p>
                 <Button 
                   variant="outline"
                   onClick={() => {
@@ -703,7 +705,7 @@ export default function SubcategoryPage({
                     setCurrentPage(1)
                   }}
                 >
-                  Сбросить фильтры
+                  {t('search.resetFilters')}
                 </Button>
               </div>
             )}
@@ -725,7 +727,7 @@ export default function SubcategoryPage({
                 }}
                 className="text-sm text-gray-600"
               >
-                Сбросить
+                {t('search.reset')}
               </button>
               <h2 className="text-base font-bold text-black">Фильтры</h2>
               <button 
@@ -839,7 +841,7 @@ export default function SubcategoryPage({
               {/* Category Filter */}
               {category && (
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                  <span className="text-base font-normal text-black">Категория</span>
+                    <span className="text-base font-normal text-black">{t('search.category')}</span>
                   <button 
                     onClick={openCatalog}
                     className="flex items-center gap-1 text-sm text-black"
@@ -852,7 +854,7 @@ export default function SubcategoryPage({
               {/* Subcategory Filter */}
               {subcategory && (
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                  <span className="text-base font-normal text-black">Подкатегория</span>
+                    <span className="text-base font-normal text-black">{t('search.subcategory')}</span>
                   <button 
                     onClick={openCatalog}
                     className="flex items-center gap-1 text-sm text-black"
@@ -884,7 +886,7 @@ export default function SubcategoryPage({
                   onClick={() => setShowBrandSelectionModal(true)}
                   className="w-full flex items-center justify-between py-3 border-b border-gray-100"
                 >
-                  <span className="text-base font-normal text-black">Бренд</span>
+                    <span className="text-base font-normal text-black">{t('search.brand')}</span>
                   <div className="flex items-center gap-1 text-sm text-black">
                     {selectedFilters.brands && selectedFilters.brands.length > 0 
                       ? `${selectedFilters.brands.length} выбрано`
@@ -924,7 +926,7 @@ export default function SubcategoryPage({
               {/* Category Filter - Dynamic from API */}
               {allCategories.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-3">Категория</h3>
+                  <h3 className="font-medium mb-3">{t('search.category')}</h3>
                   <div className="space-y-2">
                     <Link 
                       href="/"
@@ -1069,13 +1071,13 @@ export default function SubcategoryPage({
                     setCurrentPage(1)
                   }}
                 >
-                  Сбросить
+                  {t('search.reset')}
                 </Button>
                 <Button
                   className="flex-1 bg-brand hover:bg-brand-hover text-white"
                   onClick={() => setShowAllFiltersModal(false)}
                 >
-                  Применить
+                  {t('search.apply')}
                 </Button>
               </div>
             </div>
@@ -1094,7 +1096,7 @@ export default function SubcategoryPage({
               }}
               className="text-sm text-gray-600"
             >
-              Сбросить
+              {t('search.reset')}
             </button>
             <h2 className="text-base font-bold text-black">Цвет</h2>
             <button 
@@ -1140,7 +1142,7 @@ export default function SubcategoryPage({
               }}
               className="text-sm text-gray-600"
             >
-              Сбросить
+              {t('search.reset')}
             </button>
             <h2 className="text-base font-bold text-black">Бренд</h2>
             <button 
@@ -1182,19 +1184,19 @@ export default function SubcategoryPage({
             <div>
               <h3 className="text-xl font-bold mb-6">MARQUE</h3>
               <div className="space-y-2">
-                <h4 className="font-semibold text-gray-300 mb-4">Популярные категории</h4>
+                <h4 className="font-semibold text-gray-300 mb-4">{t('footer.popularCategories')}</h4>
                 <div className="space-y-2 text-sm text-gray-400">
-                  <div>Мужчинам</div>
-                  <div>Женщинам</div>
-                  <div>Детям</div>
-                  <div>Спорт</div>
-                  <div>Обувь</div>
-                  <div>Аксессуары</div>
+                  <div>{t('footer.men')}</div>
+                  <div>{t('footer.women')}</div>
+                  <div>{t('footer.kids')}</div>
+                  <div>{t('footer.sport')}</div>
+                  <div>{t('footer.shoes')}</div>
+                  <div>{t('footer.accessories')}</div>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-300 mb-4">Бренды</h4>
+              <h4 className="font-semibold text-gray-300 mb-4">{t('footer.brands')}</h4>
               <div className="space-y-2 text-sm text-gray-400">
                 <div>ECCO</div>
                 <div>VANS</div>
@@ -1206,8 +1208,8 @@ export default function SubcategoryPage({
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div>Политика конфиденциальности</div>
-            <div>Пользовательское соглашение</div>
+            <div>{t('footer.privacyPolicy')}</div>
+            <div>{t('footer.termsOfUse')}</div>
           </div>
         </div>
       </footer>

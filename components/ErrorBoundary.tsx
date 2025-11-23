@@ -7,17 +7,26 @@
 
 import React from 'react'
 import { Button } from '@/components/ui/button'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface ErrorBoundaryState {
   hasError: boolean
   error?: Error
 }
 
-export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  ErrorBoundaryState
-> {
-  constructor(props: { children: React.ReactNode }) {
+interface ErrorBoundaryProps {
+  children: React.ReactNode
+  translations?: {
+    title: string
+    message: string
+    errorDetails: string
+    refreshPage: string
+    goToHome: string
+  }
+}
+
+class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false }
   }
@@ -36,6 +45,7 @@ export class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError) {
+      const { translations } = this.props
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
           <div className="text-center max-w-md">
@@ -56,17 +66,17 @@ export class ErrorBoundary extends React.Component<
             </div>
             
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Что-то пошло не так
+              {translations?.title || 'Что-то пошло не так'}
             </h1>
             
             <p className="text-gray-600 mb-2">
-              Произошла непредвиденная ошибка. Пожалуйста, попробуйте обновить страницу.
+              {translations?.message || 'Произошла непредвиденная ошибка. Пожалуйста, попробуйте обновить страницу.'}
             </p>
             
             {this.state.error && process.env.NODE_ENV === 'development' && (
               <details className="mt-4 text-left bg-red-50 p-4 rounded-lg">
                 <summary className="cursor-pointer font-medium text-red-800 mb-2">
-                  Детали ошибки (только в dev режиме)
+                  {translations?.errorDetails || 'Детали ошибки (только в dev режиме)'}
                 </summary>
                 <pre className="text-xs text-red-700 overflow-auto">
                   {this.state.error.toString()}
@@ -79,14 +89,14 @@ export class ErrorBoundary extends React.Component<
                 onClick={() => window.location.reload()}
                 className="bg-brand hover:bg-brand-hover text-white"
               >
-                Обновить страницу
+                {translations?.refreshPage || 'Обновить страницу'}
               </Button>
               
               <Button
                 onClick={() => window.location.href = '/'}
                 variant="outline"
               >
-                На главную
+                {translations?.goToHome || 'На главную'}
               </Button>
             </div>
           </div>
@@ -96,5 +106,23 @@ export class ErrorBoundary extends React.Component<
 
     return this.props.children
   }
+}
+
+export function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  const { t } = useLanguage()
+  
+  return (
+    <ErrorBoundaryClass
+      translations={{
+        title: t('error.title'),
+        message: t('error.message'),
+        errorDetails: t('error.details'),
+        refreshPage: t('error.refreshPage'),
+        goToHome: t('common.goToHome'),
+      }}
+    >
+      {children}
+    </ErrorBoundaryClass>
+  )
 }
 

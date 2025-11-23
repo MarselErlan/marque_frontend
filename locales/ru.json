@@ -28,7 +28,15 @@
     "sending": "Отправка...",
     "saveChanges": "Сохранить изменения",
     "banner": "Баннер",
-    "currency": "сом"
+    "currency": "сом",
+    "goToHome": "На главную",
+    "sunday": "Воскресенье",
+    "monday": "Понедельник",
+    "tuesday": "Вторник",
+    "wednesday": "Среда",
+    "thursday": "Четверг",
+    "friday": "Пятница",
+    "saturday": "Суббота"
   },
   "profile": {
     "title": "Личный кабинет",
@@ -159,7 +167,9 @@
     "noAddresses": "У вас нет сохраненных адресов. Создайте адрес для доставки.",
     "addNewAddress": "+ Добавить новый адрес",
     "defaultLabel": "По умолчанию",
-    "optional": "необязательно"
+    "optional": "необязательно",
+    "createAndContinue": "Создать адрес и продолжить",
+    "default": "По умолчанию"
   },
   "payments": {
     "title": "Способы оплаты",
@@ -182,7 +192,11 @@
     "paymentDeleteError": "Ошибка удаления способа оплаты",
     "confirmDelete": "Вы уверены, что хотите удалить этот способ оплаты?",
     "addCard": "Добавить карту",
-    "defaultMethod": "Основной способ"
+    "defaultMethod": "Основной способ",
+    "selectPaymentMethod": "Выберите способ оплаты",
+    "noPaymentMethods": "У вас нет сохраненных способов оплаты. Выберите один из вариантов:",
+    "cardEnterDetails": "Банковская карта (введите данные при оформлении)",
+    "payOnDelivery": "Оплата при получении заказа"
   },
   "cart": {
     "title": "Корзина",
@@ -210,12 +224,22 @@
     "selectPaymentMethod": "Способ оплаты",
     "selectPayment": "Выберите способ оплаты",
     "size": "Размер",
-    "color": "Цвет"
-  },
-  "languages": {
-    "russian": "Русский",
-    "kyrgyz": "Кыргызча",
-    "english": "English"
+    "color": "Цвет",
+    "orderCreatedSuccess": "Заказ успешно создан!",
+    "orderCreateError": "Ошибка при оформлении заказа. Попробуйте еще раз.",
+    "selectOrCreateAddress": "Пожалуйста, выберите или создайте адрес доставки",
+    "orderConfirmation": "Подтверждение заказа",
+    "orderComment": "Комментарий к заказу",
+    "orderCommentPlaceholder": "Добавьте комментарий для курьера (например, код от домофона, время доставки и т.д.)",
+    "shipping": "Доставка",
+    "totalToPay": "Итого к оплате",
+    "processing": "Оформление...",
+    "confirmOrder": "Подтвердить заказ",
+    "orderPlaced": "Заказ оформлен",
+    "orderAccepted": "Заказ принят к исполнению!",
+    "orderDetailsSent": "Мы отправили детали заказа на ваш номер телефона",
+    "goToProfile": "Перейти в профиль",
+    "notSelected": "Не выбран"
   },
   "auth": {
     "logout": "Выйти",
@@ -294,7 +318,8 @@
     "reviewPhotosUploaded": "Загружено фото: {count}. Вы можете добавить еще.",
     "reviewPhotoAlt": "Фото отзыва",
     "submitReview": "Отправить отзыв",
-    "reviewNoItems": "В заказе нет товаров"
+    "reviewNoItems": "В заказе нет товаров",
+    "priceOnRequest": "Цена по запросу"
   },
   "search": {
     "title": "Результаты поиска",
@@ -313,7 +338,22 @@
     "sortNewest": "Новинки",
     "sortPriceAsc": "Сначала дешёвые",
     "sortPriceDesc": "Сначала дорогие",
-    "sortRating": "По рейтингу"
+    "sortRating": "По рейтингу",
+    "allFilters": "Все фильтры",
+    "category": "Категория",
+    "subcategory": "Подкатегория",
+    "size": "Размер",
+    "price": "Цена",
+    "color": "Цвет",
+    "brand": "Бренд",
+    "reset": "Сбросить",
+    "apply": "Применить",
+    "allCategories": "Все категории",
+    "allSubcategories": "Все подкатегории",
+    "noProductsFound": "Товары не найдены",
+    "resetFilters": "Сбросить фильтры",
+    "from": "от",
+    "to": "до"
   },
   "catalog": {
     "title": "Каталог",
@@ -358,6 +398,27 @@
     "kyrgyz": "Кыргызча",
     "english": "English",
     "changedTo": "Язык изменен на {language}"
+  },
+  "orderSuccess": {
+    "title": "Заказ оформлен и оплачен",
+    "trackOrder": "Отслеживайте статус заказа в личном кабинете"
+  },
+  "error": {
+    "title": "Что-то пошло не так",
+    "message": "Произошла непредвиденная ошибка. Пожалуйста, попробуйте обновить страницу.",
+    "details": "Детали ошибки (только в dev режиме)",
+    "refreshPage": "Обновить страницу"
+  },
+  "category": {
+    "notFound": "Категория не найдена",
+    "notExists": "Запрошенная категория не существует"
+  },
+  "home": {
+    "categories": "Категории",
+    "bestSellers": "Хиты продаж",
+    "noProducts": "Товары не найдены",
+    "noCategories": "Нет категорий",
+    "tryRefreshOrFilters": "Попробуйте обновить страницу или изменить фильтры"
   }
 }
 
