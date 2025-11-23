@@ -311,7 +311,9 @@ export const useAuth = () => {
       } else {
         console.error('🔐 Verification failed:', response.status, responseText)
         const errorData = JSON.parse(responseText)
-        alert(errorData.detail || 'Неверный код. Попробуйте еще раз.')
+        // Note: This alert should ideally use toast, but keeping alert for now
+        // Translation would require useLanguage hook, which is not available in this context
+        alert(errorData.detail || 'Invalid code. Please try again.')
       }
     } catch (error) {
       console.error('🔐 Verification error:', error)

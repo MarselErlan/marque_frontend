@@ -123,11 +123,11 @@ export default function CartPage() {
     } else {
       // KG format: street, building, apartment, entrance, floor, city
       const parts = [
-        address.street?.trim() ? `ул. ${address.street.trim()}` : null,
-        address.building?.trim() ? `д. ${address.building.trim()}` : null,
-        address.apartment?.trim() ? `кв. ${address.apartment.trim()}` : null,
-        address.entrance?.trim() ? `подъезд ${address.entrance.trim()}` : null,
-        address.floor?.trim() ? `этаж ${address.floor.trim()}` : null,
+        address.street?.trim() ? `${t('addresses.street')} ${address.street.trim()}` : null,
+        address.building?.trim() ? `${t('addresses.buildingShort')} ${address.building.trim()}` : null,
+        address.apartment?.trim() ? `${t('addresses.apartmentShort')} ${address.apartment.trim()}` : null,
+        address.entrance?.trim() ? `${t('addresses.entrance')} ${address.entrance.trim()}` : null,
+        address.floor?.trim() ? `${t('addresses.floor')} ${address.floor.trim()}` : null,
         address.city?.trim(),
       ].filter(Boolean)
       return parts.join(", ")
@@ -782,24 +782,24 @@ export default function CartPage() {
                   <>
                     {/* KG User Address Form - Matching mobile design */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.city')} *</label>
                       <Input
                         type="text"
                         value={newAddress.city}
                         onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                        placeholder="Бишкек"
+                        placeholder={t('addresses.cityPlaceholder')}
                         className="w-full"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Улица *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.street')} *</label>
                       <Input
                         type="text"
                         value={newAddress.street}
                         onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                        placeholder="Юнусалиева"
+                        placeholder={t('addresses.streetPlaceholder')}
                         className="w-full"
                         required
                       />
@@ -858,7 +858,7 @@ export default function CartPage() {
                 {isUSLocation && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.city')} *</label>
                       <Input
                         type="text"
                         value={newAddress.city}
@@ -1002,12 +1002,12 @@ export default function CartPage() {
                 </p>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Название адреса</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.addressName')}</label>
                   <Input
                     type="text"
                     value={newAddress.label}
                     onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
-                    placeholder="Дом, Работа, и т.д."
+                    placeholder={t('addresses.addressNamePlaceholder')}
                     className="w-full"
                   />
                 </div>
@@ -1040,24 +1040,24 @@ export default function CartPage() {
                   <>
                     {/* KG User Address Form - Matching mobile design */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.city')} *</label>
                       <Input
                         type="text"
                         value={newAddress.city}
                         onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                        placeholder="Бишкек"
+                        placeholder={t('addresses.cityPlaceholder')}
                         className="w-full"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Улица *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.street')} *</label>
                       <Input
                         type="text"
                         value={newAddress.street}
                         onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                        placeholder="Юнусалиева"
+                        placeholder={t('addresses.streetPlaceholder')}
                         className="w-full"
                         required
                       />
@@ -1115,7 +1115,7 @@ export default function CartPage() {
                 {isUSLocation && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Город *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.city')} *</label>
                       <Input
                         type="text"
                         value={newAddress.city}
