@@ -933,6 +933,7 @@ export const storeManagerApi = {
       today_orders_count: number
       all_orders_count: number
       active_orders_count: number
+      total_users_count: number
       market: string
     }>(API_CONFIG.ENDPOINTS.STORE_MANAGER_DASHBOARD_STATS, {
       requiresAuth: true,
