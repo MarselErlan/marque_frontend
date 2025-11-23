@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
   const { addToCart, cartItemCount } = useCart()
   const { openCatalog } = useCatalog()
-  const { format, currency, currencyCode, market } = useCurrency()
+  const { format, currency, currencyCode, market, isLoading: isCurrencyLoading } = useCurrency()
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -121,42 +121,7 @@ export default function ProductDetailPage() {
         const productData = await productsApi.getDetail(slug)
         setProduct(productData)
         
-        // Format prices with currency conversion
-        if (productData) {
-          const productCurrency = productData.currency?.code || 'KGS'
-          console.log('💰 Formatting prices:', {
-            productCurrency,
-            priceMin: productData.price_min,
-            userCurrency: currency?.code,
-            market,
-          })
-          
-          const priceMin = await format(productData.price_min, productCurrency)
-          console.log('💰 Formatted price:', priceMin)
-          setFormattedPrice(priceMin)
-          
-          if (productData.original_price_min) {
-            const originalPrice = await format(productData.original_price_min, productCurrency)
-            setFormattedOriginalPrice(originalPrice)
-          }
-          
-          if (productData.price_min !== productData.price_max) {
-            const priceMax = await format(productData.price_max, productCurrency)
-            setFormattedPriceRange(`${priceMin} - ${priceMax}`)
-          }
-          
-          // Format prices for similar products
-          if (productData.similar_products) {
-            const formattedSimilar = await Promise.all(
-              productData.similar_products.map(async (p: any) => {
-                const pCurrency = p.currency?.code || 'KGS'
-                const formattedPrice = await format(p.price_min, pCurrency)
-                return { ...p, formatted_price: formattedPrice }
-              })
-            )
-            setSimilarProducts(formattedSimilar)
-          }
-        }
+        // Format prices will be handled in separate useEffect when currency is loaded
 
         if (productData?.skus?.length) {
           const firstSkuWithOptions = productData.skus.find(
@@ -198,6 +163,62 @@ export default function ProductDetailPage() {
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // Format prices when product and currency are both loaded
+  useEffect(() => {
+    const updatePrices = async () => {
+      if (!product) return
+      
+      // Wait for currency to load
+      if (isCurrencyLoading || !currency) {
+        console.log('⏳ Waiting for currency to load...', { isCurrencyLoading, currency, market })
+        return
+      }
+      
+      const productCurrency = product.currency?.code || 'KGS'
+      console.log('💰 Formatting prices:', {
+        productCurrency,
+        priceMin: product.price_min,
+        userCurrency: currency.code,
+        currencySymbol: currency.symbol,
+        market,
+      })
+      
+      try {
+        const priceMin = await format(product.price_min, productCurrency)
+        console.log('💰 Formatted price:', priceMin)
+        setFormattedPrice(priceMin)
+        
+        if (product.original_price_min) {
+          const originalPrice = await format(product.original_price_min, productCurrency)
+          setFormattedOriginalPrice(originalPrice)
+        }
+        
+        if (product.price_min !== product.price_max) {
+          const priceMax = await format(product.price_max, productCurrency)
+          setFormattedPriceRange(`${priceMin} - ${priceMax}`)
+        }
+        
+        // Format prices for similar products
+        if (product.similar_products && product.similar_products.length > 0) {
+          const formattedSimilar = await Promise.all(
+            product.similar_products.map(async (p: any) => {
+              const pCurrency = p.currency?.code || 'KGS'
+              const formattedPrice = await format(p.price_min, pCurrency)
+              return { ...p, formatted_price: formattedPrice }
+            })
+          )
+          setSimilarProducts(formattedSimilar)
+        }
+      } catch (error) {
+        console.error('Error formatting prices:', error)
+        // Fallback to raw price with currency symbol
+        setFormattedPrice(`${product.price_min} ${currency.symbol}`)
+      }
+    }
+    
+    updatePrices()
+  }, [product, currency, isCurrencyLoading, market, format])
 
   // NEW: Find matching SKU based on selected size and color
   const getMatchingSKU = () => {
@@ -771,7 +792,15 @@ export default function ProductDetailPage() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-bold text-brand">
-                  {formattedPrice || `${product.price_min} ${currency?.symbol || 'сом'}`}
+                  {isCurrencyLoading ? (
+                    <span className="text-gray-400">Loading...</span>
+                  ) : formattedPrice ? (
+                    formattedPrice
+                  ) : currency ? (
+                    `${product.price_min} ${currency.symbol}`
+                  ) : (
+                    `${product.price_min} сом`
+                  )}
                 </span>
                 {formattedOriginalPrice && (
                   <span className="text-lg text-gray-400 line-through">

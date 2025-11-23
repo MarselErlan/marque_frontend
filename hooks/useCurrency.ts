@@ -82,12 +82,17 @@ export function useCurrency(): UseCurrencyReturn {
   }, [currency])
 
   const format = useCallback(async (amount: number, fromCurrency?: string): Promise<string> => {
+    console.log('💵 Format function called:', { amount, fromCurrency, currency: currency?.code, market })
+    
     if (!currency) {
+      console.warn('⚠️ Currency not loaded, using fallback:', { market, amount })
       return formatPrice(amount, undefined, market === 'US' ? '$' : 'сом')
     }
     
     if (fromCurrency && fromCurrency !== currency.code) {
+      console.log('🔄 Converting price:', { fromCurrency, toCurrency: currency.code, amount })
       const converted = await convertPrice(amount, fromCurrency, currency.code)
+      console.log('✅ Converted price:', converted)
       return formatPrice(converted, currency.code, currency.symbol)
     }
     

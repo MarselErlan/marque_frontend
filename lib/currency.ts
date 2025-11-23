@@ -90,17 +90,21 @@ export async function loadCurrencies(): Promise<Currency[]> {
   
   // Return cached currencies if still valid
   if (currencyCache && (now - currencyCacheTime) < CACHE_DURATION) {
+    console.log('💾 Using cached currencies')
     return currencyCache
   }
   
   try {
+    console.log('📡 Loading currencies from API...')
     currencyCache = await currencyApi.getCurrencies()
     currencyCacheTime = now
+    console.log('✅ Loaded currencies:', currencyCache.map(c => `${c.code} (${c.symbol})`))
     return currencyCache
   } catch (error) {
-    console.error('Failed to load currencies:', error)
+    console.error('❌ Failed to load currencies from API:', error)
+    console.log('🔄 Using fallback currencies')
     // Return fallback currencies
-    return [
+    const fallbackCurrencies = [
       {
         id: 1,
         code: 'USD',
@@ -120,6 +124,9 @@ export async function loadCurrencies(): Promise<Currency[]> {
         market: 'KG',
       },
     ]
+    currencyCache = fallbackCurrencies
+    currencyCacheTime = now
+    return fallbackCurrencies
   }
 }
 
@@ -129,7 +136,9 @@ export async function loadCurrencies(): Promise<Currency[]> {
 export async function getCurrencyForMarket(market: 'KG' | 'US'): Promise<Currency | null> {
   const currencies = await loadCurrencies()
   const code = getMarketCurrencyCode(market)
-  return currencies.find(c => c.code === code) || null
+  const found = currencies.find(c => c.code === code)
+  console.log('🔍 Looking for currency:', { market, code, found: !!found, availableCodes: currencies.map(c => c.code) })
+  return found || null
 }
 
 /**
