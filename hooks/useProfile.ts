@@ -413,7 +413,7 @@ export const useProfile = () => {
       }
     } catch (error) {
       console.error('Error fetching phone numbers:', error)
-      toast.error('Failed to load phone numbers')
+      // Silent error - phone numbers are optional
     } finally {
       setIsLoadingPhones(false)
     }
@@ -481,14 +481,12 @@ export const useProfile = () => {
     fetchPaymentMethods()
     fetchOrders()
     fetchNotifications()
-    fetchPhoneNumbers()
   }, [
     fetchProfile,
     fetchAddresses,
     fetchPaymentMethods,
     fetchOrders,
     fetchNotifications,
-    fetchPhoneNumbers,
   ])
 
   return {

@@ -28,9 +28,7 @@ export default function CartPage() {
     paymentMethods,
     fetchPaymentMethods,
     isLoadingPayments,
-    profile,
-    phoneNumbers,
-    fetchPhoneNumbers
+    profile
   } = useProfile()
 
   const [isClient, setIsClient] = useState(false)
@@ -145,12 +143,8 @@ export default function CartPage() {
     if (auth.isLoggedIn && !auth.isLoading) {
       fetchAddresses()
       fetchPaymentMethods()
-      fetchPhoneNumbers()
     }
-  }, [auth.isLoggedIn, auth.isLoading, fetchAddresses, fetchPaymentMethods, fetchPhoneNumbers])
-  
-  // Get additional phone number
-  const additionalPhone = phoneNumbers?.find(p => !p.is_primary)?.phone || phoneNumbers?.find(p => p.is_primary && phoneNumbers.length > 1)?.phone || null
+  }, [auth.isLoggedIn, auth.isLoading, fetchAddresses, fetchPaymentMethods])
 
   // Auto-select default address when addresses are loaded
   useEffect(() => {
