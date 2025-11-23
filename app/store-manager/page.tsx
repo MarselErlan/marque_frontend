@@ -920,8 +920,8 @@ export default function AdminDashboard() {
                     <Package className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Управление заказами</h3>
-                    <p className="text-sm text-gray-500">Список всех заказов за все время</p>
+                    <h3 className="font-semibold text-gray-900">{t('admin.dashboard.allOrders')}</h3>
+                    <p className="text-sm text-gray-500">{t('admin.dashboard.allOrdersDesc')}</p>
                   </div>
                 </div>
                 <div className="text-right">

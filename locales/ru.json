@@ -455,7 +455,9 @@
       "users": "Пользователи",
       "totalUsers": "Всего зарегистрированных пользователей",
       "todayOrders": "Сегодняшние заказы",
-      "todayOrdersDesc": "Список заказов на последние 24 часа"
+      "todayOrdersDesc": "Список заказов на последние 24 часа",
+      "allOrders": "Управление заказами",
+      "allOrdersDesc": "Список всех заказов за все время"
     },
     "orders": {
       "order": "Заказ",
@@ -544,6 +546,25 @@
       "dateFilterComingSoon": "Фильтрация по датам будет доступна в следующей версии",
       "notificationSettingsComingSoon": "Настройки уведомлений будут сохранены в следующей версии",
       "marketSwitched": "Переключено на рынок"
+    },
+    "market": {
+      "kg": {
+        "name": "Кыргызстан",
+        "currency": "сом",
+        "dbLabel": "KG DB"
+      },
+      "us": {
+        "name": "Соединенные Штаты",
+        "currency": "USD",
+        "dbLabel": "US DB"
+      },
+      "connected": "Подключено",
+      "selectMarket": "Выбрать рынок",
+      "selectMarketDesc": "Выберите рынок для управления заказами и данными",
+      "noAccess": "Нет доступа",
+      "currentMarket": "Текущий рынок",
+      "switchMarket": "Переключить рынок",
+      "switchWarning": "Переключение рынка обновит все данные заказов"
     }
   }
 }

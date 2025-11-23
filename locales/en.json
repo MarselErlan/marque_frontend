@@ -406,7 +406,9 @@
       "users": "Users",
       "totalUsers": "Total registered users",
       "todayOrders": "Today's Orders",
-      "todayOrdersDesc": "List of orders for the last 24 hours"
+      "todayOrdersDesc": "List of orders for the last 24 hours",
+      "allOrders": "Order Management",
+      "allOrdersDesc": "List of all orders for all time"
     },
     "orders": {
       "order": "Order",
@@ -497,20 +499,23 @@
       "marketSwitched": "Switched to market"
     },
     "market": {
+      "kg": {
+        "name": "Kyrgyzstan",
+        "currency": "som",
+        "dbLabel": "KG DB"
+      },
+      "us": {
+        "name": "United States",
+        "currency": "USD",
+        "dbLabel": "US DB"
+      },
       "connected": "Connected",
       "selectMarket": "Select Market",
       "selectMarketDesc": "Select a market to manage orders and data",
+      "noAccess": "No Access",
       "currentMarket": "Current Market",
       "switchMarket": "Switch Market",
-      "switchWarning": "Switching markets will update all order data",
-      "kg": {
-        "name": "KYRGYZSTAN",
-        "currency": "som KGS"
-      },
-      "us": {
-        "name": "UNITED STATES",
-        "currency": "$ USD"
-      }
+      "switchWarning": "Switching market will update all order data"
     }
   },
   "wishlist": {
