@@ -419,6 +419,116 @@
     "noProducts": "Товары не найдены",
     "noCategories": "Нет категорий",
     "tryRefreshOrFilters": "Попробуйте обновить страницу или изменить фильтры"
+  },
+  "admin": {
+    "login": {
+      "title": "Панель администратора",
+      "subtitle": "Войдите, чтобы получить доступ к управлению магазином",
+      "success": "Вход выполнен успешно"
+    },
+    "loading": {
+      "redirecting": "Перенаправление на страницу входа...",
+      "checkingAccess": "Проверка доступа..."
+    },
+    "dashboard": {
+      "welcome": "Добро пожаловать,",
+      "administrator": "Администратор",
+      "revenue": "Доходы",
+      "revenueAllTime": "Информация о доходах за все время",
+      "revenueToday": "Доход за сегодня",
+      "users": "Пользователи",
+      "totalUsers": "Всего зарегистрированных пользователей",
+      "todayOrders": "Сегодняшние заказы",
+      "todayOrdersDesc": "Список заказов на последние 24 часа"
+    },
+    "orders": {
+      "order": "Заказ",
+      "count": "заказа",
+      "notFound": "Заказы не найдены",
+      "searchPlaceholder": "№ заказа, номер телефона, адрес",
+      "filters": {
+        "all": "Все",
+        "pending": "Ожидание",
+        "processing": "В пути",
+        "delivered": "Доставлено"
+      },
+      "delivery": "Доставка",
+      "deliveryDate": "Дата доставки",
+      "deliveryAddress": "Адрес доставки",
+      "orderItems": "Состав заказа",
+      "orderComment": "Комментарий к заказу",
+      "size": "Размер",
+      "color": "Цвет",
+      "phone": "Телефон",
+      "dateTime": "Дата и время",
+      "statusLabel": "Статус",
+      "total": "Сумма",
+      "changeStatus": "Изменить статус",
+      "updating": "Обновление...",
+      "statusUpdated": "Статус заказа обновлен",
+      "cancelOrder": "Отменить заказ",
+      "cancel": "Отменить",
+      "resumeOrder": "Возобновить заказ",
+      "resume": "Возобновить",
+      "resuming": "Возобновление",
+      "confirmCancel": "Вы действительно хотите отменить заказ?",
+      "confirmResume": "Вы действительно хотите возобновить заказ?",
+      "orderCancelled": "Заказ отменен",
+      "orderResumed": "Заказ возобновлен",
+      "loadMore": "Загрузить еще",
+      "dateRange": "Диапазон дат",
+      "status": {
+        "pending": "В ожидании",
+        "confirmed": "ОФОРМЛЕН",
+        "processing": "В ПУТИ",
+        "shipped": "Отправлен",
+        "delivered": "ДОСТАВЛЕН",
+        "cancelled": "ОТМЕНЕН"
+      }
+    },
+    "settings": {
+      "administrator": "Администратор",
+      "role": {
+        "admin": "Администратор",
+        "manager": "Менеджер",
+        "viewer": "Просмотр"
+      },
+      "realTimeUpdates": "Обновления в реальном времени",
+      "realTimeUpdatesDesc": "Автоматическое обновление данных каждые 30 секунд",
+      "darkTheme": "Тёмная тема",
+      "notifications": "Уведомления",
+      "notifyNewOrders": "Получать уведомления о новых заказах",
+      "notifyStatusChanges": "Уведомления о смене статуса заказов",
+      "dailyReport": "Ежедневный отчёт о доходах на Email",
+      "notifyDeliveryErrors": "Уведомления об ошибках доставки",
+      "confirmLogout": "Выйти из аккаунта?"
+    },
+    "errors": {
+      "accessDenied": "Доступ запрещен",
+      "notManager": "Вы не являетесь менеджером магазина",
+      "notManagerAccess": "Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.",
+      "inactiveAccount": "Ваш аккаунт менеджера неактивен",
+      "timeout": "Таймаут проверки статуса. Попробуйте обновить страницу.",
+      "checkStatusFailed": "Ошибка проверки статуса менеджера",
+      "loadStatsFailed": "Ошибка загрузки статистики",
+      "loadOrdersFailed": "Ошибка загрузки заказов",
+      "loadOrderFailed": "Ошибка загрузки заказа",
+      "loadAnalyticsFailed": "Ошибка загрузки аналитики",
+      "noMarketAccess": "У вас нет доступа к этому рынку",
+      "updateStatusFailed": "Ошибка обновления статуса",
+      "cancelOrderFailed": "Ошибка отмены заказа",
+      "resumeOrderFailed": "Ошибка возобновления заказа",
+      "authFailed": "Ошибка аутентификации. Попробуйте войти еще раз."
+    },
+    "actions": {
+      "logoutAndLogin": "Выйти и войти с другим аккаунтом",
+      "goToHome": "Перейти на главную страницу"
+    },
+    "info": {
+      "dateFilterComingSoon": "Фильтрация по датам будет доступна в следующей версии",
+      "notificationSettingsComingSoon": "Настройки уведомлений будут сохранены в следующей версии",
+      "marketSwitched": "Переключено на рынок"
+    }
   }
 }
 

@@ -16,16 +16,17 @@ import { useRouter } from "next/navigation"
 import { MarketIndicator, MarketIndicatorCompact, type Market } from "@/components/admin/MarketIndicator"
 import { storeManagerApi, ApiError } from "@/lib/api"
 import { toast } from "@/lib/toast"
-// Map backend status to frontend display status
-const mapBackendStatusToFrontend = (status: string): string => {
+import { useLanguage } from "@/contexts/LanguageContext"
+// Map backend status to frontend display status - will be translated in component
+const mapBackendStatusToFrontend = (status: string, t: (key: string) => string): string => {
   const statusMap: Record<string, string> = {
-    'pending': 'В ожидании',
-    'confirmed': 'ОФОРМЛЕН',
-    'processing': 'В ПУТИ',
-    'shipped': 'В ПУТИ',
-    'delivered': 'ДОСТАВЛЕН',
-    'cancelled': 'ОТМЕНЕН',
-    'refunded': 'ОТМЕНЕН',
+    'pending': t('admin.orders.status.pending'),
+    'confirmed': t('admin.orders.status.confirmed'),
+    'processing': t('admin.orders.status.processing'),
+    'shipped': t('admin.orders.status.shipped'),
+    'delivered': t('admin.orders.status.delivered'),
+    'cancelled': t('admin.orders.status.cancelled'),
+    'refunded': t('admin.orders.status.cancelled'),
   }
   return statusMap[status] || status
 }
@@ -47,38 +48,27 @@ const formatDateString = (dateString: string | null | undefined, format: 'short'
   return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
 }
 
-// Map frontend display status to backend status
+// Map frontend display status to backend status - will use backend status directly
 const mapFrontendStatusToBackend = (status: string): string => {
-  const statusMap: Record<string, string> = {
-    'В ожидании': 'pending',
-    'pending': 'pending',
-    'ОФОРМЛЕН': 'confirmed',
-    'confirmed': 'confirmed',
-    'В ПУТИ': 'processing',
-    'processing': 'processing',
-    'shipped': 'shipped',
-    'ДОСТАВЛЕН': 'delivered',
-    'delivered': 'delivered',
-    'ОТМЕНЕН': 'cancelled',
-    'cancelled': 'cancelled',
-  }
-  return statusMap[status] || status.toLowerCase()
+  // Status is already in backend format, just return it
+  return status.toLowerCase()
 }
 
-// Map backend status to frontend display status for status update modal
-const mapBackendStatusForModal = (status: string): string => {
+// Map backend status to frontend display status for status update modal - will be translated in component
+const mapBackendStatusForModal = (status: string, t: (key: string) => string): string => {
   // For status update modal, we want to show frontend display names
-  if (status === 'pending' || status === 'В ожидании') return 'В ожидании'
-  if (status === 'confirmed' || status === 'ОФОРМЛЕН') return 'ОФОРМЛЕН'
-  if (status === 'processing' || status === 'shipped' || status === 'В ПУТИ') return 'В ПУТИ'
-  if (status === 'delivered' || status === 'ДОСТАВЛЕН') return 'ДОСТАВЛЕН'
-  if (status === 'cancelled' || status === 'ОТМЕНЕН') return 'ОТМЕНЕН'
-  return 'В ожидании'
+  if (status === 'pending') return t('admin.orders.status.pending')
+  if (status === 'confirmed') return t('admin.orders.status.confirmed')
+  if (status === 'processing' || status === 'shipped') return t('admin.orders.status.processing')
+  if (status === 'delivered') return t('admin.orders.status.delivered')
+  if (status === 'cancelled') return t('admin.orders.status.cancelled')
+  return t('admin.orders.status.pending')
 }
 
 export default function AdminDashboard() {
   const auth = useAuth()
   const router = useRouter()
+  const { t } = useLanguage()
   
   // Manager status
   const [managerStatus, setManagerStatus] = useState<{
@@ -263,7 +253,7 @@ export default function AdminDashboard() {
       const fallbackMarket = accessibleMarkets[0]
       setCurrentMarket(fallbackMarket)
       localStorage.setItem("admin_market", fallbackMarket)
-      toast.info(`Переключено на рынок ${fallbackMarket.toUpperCase()} — нет доступа к выбранному рынку`)
+      toast.info(`${t('admin.info.marketSwitched')} ${fallbackMarket.toUpperCase()} — ${t('admin.errors.noMarketAccess')}`)
     }
   }, [accessibleMarkets, currentMarket])
   
@@ -312,7 +302,7 @@ export default function AdminDashboard() {
         console.error('❌ checkManagerStatus: Timeout after 10 seconds')
         setIsCheckingManagerStatus(false)
         isCheckingManagerRef.current = false
-        setManagerStatusError('Таймаут проверки статуса. Попробуйте обновить страницу.')
+        setManagerStatusError(t('admin.errors.timeout'))
         hasCheckedOnceRef.current = false
       }
     }, 10000) // 10 second timeout
@@ -330,9 +320,9 @@ export default function AdminDashboard() {
         managerStatusSetRef.current = true
         
         if (!data.is_manager) {
-          setManagerStatusError('Вы не являетесь менеджером магазина')
+          setManagerStatusError(t('admin.errors.notManager'))
         } else if (!data.is_active) {
-          setManagerStatusError('Ваш аккаунт менеджера неактивен')
+          setManagerStatusError(t('admin.errors.inactiveAccount'))
         }
       })
       
@@ -340,7 +330,7 @@ export default function AdminDashboard() {
       hasCheckedOnceRef.current = true
     } catch (error) {
       clearTimeout(timeoutId)
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка проверки статуса менеджера'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.checkStatusFailed')
       setManagerStatusError(errorMessage)
       console.error('❌ checkManagerStatus: Error occurred', error)
       // If error is "Authentication required", user is not logged in
@@ -432,7 +422,7 @@ export default function AdminDashboard() {
         total_users_count: data.total_users_count || 0,
       })
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка загрузки статистики'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.loadStatsFailed')
       setDashboardError(errorMessage)
       toast.error(errorMessage)
       console.error('Error fetching dashboard stats:', error)
@@ -452,19 +442,28 @@ export default function AdminDashboard() {
       const currentOffset = reset ? 0 : ordersOffsetRef.current
       
       // Determine status filter
-      let statusFilter = orderFilter
+      let statusFilter: string | undefined = orderFilter === "all" ? undefined : orderFilter
       if (statusOverride) {
-        statusFilter = statusOverride
+        statusFilter = statusOverride === "all" ? undefined : statusOverride
       } else if (currentView === "orders") {
         // For "today's orders" view, show active orders (pending, confirmed, processing, shipped)
-        // Backend maps "Ожидание" to pending/confirmed and "В пути" to processing/shipped
-        // So we'll fetch all and filter on frontend, or use "Все" and filter client-side
-        statusFilter = orderFilter === "Все" ? "Все" : orderFilter
+        // Map frontend filter to backend status
+        if (orderFilter === "all") {
+          statusFilter = undefined
+        } else if (orderFilter === "pending") {
+          statusFilter = "pending"
+        } else if (orderFilter === "processing") {
+          statusFilter = "processing"
+        } else if (orderFilter === "delivered") {
+          statusFilter = "delivered"
+        } else {
+          statusFilter = orderFilter === "all" ? undefined : orderFilter
+        }
       }
       
       const data = await storeManagerApi.getOrders({
         market: marketUpper,
-        status: statusFilter === "Все" ? undefined : statusFilter,
+        status: statusFilter,
         search: searchQuery || undefined,
         limit: ordersLimit,
         offset: currentOffset,
@@ -485,7 +484,7 @@ export default function AdminDashboard() {
       setOrdersTotal(data.total)
       setOrdersHasMore(data.has_more)
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка загрузки заказов'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.loadOrdersFailed')
       setOrdersError(errorMessage)
       toast.error(errorMessage)
       console.error('Error fetching orders:', error)
@@ -505,7 +504,7 @@ export default function AdminDashboard() {
       // Set initial status for modal (use backend status value for API call)
       setSelectedOrderStatus(data.order.status || 'pending')
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка загрузки заказа'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.loadOrderFailed')
       toast.error(errorMessage)
       console.error('Error fetching order detail:', error)
     } finally {
@@ -523,7 +522,7 @@ export default function AdminDashboard() {
       const data = await storeManagerApi.getRevenueAnalytics(marketUpper)
       setRevenueData(data)
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка загрузки аналитики'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.loadAnalyticsFailed')
       setRevenueError(errorMessage)
       toast.error(errorMessage)
       console.error('Error fetching revenue analytics:', error)
@@ -634,7 +633,7 @@ export default function AdminDashboard() {
   // Handle market change
   const handleMarketChange = (newMarket: Market) => {
     if (accessibleMarkets && !accessibleMarkets.includes(newMarket)) {
-      toast.error('У вас нет доступа к этому рынку')
+      toast.error(t('admin.errors.noMarketAccess'))
       return
     }
     setCurrentMarket(newMarket)
@@ -657,7 +656,7 @@ export default function AdminDashboard() {
     try {
       // selectedOrderStatus is already a backend status value (pending, confirmed, etc.)
       await storeManagerApi.updateOrderStatus(selectedOrder.id, selectedOrderStatus)
-      toast.success('Статус заказа обновлен')
+      toast.success(t('admin.orders.statusUpdated'))
     setIsStatusModalOpen(false)
       // Reload order detail
       await fetchOrderDetail(selectedOrder.id)
@@ -670,7 +669,7 @@ export default function AdminDashboard() {
         await fetchDashboardStats()
       }
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка обновления статуса'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.updateStatusFailed')
       toast.error(errorMessage)
       console.error('Error updating order status:', error)
     } finally {
@@ -685,7 +684,7 @@ export default function AdminDashboard() {
     setIsCancellingOrder(true)
     try {
       await storeManagerApi.cancelOrder(selectedOrder.id)
-      toast.success('Заказ отменен')
+      toast.success(t('admin.orders.orderCancelled'))
     setIsCancelConfirmOpen(false)
       // Reload order detail
       await fetchOrderDetail(selectedOrder.id)
@@ -698,7 +697,7 @@ export default function AdminDashboard() {
         await fetchDashboardStats()
       }
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка отмены заказа'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.cancelOrderFailed')
       toast.error(errorMessage)
       console.error('Error cancelling order:', error)
     } finally {
@@ -713,7 +712,7 @@ export default function AdminDashboard() {
     setIsResumingOrder(true)
     try {
       await storeManagerApi.resumeOrder(selectedOrder.id)
-      toast.success('Заказ возобновлен')
+      toast.success(t('admin.orders.orderResumed'))
     setIsResumeConfirmOpen(false)
       // Reload order detail
       await fetchOrderDetail(selectedOrder.id)
@@ -726,7 +725,7 @@ export default function AdminDashboard() {
         await fetchDashboardStats()
       }
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Ошибка возобновления заказа'
+      const errorMessage = error instanceof ApiError ? error.message : t('admin.errors.resumeOrderFailed')
       toast.error(errorMessage)
       console.error('Error resuming order:', error)
     } finally {
@@ -739,7 +738,7 @@ export default function AdminDashboard() {
     console.log(`Filtering orders from ${dateFrom} to ${dateTo}`)
     setIsDateRangeOpen(false)
     // TODO: Implement date range filtering in backend
-    toast.info('Фильтрация по датам будет доступна в следующей версии')
+    toast.info(t('admin.info.dateFilterComingSoon'))
   }
   
   // Handle logout
@@ -756,7 +755,7 @@ export default function AdminDashboard() {
       [setting]: value,
     }))
     // TODO: Save notification settings to backend
-    toast.info('Настройки уведомлений будут сохранены в следующей версии')
+    toast.info(t('admin.info.notificationSettingsComingSoon'))
   }
   
   // Filter orders locally
@@ -800,7 +799,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
-          <p className="text-gray-600">Перенаправление на страницу входа...</p>
+          <p className="text-gray-600">{t('admin.loading.redirecting')}</p>
         </div>
       </div>
     )
@@ -813,9 +812,9 @@ export default function AdminDashboard() {
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
             <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Доступ запрещен</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('admin.errors.accessDenied')}</h2>
             <p className="text-gray-600 mb-6">
-              {managerStatusError || 'Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.'}
+              {managerStatusError || t('admin.errors.notManagerAccess')}
             </p>
             <div className="space-y-3">
               <Button
@@ -825,14 +824,14 @@ export default function AdminDashboard() {
                   router.push('/store-manager/login')
                 }}
               >
-                Выйти и войти с другим аккаунтом
+                {t('admin.actions.logoutAndLogin')}
               </Button>
               <Button
                 variant="ghost"
                 className="w-full text-gray-600 hover:text-gray-900"
                 onClick={() => router.push('/')}
               >
-                Перейти на главную страницу
+                {t('admin.actions.goToHome')}
               </Button>
             </div>
           </CardContent>
@@ -848,8 +847,8 @@ export default function AdminDashboard() {
         <header className="bg-white border-b border-gray-200 px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Добро пожаловать,</h1>
-              <p className="text-2xl font-bold text-black">Администратор</p>
+              <h1 className="text-lg font-semibold text-gray-900">{t('admin.dashboard.welcome')}</h1>
+              <p className="text-2xl font-bold text-black">{t('admin.dashboard.administrator')}</p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => setCurrentView("settings")}>
               <Settings className="w-5 h-5" />
@@ -891,8 +890,8 @@ export default function AdminDashboard() {
                     <ShoppingBag className="w-5 h-5 text-brand" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Сегодняшние заказы</h3>
-                    <p className="text-sm text-gray-500">Список заказов на последние 24 часа</p>
+                    <h3 className="font-semibold text-gray-900">{t('admin.dashboard.todayOrders')}</h3>
+                    <p className="text-sm text-gray-500">{t('admin.dashboard.todayOrdersDesc')}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -934,8 +933,8 @@ export default function AdminDashboard() {
                     <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Доходы</h3>
-                    <p className="text-sm text-gray-500">Информация о доходах за все время</p>
+                    <h3 className="font-semibold text-gray-900">{t('admin.dashboard.revenue')}</h3>
+                    <p className="text-sm text-gray-500">{t('admin.dashboard.revenueAllTime')}</p>
                   </div>
                 </div>
               </div>
@@ -952,8 +951,8 @@ export default function AdminDashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Пользователи</h3>
-                    <p className="text-sm text-gray-500">Всего зарегистрированных пользователей</p>
+                    <h3 className="font-semibold text-gray-900">{t('admin.dashboard.users')}</h3>
+                    <p className="text-sm text-gray-500">{t('admin.dashboard.totalUsers')}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -980,7 +979,7 @@ export default function AdminDashboard() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Доходы</h1>
+                <h1 className="text-lg font-semibold text-gray-900">{t('admin.dashboard.revenue')}</h1>
               </div>
             </div>
             <MarketIndicatorCompact currentMarket={currentMarket} />
@@ -1012,7 +1011,7 @@ export default function AdminDashboard() {
                         <p className={`text-sm ${revenueData.revenue_change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                           {revenueData.revenue_change}
                         </p>
-                    <p className="text-sm text-gray-500">Доход за сегодня</p>
+                    <p className="text-sm text-gray-500">{t('admin.dashboard.revenueToday')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -1107,8 +1106,8 @@ export default function AdminDashboard() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Сегодняшние заказы</h1>
-                <p className="text-sm text-gray-500">{dashboardStats?.active_orders_count || 0} заказа</p>
+                <h1 className="text-lg font-semibold text-gray-900">{t('admin.dashboard.todayOrders')}</h1>
+                <p className="text-sm text-gray-500">{dashboardStats?.active_orders_count || 0} {t('admin.orders.count')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -1135,17 +1134,22 @@ export default function AdminDashboard() {
 
         <div className="bg-white border-b border-gray-200 px-4">
           <div className="flex space-x-6">
-            {["Все", "Ожидание", "В пути", "Доставлено"].map((filter) => (
+            {[
+              { value: "all", label: t('admin.orders.filters.all') },
+              { value: "pending", label: t('admin.orders.filters.pending') },
+              { value: "processing", label: t('admin.orders.filters.processing') },
+              { value: "delivered", label: t('admin.orders.filters.delivered') }
+            ].map((filter) => (
               <button
-                key={filter}
+                key={filter.value}
                 className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  orderFilter === filter
+                  orderFilter === filter.value
                     ? "border-brand text-brand"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
-                onClick={() => setOrderFilter(filter)}
+                onClick={() => setOrderFilter(filter.value)}
               >
-                {filter}
+                {filter.label}
               </button>
             ))}
           </div>
@@ -1168,7 +1172,7 @@ export default function AdminDashboard() {
           ) : filteredOrders.length === 0 ? (
             <Card>
               <CardContent className="p-4">
-                <p className="text-center text-gray-500">Заказы не найдены</p>
+                <p className="text-center text-gray-500">{t('admin.orders.notFound')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -1183,7 +1187,7 @@ export default function AdminDashboard() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">Заказ {order.order_number}</h3>
+                          <h3 className="font-semibold text-gray-900">{t('admin.orders.order')} {order.order_number}</h3>
                           <Badge className={`${order.status_color} text-xs`}>{order.status_display}</Badge>
                     </div>
                     <p className="text-sm text-gray-500">
@@ -1191,7 +1195,7 @@ export default function AdminDashboard() {
                     </p>
                     {order.requested_delivery_date && (
                       <p className="text-sm text-brand font-medium mt-1">
-                        📅 Доставка: {formatDateString(order.requested_delivery_date, 'short')}
+                        📅 {t('admin.orders.delivery')}: {formatDateString(order.requested_delivery_date, 'short')}
                       </p>
                     )}
                   </div>
@@ -1250,12 +1254,12 @@ export default function AdminDashboard() {
         <Dialog open={isDateRangeOpen} onOpenChange={setIsDateRangeOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Диапазон дат</DialogTitle>
+              <DialogTitle>{t('admin.orders.dateRange')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="date-from" className="text-sm font-medium text-gray-700">
-                  От
+                  {t('search.from')}
                 </Label>
                 <Input
                   id="date-from"
@@ -1267,7 +1271,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <Label htmlFor="date-to" className="text-sm font-medium text-gray-700">
-                  До
+                  {t('search.to')}
                 </Label>
                 <Input
                   id="date-to"
@@ -1278,7 +1282,7 @@ export default function AdminDashboard() {
                 />
               </div>
               <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleDateRangeApply}>
-                Применить
+                {t('search.apply')}
               </Button>
             </div>
           </DialogContent>
@@ -1326,17 +1330,22 @@ export default function AdminDashboard() {
 
         <div className="bg-white border-b border-gray-200 px-4">
           <div className="flex space-x-6">
-            {["Все", "Ожидание", "В пути", "Доставлено"].map((filter) => (
+            {[
+              { value: "all", label: t('admin.orders.filters.all') },
+              { value: "pending", label: t('admin.orders.filters.pending') },
+              { value: "processing", label: t('admin.orders.filters.processing') },
+              { value: "delivered", label: t('admin.orders.filters.delivered') }
+            ].map((filter) => (
               <button
-                key={filter}
+                key={filter.value}
                 className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  orderFilter === filter
+                  orderFilter === filter.value
                     ? "border-brand text-brand"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
-                onClick={() => setOrderFilter(filter)}
+                onClick={() => setOrderFilter(filter.value)}
               >
-                {filter}
+                {filter.label}
               </button>
             ))}
           </div>
@@ -1359,7 +1368,7 @@ export default function AdminDashboard() {
           ) : filteredOrders.length === 0 ? (
             <Card>
               <CardContent className="p-4">
-                <p className="text-center text-gray-500">Заказы не найдены</p>
+                <p className="text-center text-gray-500">{t('admin.orders.notFound')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -1374,7 +1383,7 @@ export default function AdminDashboard() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">Заказ {order.order_number}</h3>
+                          <h3 className="font-semibold text-gray-900">{t('admin.orders.order')} {order.order_number}</h3>
                           <Badge className={`${order.status_color} text-xs`}>{order.status_display}</Badge>
                     </div>
                     <p className="text-sm text-gray-500">
@@ -1382,7 +1391,7 @@ export default function AdminDashboard() {
                     </p>
                     {order.requested_delivery_date && (
                       <p className="text-sm text-brand font-medium mt-1">
-                        📅 Доставка: {formatDateString(order.requested_delivery_date, 'short')}
+                        📅 {t('admin.orders.delivery')}: {formatDateString(order.requested_delivery_date, 'short')}
                       </p>
                     )}
                   </div>
@@ -1441,12 +1450,12 @@ export default function AdminDashboard() {
         <Dialog open={isDateRangeOpen} onOpenChange={setIsDateRangeOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Диапазон дат</DialogTitle>
+              <DialogTitle>{t('admin.orders.dateRange')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="date-from" className="text-sm font-medium text-gray-700">
-                  От
+                  {t('search.from')}
                 </Label>
                 <Input
                   id="date-from"
@@ -1458,7 +1467,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <Label htmlFor="date-to" className="text-sm font-medium text-gray-700">
-                  До
+                  {t('search.to')}
                 </Label>
                 <Input
                   id="date-to"
@@ -1469,7 +1478,7 @@ export default function AdminDashboard() {
                 />
               </div>
               <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleDateRangeApply}>
-                Применить
+                {t('search.apply')}
               </Button>
             </div>
           </DialogContent>
@@ -1489,7 +1498,7 @@ export default function AdminDashboard() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Заказ {selectedOrder?.order_number}</h1>
+                <h1 className="text-lg font-semibold text-gray-900">{t('admin.orders.order')} {selectedOrder?.order_number}</h1>
                 <p className="text-sm text-gray-500">{selectedOrder?.order_date_formatted || selectedOrder?.order_date}</p>
               </div>
             </div>
@@ -1505,7 +1514,7 @@ export default function AdminDashboard() {
           ) : selectedOrder ? (
             <>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Состав заказа</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('admin.orders.orderItems')}</h3>
             <div className="space-y-4">
                   {selectedOrder.items?.map((item: any, index: number) => (
                 <div key={index} className="flex items-start space-x-3">
@@ -1516,8 +1525,8 @@ export default function AdminDashboard() {
                   />
                   <div className="flex-1">
                         <h4 className="font-medium text-gray-900">{item.product_name}</h4>
-                    {item.size && <p className="text-sm text-gray-500">Размер {item.size}</p>}
-                    {item.color && <p className="text-sm text-gray-500">Цвет {item.color}</p>}
+                    {item.size && <p className="text-sm text-gray-500">{t('admin.orders.size')} {item.size}</p>}
+                    {item.color && <p className="text-sm text-gray-500">{t('admin.orders.color')} {item.color}</p>}
                         <p className="text-sm font-medium text-gray-900">
                           {item.price} {selectedOrder.currency} x {item.quantity} = {item.subtotal} {selectedOrder.currency}
                         </p>
@@ -1529,17 +1538,17 @@ export default function AdminDashboard() {
 
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">Телефон</span>
+              <span className="text-gray-600">{t('admin.orders.phone')}</span>
                   <span className="font-medium">{selectedOrder.customer_phone}</span>
             </div>
             
             {/* Address Information Section */}
             <div className="border-t pt-3 mt-3">
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Адрес доставки</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('admin.orders.deliveryAddress')}</h4>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Полный адрес</span>
-                  <span className="font-medium text-right max-w-[60%]">{selectedOrder.delivery_address || 'Не указан'}</span>
+                  <span className="text-gray-600">{t('addresses.fullAddress')}</span>
+                  <span className="font-medium text-right max-w-[60%]">{selectedOrder.delivery_address || t('common.notSpecified')}</span>
                 </div>
                 
                 {/* Detailed address fields from shipping_address if available */}
@@ -1547,31 +1556,31 @@ export default function AdminDashboard() {
                   <>
                     {selectedOrder.shipping_address.street && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Улица</span>
+                        <span className="text-gray-600">{t('addresses.street')}</span>
                         <span className="font-medium">{selectedOrder.shipping_address.street}</span>
                       </div>
                     )}
                     {selectedOrder.shipping_address.building && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Дом/Здание</span>
+                        <span className="text-gray-600">{t('addresses.building')}</span>
                         <span className="font-medium">{selectedOrder.shipping_address.building}</span>
                       </div>
                     )}
                     {selectedOrder.shipping_address.apartment && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Квартира</span>
+                        <span className="text-gray-600">{t('addresses.apartment')}</span>
                         <span className="font-medium">{selectedOrder.shipping_address.apartment}</span>
                       </div>
                     )}
                     {selectedOrder.shipping_address.entrance && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Подъезд</span>
+                        <span className="text-gray-600">{t('addresses.entrance')}</span>
                         <span className="font-medium">{selectedOrder.shipping_address.entrance}</span>
                       </div>
                     )}
                     {selectedOrder.shipping_address.floor && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Этаж</span>
+                        <span className="text-gray-600">{t('addresses.floor')}</span>
                         <span className="font-medium">{selectedOrder.shipping_address.floor}</span>
                       </div>
                     )}
@@ -1580,25 +1589,25 @@ export default function AdminDashboard() {
                 
                 {selectedOrder.delivery_city && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Город</span>
+                    <span className="text-gray-600">{t('addresses.city')}</span>
                     <span className="font-medium">{selectedOrder.delivery_city}</span>
                   </div>
                 )}
                 {selectedOrder.delivery_state && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Штат/Область</span>
+                    <span className="text-gray-600">{t('addresses.state')}</span>
                     <span className="font-medium">{selectedOrder.delivery_state}</span>
                   </div>
                 )}
                 {selectedOrder.delivery_postal_code && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Почтовый индекс</span>
+                    <span className="text-gray-600">{t('addresses.postalCode')}</span>
                     <span className="font-medium">{selectedOrder.delivery_postal_code}</span>
                   </div>
                 )}
                 {selectedOrder.delivery_country && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Страна</span>
+                    <span className="text-gray-600">{t('orders.country')}</span>
                     <span className="font-medium">{selectedOrder.delivery_country}</span>
                   </div>
                 )}
@@ -1606,12 +1615,12 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex justify-between">
-              <span className="text-gray-600">Дата и время</span>
+              <span className="text-gray-600">{t('admin.orders.dateTime')}</span>
                   <span className="font-medium">{selectedOrder.order_date_formatted || selectedOrder.order_date}</span>
             </div>
             {selectedOrder.requested_delivery_date && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Дата доставки</span>
+                <span className="text-gray-600">{t('admin.orders.deliveryDate')}</span>
                 <span className="font-medium text-brand">
                   {formatDateString(selectedOrder.requested_delivery_date, 'long')}
                 </span>
@@ -1619,16 +1628,16 @@ export default function AdminDashboard() {
             )}
             {selectedOrder.delivery_notes && (
               <div className="flex flex-col">
-                <span className="text-gray-600 mb-1">Комментарий к заказу</span>
+                <span className="text-gray-600 mb-1">{t('admin.orders.orderComment')}</span>
                 <span className="font-medium text-brand">{selectedOrder.delivery_notes}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-gray-600">Статус</span>
+              <span className="text-gray-600">{t('admin.orders.status')}</span>
                   <Badge className={`${selectedOrder.status_color} text-xs`}>{selectedOrder.status_display}</Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Сумма</span>
+                  <span className="text-gray-600">{t('admin.orders.total')}</span>
                   <span className="font-medium">{selectedOrder.amount || `${selectedOrder.total_amount} ${selectedOrder.currency}`}</span>
             </div>
           </div>
@@ -1642,10 +1651,10 @@ export default function AdminDashboard() {
                   {isUpdatingStatus ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Обновление...
+                      {t('admin.orders.updating')}
                     </>
                   ) : (
-                    'Изменить статус'
+                    t('admin.orders.changeStatus')
                   )}
             </Button>
 
@@ -1659,10 +1668,10 @@ export default function AdminDashboard() {
                     {isResumingOrder ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Возобновление...
+                        {t('admin.orders.resuming')}...
                       </>
                     ) : (
-                      'Возобновить заказ'
+                      t('admin.orders.resumeOrder')
                     )}
               </Button>
             ) : (
@@ -1675,10 +1684,10 @@ export default function AdminDashboard() {
                     {isCancellingOrder ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Отмена...
+                        {t('common.cancel')}...
                       </>
                     ) : (
-                      'Отменить заказ'
+                      t('admin.orders.cancelOrder')
                     )}
               </Button>
             )}
@@ -1690,33 +1699,33 @@ export default function AdminDashboard() {
         <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Статус заказа</DialogTitle>
+              <DialogTitle>{t('admin.orders.statusLabel')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <RadioGroup value={selectedOrderStatus} onValueChange={setSelectedOrderStatus}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="pending" id="pending" />
-                  <Label htmlFor="pending">В ожидании (Pending)</Label>
+                  <Label htmlFor="pending">{t('admin.orders.status.pending')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="confirmed" id="confirmed" />
-                  <Label htmlFor="confirmed">Оформлен (Confirmed)</Label>
+                  <Label htmlFor="confirmed">{t('admin.orders.status.confirmed')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="processing" id="processing" />
-                  <Label htmlFor="processing">В обработке (Processing)</Label>
+                  <Label htmlFor="processing">{t('admin.orders.status.processing')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="shipped" id="shipped" />
-                  <Label htmlFor="shipped">Отправлен (Shipped)</Label>
+                  <Label htmlFor="shipped">{t('admin.orders.status.shipped')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="delivered" id="delivered" />
-                  <Label htmlFor="delivered">Доставлен (Delivered)</Label>
+                  <Label htmlFor="delivered">{t('admin.orders.status.delivered')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="cancelled" id="cancelled" />
-                  <Label htmlFor="cancelled">Отменен (Cancelled)</Label>
+                  <Label htmlFor="cancelled">{t('admin.orders.status.cancelled')}</Label>
                 </div>
               </RadioGroup>
               <Button
@@ -1727,10 +1736,10 @@ export default function AdminDashboard() {
                 {isUpdatingStatus ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Обновление...
+                    {t('admin.orders.updating')}
                   </>
                 ) : (
-                  'Сохранить'
+                  t('common.save')
                 )}
               </Button>
             </div>
@@ -1740,7 +1749,7 @@ export default function AdminDashboard() {
         <Dialog open={isCancelConfirmOpen} onOpenChange={setIsCancelConfirmOpen}>
           <DialogContent className="sm:max-w-md">
             <div className="text-center space-y-4 py-4">
-              <h3 className="text-lg font-semibold text-gray-900">Вы действительно хотите отменить заказ?</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('admin.orders.confirmCancel')}</h3>
               <div className="flex space-x-3">
                 <Button
                   variant="outline"
@@ -1748,7 +1757,7 @@ export default function AdminDashboard() {
                   onClick={() => setIsCancelConfirmOpen(false)}
                   disabled={isCancellingOrder}
                 >
-                  Отмена
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
@@ -1758,10 +1767,10 @@ export default function AdminDashboard() {
                   {isCancellingOrder ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Отмена...
+                      {t('common.cancel')}...
                     </>
                   ) : (
-                    'Отменить'
+                    t('admin.orders.cancel')
                   )}
                 </Button>
               </div>
@@ -1772,7 +1781,7 @@ export default function AdminDashboard() {
         <Dialog open={isResumeConfirmOpen} onOpenChange={setIsResumeConfirmOpen}>
           <DialogContent className="sm:max-w-md">
             <div className="text-center space-y-4 py-4">
-              <h3 className="text-lg font-semibold text-gray-900">Вы действительно хотите возобновить заказ?</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('admin.orders.confirmResume')}</h3>
               <div className="flex space-x-3">
                 <Button
                   variant="outline"
@@ -1780,7 +1789,7 @@ export default function AdminDashboard() {
                   onClick={() => setIsResumeConfirmOpen(false)}
                   disabled={isResumingOrder}
                 >
-                  Отмена
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
@@ -1790,10 +1799,10 @@ export default function AdminDashboard() {
                   {isResumingOrder ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Возобновление...
+                      {t('admin.orders.resuming')}...
                     </>
                   ) : (
-                    'Возобновить'
+                    t('admin.orders.resume')
                   )}
                 </Button>
               </div>
@@ -1815,7 +1824,7 @@ export default function AdminDashboard() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Настройки</h1>
+                <h1 className="text-lg font-semibold text-gray-900">{t('settings.title')}</h1>
               </div>
             </div>
             <MarketIndicatorCompact currentMarket={currentMarket} />
@@ -1827,9 +1836,9 @@ export default function AdminDashboard() {
           <Card>
             <CardContent className="p-4">
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900">Администратор</h3>
+                <h3 className="font-semibold text-gray-900">{t('admin.settings.administrator')}</h3>
                 <p className="text-sm text-gray-500">
-                  {managerStatus?.role === 'admin' ? 'Администратор' : managerStatus?.role === 'manager' ? 'Менеджер' : 'Просмотр'}
+                  {managerStatus?.role === 'admin' ? t('admin.settings.role.admin') : managerStatus?.role === 'manager' ? t('admin.settings.role.manager') : t('admin.settings.role.viewer')}
                 </p>
               </div>
             </CardContent>
@@ -1841,12 +1850,12 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <TrendingUp className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium text-gray-900">Обновления в реальном времени</span>
+                  <span className="font-medium text-gray-900">{t('admin.settings.realTimeUpdates')}</span>
                 </div>
                 <Switch checked={enablePolling} onCheckedChange={setEnablePolling} />
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                Автоматическое обновление данных каждые 30 секунд
+                {t('admin.settings.realTimeUpdatesDesc')}
               </p>
             </CardContent>
           </Card>
@@ -1854,17 +1863,21 @@ export default function AdminDashboard() {
           {/* Language Selection */}
           <div>
             <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-              {["Русский", "Кыргызча", "English"].map((language) => (
+              {[
+                { code: "ru", label: t('languages.russian') },
+                { code: "ky", label: t('languages.kyrgyz') },
+                { code: "en", label: t('languages.english') }
+              ].map((language) => (
                 <button
-                  key={language}
+                  key={language.code}
                   className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                    selectedLanguage === language
+                    selectedLanguage === language.code
                       ? "bg-white text-gray-900 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
-                  onClick={() => setSelectedLanguage(language)}
+                  onClick={() => setSelectedLanguage(language.code)}
                 >
-                  {language}
+                  {language.label}
                 </button>
               ))}
             </div>
@@ -1876,7 +1889,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   {isDarkMode ? <Moon className="w-5 h-5 text-gray-600" /> : <Sun className="w-5 h-5 text-gray-600" />}
-                  <span className="font-medium text-gray-900">Тёмная тема</span>
+                  <span className="font-medium text-gray-900">{t('admin.settings.darkTheme')}</span>
                 </div>
                 <Switch checked={isDarkMode} onCheckedChange={setIsDarkMode} />
               </div>
@@ -1885,12 +1898,12 @@ export default function AdminDashboard() {
 
           {/* Notifications Section */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Уведомления</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('admin.settings.notifications')}</h3>
             <div className="space-y-4">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-900">Получать уведомления о новых заказах</span>
+                    <span className="text-gray-900">{t('admin.settings.notifyNewOrders')}</span>
                     <Switch
                       checked={notificationSettings.newOrders}
                       onCheckedChange={(value) => handleNotificationToggle("newOrders", value)}
@@ -1902,7 +1915,7 @@ export default function AdminDashboard() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-900">Уведомления о смене статуса заказов</span>
+                    <span className="text-gray-900">{t('admin.settings.notifyStatusChanges')}</span>
                     <Switch
                       checked={notificationSettings.statusChanges}
                       onCheckedChange={(value) => handleNotificationToggle("statusChanges", value)}
@@ -1914,7 +1927,7 @@ export default function AdminDashboard() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-900">Ежедневный отчёт о доходах на Email</span>
+                    <span className="text-gray-900">{t('admin.settings.dailyReport')}</span>
                     <Switch
                       checked={notificationSettings.dailyReport}
                       onCheckedChange={(value) => handleNotificationToggle("dailyReport", value)}
@@ -1926,7 +1939,7 @@ export default function AdminDashboard() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-900">Уведомления об ошибках доставки</span>
+                    <span className="text-gray-900">{t('admin.settings.notifyDeliveryErrors')}</span>
                     <Switch
                       checked={notificationSettings.deliveryErrors}
                       onCheckedChange={(value) => handleNotificationToggle("deliveryErrors", value)}
@@ -1944,7 +1957,7 @@ export default function AdminDashboard() {
               className="w-full text-red-600 border-red-600 hover:bg-red-50 bg-transparent"
               onClick={() => setIsLogoutConfirmOpen(true)}
             >
-              Выйти из аккаунта
+              {t('profile.logout')}
             </Button>
           </div>
         </div>
@@ -1953,17 +1966,17 @@ export default function AdminDashboard() {
         <Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
           <DialogContent className="sm:max-w-md">
             <div className="text-center space-y-4 py-4">
-              <h3 className="text-lg font-semibold text-gray-900">Выйти из аккаунта?</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('admin.settings.confirmLogout')}</h3>
               <div className="flex space-x-3">
                 <Button
                   variant="outline"
                   className="flex-1 bg-transparent"
                   onClick={() => setIsLogoutConfirmOpen(false)}
                 >
-                  Отмена
+                  {t('common.cancel')}
                 </Button>
                 <Button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white" onClick={handleLogout}>
-                  Выйти
+                  {t('auth.logout')}
                 </Button>
               </div>
             </div>

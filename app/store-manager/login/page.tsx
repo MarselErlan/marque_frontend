@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { Phone, MessageSquare, Loader2, AlertCircle, Shield } from "lucide-react"
 import { toast } from "@/lib/toast"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const countryCodes = [
   { code: "+996", country: "KG", flag: "🇰🇬", placeholder: "505-23-12-55" },
@@ -21,6 +22,7 @@ const countryCodes = [
 export default function AdminLoginPage() {
   const router = useRouter()
   const auth = useAuth()
+  const { t } = useLanguage()
   
   const [phoneNumber, setPhoneNumber] = useState("")
   const [countryCode, setCountryCode] = useState("+996")
@@ -43,7 +45,7 @@ export default function AdminLoginPage() {
             router.push('/store-manager')
           } else {
             // Logged in but not a manager
-            setLoginError('Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.')
+            setLoginError(t('admin.errors.notManagerAccess'))
           }
         } catch (error) {
           console.error('Error checking manager status:', error)
@@ -59,7 +61,7 @@ export default function AdminLoginPage() {
   // Handle phone submission
   const handlePhoneSubmit = async () => {
     if (!phoneNumber.trim()) {
-      toast.error('Пожалуйста, введите номер телефона')
+      toast.error(t('auth.enterPhone'))
       return
     }
 
@@ -76,14 +78,14 @@ export default function AdminLoginPage() {
 
       if (response.ok) {
         setShowSmsForm(true)
-        toast.success('Код подтверждения отправлен')
+        toast.success(t('auth.codeSent'))
       } else {
-        const errorData = await response.json().catch(() => ({ message: 'Ошибка отправки SMS' }))
-        setLoginError(errorData.message || 'Ошибка отправки SMS')
+        const errorData = await response.json().catch(() => ({ message: t('auth.smsError') }))
+        setLoginError(errorData.message || t('auth.smsError'))
       }
     } catch (error) {
       console.error('Error sending SMS:', error)
-      setLoginError('Ошибка отправки SMS. Попробуйте еще раз.')
+      setLoginError(t('auth.smsError'))
     } finally {
       setIsSendingSms(false)
     }
@@ -92,7 +94,7 @@ export default function AdminLoginPage() {
   // Handle SMS verification
   const handleSmsVerification = async () => {
     if (smsCode.length !== 6) {
-      toast.error('Введите 6-значный код')
+      toast.error(t('auth.enterCode'))
       return
     }
 
@@ -137,12 +139,12 @@ export default function AdminLoginPage() {
         
         if (managerStatus.is_manager && managerStatus.is_active) {
           // Success! Redirect to admin dashboard
-          toast.success('Вход выполнен успешно')
+          toast.success(t('admin.login.success'))
           // Use window.location for a hard redirect to ensure clean state
           window.location.href = '/store-manager'
         } else {
           // User is not a manager
-          setLoginError('Вы не являетесь менеджером магазина. Обратитесь к администратору для получения доступа.')
+            setLoginError(t('admin.errors.notManagerAccess'))
           await auth.handleLogout()
           setShowSmsForm(false)
           setSmsCode("")
@@ -152,15 +154,15 @@ export default function AdminLoginPage() {
         // If manager check fails, it might be an auth issue
         console.error('Manager status check error:', managerError)
         if (managerError instanceof ApiError && managerError.message.includes('Authentication')) {
-          setLoginError('Ошибка аутентификации. Попробуйте войти еще раз.')
+          setLoginError(t('admin.errors.authFailed'))
         } else {
-          setLoginError('Ошибка проверки статуса менеджера. Попробуйте еще раз.')
+          setLoginError(t('admin.errors.checkStatusFailed'))
         }
         setIsCheckingManager(false)
         setIsVerifyingCode(false)
       }
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Неверный код подтверждения'
+      const errorMessage = error instanceof ApiError ? error.message : t('auth.invalidCode')
       setLoginError(errorMessage)
       console.error('Login error:', error)
       setIsVerifyingCode(false)
@@ -172,7 +174,7 @@ export default function AdminLoginPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
-          <p className="text-gray-600">Проверка доступа...</p>
+          <p className="text-gray-600">{t('admin.loading.checkingAccess')}</p>
         </div>
       </div>
     )
@@ -186,8 +188,8 @@ export default function AdminLoginPage() {
             <div className="mx-auto w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4">
               <Shield className="w-8 h-8 text-brand" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Панель администратора</h1>
-            <p className="text-gray-600 text-sm">Войдите, чтобы получить доступ к управлению магазином</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('admin.login.title')}</h1>
+            <p className="text-gray-600 text-sm">{t('admin.login.subtitle')}</p>
           </div>
 
           {loginError && (
@@ -200,7 +202,7 @@ export default function AdminLoginPage() {
           {!showSmsForm && (
             <div className="space-y-6">
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">Номер телефона</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth.phoneNumber')}</label>
                 <div className="flex space-x-3">
                   <Select value={countryCode} onValueChange={setCountryCode}>
                     <SelectTrigger className="w-28 h-12 border-gray-300 focus:border-brand focus:ring-brand">
@@ -226,7 +228,7 @@ export default function AdminLoginPage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="flex-1 h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
-                    placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || "Номер телефона"}
+                    placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || t('auth.phoneNumber')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && phoneNumber.trim() && !isSendingSms) {
                         handlePhoneSubmit()
@@ -244,10 +246,10 @@ export default function AdminLoginPage() {
                 {isSendingSms ? (
                   <div className="flex items-center justify-center space-x-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Отправляем SMS...</span>
+                    <span>{t('auth.sendingSms')}</span>
                   </div>
                 ) : (
-                  "Продолжить"
+                  t('auth.continue')
                 )}
               </Button>
             </div>
@@ -259,15 +261,15 @@ export default function AdminLoginPage() {
                 <div className="mx-auto w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4">
                   <MessageSquare className="w-8 h-8 text-brand" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Введите код подтверждения</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">{t('auth.smsCodeTitle')}</h2>
                 <p className="text-gray-600 text-sm">
-                  Мы отправили код на номер <br />
+                  {t('auth.codeSentTo')} <br />
                   <span className="font-medium">{countryCode} {phoneNumber}</span>
                 </p>
               </div>
 
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">Код подтверждения</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth.verificationCode')}</label>
                 <Input
                   type="text"
                   value={smsCode}
@@ -292,10 +294,10 @@ export default function AdminLoginPage() {
                 {isVerifyingCode ? (
                   <div className="flex items-center justify-center space-x-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Проверяем код...</span>
+                    <span>{t('auth.verifyingCode')}</span>
                   </div>
                 ) : (
-                  "Войти"
+                  t('common.login')
                 )}
               </Button>
 
@@ -308,7 +310,7 @@ export default function AdminLoginPage() {
                 }}
                 disabled={isVerifyingCode}
               >
-                Изменить номер телефона
+                {t('auth.changePhone')}
               </Button>
             </div>
           )}
@@ -319,7 +321,7 @@ export default function AdminLoginPage() {
               className="w-full text-gray-600 hover:text-gray-900"
               onClick={() => router.push('/')}
             >
-              Вернуться на главную
+              {t('common.goToHome')}
             </Button>
           </div>
         </CardContent>
