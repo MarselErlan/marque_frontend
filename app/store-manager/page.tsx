@@ -785,7 +785,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
           <p className="text-gray-600">Проверка статуса менеджера...</p>
         </div>
       </div>
@@ -797,7 +797,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
           <p className="text-gray-600">Перенаправление на страницу входа...</p>
         </div>
       </div>
@@ -817,7 +817,7 @@ export default function AdminDashboard() {
             </p>
             <div className="space-y-3">
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                className="w-full bg-brand hover:bg-brand-hover text-white"
                 onClick={async () => {
                   await auth.handleLogout()
                   router.push('/store-manager/login')
@@ -868,7 +868,7 @@ export default function AdminDashboard() {
         <div className="p-4 space-y-4">
           {isLoadingDashboard ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : dashboardError ? (
             <Card>
@@ -885,8 +885,8 @@ export default function AdminDashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-brand-50 rounded-lg flex items-center justify-center">
+                    <ShoppingBag className="w-5 h-5 text-brand" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Сегодняшние заказы</h3>
@@ -894,7 +894,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  <div className="w-6 h-6 bg-brand text-white rounded-full flex items-center justify-center text-xs font-bold">
                         {dashboardStats?.active_orders_count || 0}
                   </div>
                 </div>
@@ -967,7 +967,7 @@ export default function AdminDashboard() {
         <div className="p-4 space-y-6">
           {isLoadingRevenue ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : revenueError ? (
             <Card>
@@ -1031,7 +1031,7 @@ export default function AdminDashboard() {
                 <div
                   key={index}
                   className={`flex items-center justify-between p-3 rounded-lg ${
-                        hour.is_highlighted ? "bg-purple-500 text-white" : "bg-white"
+                        hour.is_highlighted ? "bg-brand text-white" : "bg-white"
                   }`}
                 >
                   <span className="font-medium">{hour.time}</span>
@@ -1117,7 +1117,7 @@ export default function AdminDashboard() {
                 key={filter}
                 className={`py-3 px-1 border-b-2 font-medium text-sm ${
                   orderFilter === filter
-                    ? "border-purple-500 text-purple-600"
+                    ? "border-brand text-brand"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
                 onClick={() => setOrderFilter(filter)}
@@ -1131,7 +1131,7 @@ export default function AdminDashboard() {
         <div className="p-4 space-y-4">
           {isLoadingOrders && orders.length === 0 ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : ordersError ? (
             <Card>
@@ -1167,7 +1167,7 @@ export default function AdminDashboard() {
                           {order.date} • {order.customer_phone}
                     </p>
                     {order.requested_delivery_date && (
-                      <p className="text-sm text-purple-600 font-medium mt-1">
+                      <p className="text-sm text-brand font-medium mt-1">
                         📅 Доставка: {formatDateString(order.requested_delivery_date, 'short')}
                       </p>
                     )}
@@ -1195,7 +1195,7 @@ export default function AdminDashboard() {
 
                     <p className="text-sm text-gray-500">{order.delivery_address}</p>
                     {order.delivery_notes && (
-                      <p className="text-sm text-purple-600 font-medium mt-1">
+                      <p className="text-sm text-brand font-medium mt-1">
                         💬 {order.delivery_notes}
                       </p>
                     )}
@@ -1254,7 +1254,7 @@ export default function AdminDashboard() {
                   className="mt-1"
                 />
               </div>
-              <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white" onClick={handleDateRangeApply}>
+              <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleDateRangeApply}>
                 Применить
               </Button>
             </div>
@@ -1308,7 +1308,7 @@ export default function AdminDashboard() {
                 key={filter}
                 className={`py-3 px-1 border-b-2 font-medium text-sm ${
                   orderFilter === filter
-                    ? "border-purple-500 text-purple-600"
+                    ? "border-brand text-brand"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
                 onClick={() => setOrderFilter(filter)}
@@ -1322,7 +1322,7 @@ export default function AdminDashboard() {
         <div className="p-4 space-y-4">
           {isLoadingOrders && orders.length === 0 ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : ordersError ? (
             <Card>
@@ -1358,7 +1358,7 @@ export default function AdminDashboard() {
                           {order.date} • {order.customer_phone}
                     </p>
                     {order.requested_delivery_date && (
-                      <p className="text-sm text-purple-600 font-medium mt-1">
+                      <p className="text-sm text-brand font-medium mt-1">
                         📅 Доставка: {formatDateString(order.requested_delivery_date, 'short')}
                       </p>
                     )}
@@ -1386,7 +1386,7 @@ export default function AdminDashboard() {
 
                     <p className="text-sm text-gray-500">{order.delivery_address}</p>
                     {order.delivery_notes && (
-                      <p className="text-sm text-purple-600 font-medium mt-1">
+                      <p className="text-sm text-brand font-medium mt-1">
                         💬 {order.delivery_notes}
                       </p>
                     )}
@@ -1445,7 +1445,7 @@ export default function AdminDashboard() {
                   className="mt-1"
                 />
               </div>
-              <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white" onClick={handleDateRangeApply}>
+              <Button className="w-full bg-brand hover:bg-brand-hover text-white" onClick={handleDateRangeApply}>
                 Применить
               </Button>
             </div>
@@ -1477,7 +1477,7 @@ export default function AdminDashboard() {
         <div className="p-4 space-y-6">
           {isLoadingOrderDetail ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : selectedOrder ? (
             <>
@@ -1589,7 +1589,7 @@ export default function AdminDashboard() {
             {selectedOrder.requested_delivery_date && (
               <div className="flex justify-between">
                 <span className="text-gray-600">Дата доставки</span>
-                <span className="font-medium text-purple-600">
+                <span className="font-medium text-brand">
                   {formatDateString(selectedOrder.requested_delivery_date, 'long')}
                 </span>
               </div>
@@ -1597,7 +1597,7 @@ export default function AdminDashboard() {
             {selectedOrder.delivery_notes && (
               <div className="flex flex-col">
                 <span className="text-gray-600 mb-1">Комментарий к заказу</span>
-                <span className="font-medium text-purple-600">{selectedOrder.delivery_notes}</span>
+                <span className="font-medium text-brand">{selectedOrder.delivery_notes}</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -1612,7 +1612,7 @@ export default function AdminDashboard() {
 
           <div className="space-y-3 pt-4">
             <Button
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              className="w-full bg-brand hover:bg-brand-hover text-white"
               onClick={() => setIsStatusModalOpen(true)}
                   disabled={isUpdatingStatus}
                 >
@@ -1629,7 +1629,7 @@ export default function AdminDashboard() {
                 {(selectedOrder.status === "cancelled" || selectedOrder.status_display === "ОТМЕНЕН") ? (
               <Button
                 variant="outline"
-                className="w-full text-purple-600 border-purple-600 hover:bg-purple-50 bg-transparent"
+                className="w-full text-brand border-brand hover:bg-brand-50 bg-transparent"
                 onClick={() => setIsResumeConfirmOpen(true)}
                     disabled={isResumingOrder}
                   >
@@ -1697,7 +1697,7 @@ export default function AdminDashboard() {
                 </div>
               </RadioGroup>
               <Button
-                className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                className="w-full bg-brand hover:bg-brand-hover text-white"
                 onClick={handleStatusChange}
                 disabled={isUpdatingStatus || !selectedOrderStatus}
               >

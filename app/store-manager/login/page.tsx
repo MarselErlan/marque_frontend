@@ -171,7 +171,7 @@ export default function AdminLoginPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
           <p className="text-gray-600">Проверка доступа...</p>
         </div>
       </div>
@@ -179,12 +179,12 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 to-blue-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardContent className="p-8">
           <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-              <Shield className="w-8 h-8 text-purple-600" />
+            <div className="mx-auto w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4">
+              <Shield className="w-8 h-8 text-brand" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Панель администратора</h1>
             <p className="text-gray-600 text-sm">Войдите, чтобы получить доступ к управлению магазином</p>
@@ -203,8 +203,12 @@ export default function AdminLoginPage() {
                 <label className="block text-sm font-medium text-gray-700">Номер телефона</label>
                 <div className="flex space-x-3">
                   <Select value={countryCode} onValueChange={setCountryCode}>
-                    <SelectTrigger className="w-28 h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500">
-                      <SelectValue />
+                    <SelectTrigger className="w-28 h-12 border-gray-300 focus:border-brand focus:ring-brand">
+                      {/* Explicitly render selected country code and flag */}
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">{countryCodes.find(c => c.code === countryCode)?.flag}</span>
+                        <span className="font-medium">{countryCode}</span>
+                      </div>
                     </SelectTrigger>
                     <SelectContent>
                       {countryCodes.map((country) => (
@@ -221,7 +225,7 @@ export default function AdminLoginPage() {
                     type="tel"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="flex-1 h-12 text-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                    className="flex-1 h-12 text-lg border-gray-300 focus:border-brand focus:ring-brand"
                     placeholder={countryCodes.find(c => c.code === countryCode)?.placeholder || "Номер телефона"}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && phoneNumber.trim() && !isSendingSms) {
@@ -233,7 +237,7 @@ export default function AdminLoginPage() {
               </div>
               
               <Button
-                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white text-lg font-medium rounded-lg transition-colors"
+                className="w-full h-12 bg-brand hover:bg-brand-hover text-white text-lg font-medium rounded-lg transition-colors"
                 onClick={handlePhoneSubmit}
                 disabled={isSendingSms || !phoneNumber.trim()}
               >
@@ -252,8 +256,8 @@ export default function AdminLoginPage() {
           {showSmsForm && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                  <MessageSquare className="w-8 h-8 text-purple-600" />
+                <div className="mx-auto w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4">
+                  <MessageSquare className="w-8 h-8 text-brand" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Введите код подтверждения</h2>
                 <p className="text-gray-600 text-sm">
@@ -268,7 +272,7 @@ export default function AdminLoginPage() {
                   type="text"
                   value={smsCode}
                   onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="h-12 text-lg text-center tracking-widest border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                  className="h-12 text-lg text-center tracking-widest border-gray-300 focus:border-brand focus:ring-brand"
                   placeholder="000000"
                   maxLength={6}
                   onKeyDown={(e) => {
@@ -281,7 +285,7 @@ export default function AdminLoginPage() {
               </div>
 
               <Button
-                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white text-lg font-medium rounded-lg transition-colors"
+                className="w-full h-12 bg-brand hover:bg-brand-hover text-white text-lg font-medium rounded-lg transition-colors"
                 onClick={handleSmsVerification}
                 disabled={isVerifyingCode || smsCode.length !== 6}
               >
