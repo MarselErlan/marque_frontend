@@ -6,6 +6,7 @@ import { X, ArrowRight, ArrowLeft, Search } from 'lucide-react'
 import { categoriesApi } from '@/lib/api'
 import { API_CONFIG } from '@/lib/config'
 import { getImageUrl } from '@/lib/utils'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface CatalogSidebarProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface CatalogSidebarProps {
 }
 
 export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
+  const { t } = useLanguage()
   const [apiCategories, setApiCategories] = useState<any[]>([])
   const [apiSubcategories, setApiSubcategories] = useState<any[]>([])
   const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<string>('')
@@ -106,14 +108,14 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
               <div className="flex items-center justify-between px-4 py-3">
-                <h2 className="text-xl font-bold text-black">Каталог</h2>
+                <h2 className="text-xl font-bold text-black">{t('catalog.title')}</h2>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     handleClose()
                   }}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors touch-manipulation"
-                  aria-label="Закрыть каталог"
+                  aria-label={t('catalog.close')}
                 >
                   <X className="w-5 h-5 text-gray-600" />
                 </button>

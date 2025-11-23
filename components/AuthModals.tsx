@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { ArrowLeft, Phone, MessageSquare } from 'lucide-react'
 
 type AuthModalsProps = Omit<ReturnType<typeof useAuth>, 
@@ -32,7 +33,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   handlePhoneSubmit,
   handleSmsVerification,
 }) => {
-
+  const { t } = useLanguage()
   const getFullPhoneNumber = () => `${countryCode} ${phoneNumber}`
 
   return (
@@ -44,13 +45,13 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
             <div className="mx-auto w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
               <Phone className="w-8 h-8 text-brand" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-gray-900">Войти в аккаунт</DialogTitle>
-            <p className="text-gray-600 text-sm mt-2">Мы отправим вам код подтверждения</p>
+            <DialogTitle className="text-2xl font-bold text-gray-900">{t('auth.loginTitle')}</DialogTitle>
+            <p className="text-gray-600 text-sm mt-2">{t('auth.loginSubtitle')}</p>
           </DialogHeader>
           
           <div className="space-y-6">
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">Номер телефона</label>
+              <label className="block text-sm font-medium text-gray-700">{t('auth.phoneNumber')}</label>
               <div className="flex space-x-3">
                 <Select value={countryCode} onValueChange={setCountryCode}>
                   <SelectTrigger className="w-28 h-12 border-gray-300 focus:border-brand focus:ring-brand">
@@ -88,17 +89,17 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               {isSendingSms ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Отправляем SMS...</span>
+                  <span>{t('auth.sendingSms')}</span>
                 </div>
               ) : (
-                "Продолжить"
+                t('auth.continue')
               )}
             </Button>
             
             <p className="text-xs text-gray-500 text-center leading-relaxed">
-              Нажимая "Продолжить", вы соглашаетесь с{" "}
-              <span className="text-brand cursor-pointer hover:underline">Политикой конфиденциальности</span> и{" "}
-              <span className="text-brand cursor-pointer hover:underline">Пользовательским соглашением</span>
+              {t('auth.agreeText')}{" "}
+              <span className="text-brand cursor-pointer hover:underline">{t('auth.privacyPolicy')}</span> {" "}{t('common.and')}{" "}
+              <span className="text-brand cursor-pointer hover:underline">{t('auth.termsOfService')}</span>
             </p>
           </div>
         </DialogContent>
@@ -124,9 +125,9 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 <MessageSquare className="w-8 h-8 text-brand" />
               </div>
             </div>
-            <DialogTitle className="text-2xl font-bold text-gray-900">Код из СМС</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-gray-900">{t('auth.smsCodeTitle')}</DialogTitle>
             <p className="text-gray-600 text-sm mt-2">
-              Мы отправили вам код на номер
+              {t('auth.smsCodeSubtitle')}
               <br />
               <span className="font-semibold text-gray-900">{getFullPhoneNumber()}</span>
             </p>
@@ -134,7 +135,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
           
           <div className="space-y-6">
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">Код подтверждения</label>
+              <label className="block text-sm font-medium text-gray-700">{t('auth.verificationCode')}</label>
               <Input
                 type="text"
                 value={smsCode}
@@ -153,10 +154,10 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               {isVerifyingCode ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Проверяем код...</span>
+                  <span>{t('auth.verifyingCode')}</span>
                 </div>
               ) : (
-                "Подтвердить"
+                t('auth.verify')
               )}
             </Button>
             
@@ -168,7 +169,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                   setIsPhoneModalOpen(true)
                 }}
               >
-                Изменить номер телефона
+                {t('auth.changePhone')}
               </button>
             </div>
           </div>

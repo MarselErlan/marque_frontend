@@ -17,7 +17,8 @@
     "yes": "Да",
     "no": "Нет",
     "continue": "Продолжить",
-    "back": "Назад"
+    "back": "Назад",
+    "and": "и"
   },
   "profile": {
     "title": "Личный кабинет",
@@ -97,15 +98,80 @@
     "emptyCart": "Корзина пуста",
     "subtotal": "Товары на сумму",
     "delivery": "Доставка",
+    "deliveryCost": "Доставка 150 сом",
+    "pickup": "Самовывоз",
     "total": "Итого",
     "checkout": "Перейти к оформлению",
     "remove": "Удалить",
-    "mannequin3D": "3D манекен"
+    "mannequin3D": "3D манекен",
+    "items": "товар",
+    "itemsPlural": "товара",
+    "itemsMany": "товаров"
   },
   "languages": {
     "russian": "Русский",
     "kyrgyz": "Кыргызча",
     "english": "English"
+  },
+  "auth": {
+    "logout": "Выйти",
+    "logoutSuccess": "Вы успешно вышли из аккаунта",
+    "logoutError": "Ошибка при выходе из аккаунта",
+    "enterPhone": "Введите номер телефона",
+    "enterCode": "Введите код подтверждения",
+    "codeSent": "Код подтверждения отправлен",
+    "codeSentTo": "Мы отправили код на номер",
+    "verify": "Подтвердить",
+    "changePhone": "Изменить номер телефона",
+    "invalidCode": "Неверный код подтверждения",
+    "smsError": "Ошибка отправки SMS",
+    "loginTitle": "Войти в аккаунт",
+    "loginSubtitle": "Мы отправим вам код подтверждения",
+    "phoneNumber": "Номер телефона",
+    "continue": "Продолжить",
+    "sendingSms": "Отправляем SMS...",
+    "verifyingCode": "Проверяем код...",
+    "smsCodeTitle": "Код из СМС",
+    "smsCodeSubtitle": "Мы отправили вам код на номер",
+    "verificationCode": "Код подтверждения",
+    "privacyPolicy": "Политикой конфиденциальности",
+    "termsOfService": "Пользовательским соглашением",
+    "agreeText": "Нажимая \"Продолжить\", вы соглашаетесь с"
+  },
+  "product": {
+    "addToCart": "В корзину",
+    "addToWishlist": "В избранное",
+    "removeFromWishlist": "Удалить из избранного",
+    "inStock": "В наличии",
+    "outOfStock": "Нет в наличии",
+    "selectSize": "Выберите размер",
+    "selectColor": "Выберите цвет",
+    "about": "О товаре",
+    "reviews": "Отзывы",
+    "specifications": "Характеристики",
+    "gender": "Пол",
+    "color": "Цвет",
+    "composition": "Состав",
+    "season": "Сезон",
+    "sku": "Артикул",
+    "noReviews": "Пока нет отзывов",
+    "writeReview": "Написать отзыв"
+  },
+  "search": {
+    "title": "Результаты поиска",
+    "noResults": "Ничего не найдено",
+    "found": "Найдено",
+    "products": "товаров"
+  },
+  "catalog": {
+    "title": "Каталог",
+    "allCategories": "Все категории",
+    "close": "Закрыть каталог"
+  },
+  "wishlist": {
+    "title": "Избранное",
+    "empty": "Ваш список избранного пуст",
+    "addItems": "Добавьте товары в избранное"
   }
 }
 

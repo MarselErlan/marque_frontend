@@ -17,7 +17,8 @@
     "yes": "Yes",
     "no": "No",
     "continue": "Continue",
-    "back": "Back"
+    "back": "Back",
+    "and": "and"
   },
   "profile": {
     "title": "My Account",
@@ -97,15 +98,80 @@
     "emptyCart": "Cart is empty",
     "subtotal": "Subtotal",
     "delivery": "Delivery",
+    "deliveryCost": "Delivery 150 som",
+    "pickup": "Pickup",
     "total": "Total",
     "checkout": "Proceed to Checkout",
     "remove": "Remove",
-    "mannequin3D": "3D Mannequin"
+    "mannequin3D": "3D Mannequin",
+    "items": "item",
+    "itemsPlural": "items",
+    "itemsMany": "items"
   },
   "languages": {
     "russian": "Russian",
     "kyrgyz": "Kyrgyz",
     "english": "English"
+  },
+  "auth": {
+    "logout": "Logout",
+    "logoutSuccess": "You have successfully logged out",
+    "logoutError": "Error logging out",
+    "enterPhone": "Enter phone number",
+    "enterCode": "Enter verification code",
+    "codeSent": "Verification code sent",
+    "codeSentTo": "We sent a code to",
+    "verify": "Verify",
+    "changePhone": "Change phone number",
+    "invalidCode": "Invalid verification code",
+    "smsError": "Error sending SMS",
+    "loginTitle": "Login to Account",
+    "loginSubtitle": "We will send you a verification code",
+    "phoneNumber": "Phone Number",
+    "continue": "Continue",
+    "sendingSms": "Sending SMS...",
+    "verifyingCode": "Verifying code...",
+    "smsCodeTitle": "SMS Code",
+    "smsCodeSubtitle": "We sent you a code to",
+    "verificationCode": "Verification Code",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "agreeText": "By clicking \"Continue\", you agree to"
+  },
+  "product": {
+    "addToCart": "Add to Cart",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "selectSize": "Select Size",
+    "selectColor": "Select Color",
+    "about": "About Product",
+    "reviews": "Reviews",
+    "specifications": "Specifications",
+    "gender": "Gender",
+    "color": "Color",
+    "composition": "Composition",
+    "season": "Season",
+    "sku": "SKU",
+    "noReviews": "No reviews yet",
+    "writeReview": "Write a Review"
+  },
+  "search": {
+    "title": "Search Results",
+    "noResults": "Nothing found",
+    "found": "Found",
+    "products": "products"
+  },
+  "catalog": {
+    "title": "Catalog",
+    "allCategories": "All Categories",
+    "close": "Close Catalog"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "empty": "Your wishlist is empty",
+    "addItems": "Add items to wishlist"
   }
 }
 

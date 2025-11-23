@@ -11,6 +11,7 @@ import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCatalog } from '@/contexts/CatalogContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { AuthModals } from '@/components/AuthModals'
 import { toast } from 'sonner'
 
@@ -26,6 +27,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
   const { cartItemCount } = useCart()
   const { wishlistItemCount } = useWishlist()
   const { openCatalog } = useCatalog()
+  const { t } = useLanguage()
   
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
@@ -80,12 +82,12 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
         try {
           console.log('🔴 Header: Starting logout...')
           await auth.handleLogout()
-          toast.success('Вы успешно вышли из аккаунта')
+          toast.success(t('auth.logoutSuccess'))
           console.log('🔴 Header: Redirecting to home...')
           window.location.href = '/'
         } catch (error) {
           console.error('🔴 Header: Logout error:', error)
-          toast.error('Ошибка при выходе из аккаунта')
+          toast.error(t('auth.logoutError'))
         }
       } else {
         // Not on profile page, navigate to profile
@@ -146,7 +148,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               onClick={handleCatalogClick}
             >
               <span className="text-lg">⋮⋮⋮</span>
-              <span>Каталог</span>
+              <span>{t('common.catalog')}</span>
             </Button>
           </div>
           {/* Center Section */}
@@ -155,7 +157,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 type="text"
-                placeholder="Товар, бренд или артикул"
+                placeholder={t('common.search')}
                 className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand"
                 value={searchQuery}
                 onChange={handleSearchChange}
@@ -170,7 +172,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
           <div className="flex items-center space-x-6 text-sm text-gray-600">
             <Link href="/" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
               <SparklesIcon className="w-6 h-6 mb-1" strokeWidth={1.5} />
-              <span>Манекен</span>
+              <span>{t('common.mannequin')}</span>
             </Link>
             <Link href="/wishlist" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
               <div className="relative">
@@ -181,7 +183,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
                   </span>
                 )}
               </div>
-              <span>Избранные</span>
+              <span>{t('common.favorites')}</span>
             </Link>
             <Link href="/cart" className="flex flex-col items-center cursor-pointer hover:text-brand relative">
               <div className="relative">
@@ -192,7 +194,7 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
                   </span>
                 )}
               </div>
-              <span>Корзина</span>
+              <span>{t('common.cart')}</span>
             </Link>
             <button
               onClick={handleHeaderAuthClick}
@@ -204,18 +206,18 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
                 isOnProfilePage ? (
                   <>
                     <LogOut className="w-6 h-6 mb-1" strokeWidth={1.5} />
-                    <span>Выйти</span>
+                    <span>{t('auth.logout')}</span>
                   </>
                 ) : (
                   <>
                     <User className="w-6 h-6 mb-1" strokeWidth={1.5} />
-                    <span>Профиль</span>
+                    <span>{t('common.profile')}</span>
                   </>
                 )
               ) : (
                 <>
                   <User className="w-6 h-6 mb-1" strokeWidth={1.5} />
-                  <span>Войти</span>
+                  <span>{t('common.login')}</span>
                 </>
               )}
             </button>
@@ -273,13 +275,13 @@ export const Header = ({ authInstance }: HeaderProps = {}) => {
             onClick={handleCatalogClick}
           >
             <span className="text-lg">⋮⋮⋮</span>
-            <span>Каталог</span>
+            <span>{t('common.catalog')}</span>
           </Button>
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder="Товар, бренд или артикул"
+              placeholder={t('common.search')}
               className="pl-10 pr-4 py-2 w-full bg-gray-100 border-0 rounded-lg"
               value={searchQuery}
               onChange={handleSearchChange}

@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useCart } from "@/hooks/useCart"
 import { useProfile, Address, PaymentMethod } from "@/hooks/useProfile"
+import { useLanguage } from "@/contexts/LanguageContext"
 import { getImageUrl } from "@/lib/utils"
 import { ordersApi, authApi } from "@/lib/api"
 import { toast } from "@/lib/toast"
@@ -19,6 +20,7 @@ import { toast } from "@/lib/toast"
 export default function CartPage() {
   const router = useRouter()
   const auth = useAuth()
+  const { t } = useLanguage()
   const { cartItems, updateQuantity, removeFromCart, clearCart } = useCart()
   const { 
     addresses, 
@@ -457,7 +459,7 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="flex-1 px-4 md:px-0 pt-4 md:pt-0 pb-4 md:pb-0">
             <div className="mb-4 md:mb-6">
-              <h1 className="text-2xl font-bold text-black">Корзина</h1>
+              <h1 className="text-2xl font-bold text-black">{t('cart.title')}</h1>
               <p className="text-gray-500 text-sm mt-1">{cartItems.length} {cartItems.length === 1 ? 'товар' : cartItems.length < 5 ? 'товара' : 'товаров'}</p>
             </div>
 
@@ -549,7 +551,7 @@ export default function CartPage() {
                     }}
                   >
                     <SparklesIcon className="w-4 h-4 md:w-4 md:h-4" strokeWidth={1.5} />
-                    <span>3D манекен</span>
+                    <span>{t('cart.mannequin3D')}</span>
                   </Button>
                 </div>
               </>
@@ -563,8 +565,8 @@ export default function CartPage() {
                 {/* Delivery Options */}
                 <div>
                   <div className="flex bg-gray-100 rounded-lg p-1 text-sm mb-4">
-                    <button className="flex-1 py-1.5 rounded-md bg-white text-black font-semibold">Доставка 150 сом</button>
-                    <button className="flex-1 py-1.5 text-gray-500">Самовывоз</button>
+                    <button className="flex-1 py-1.5 rounded-md bg-white text-black font-semibold">{t('cart.deliveryCost')}</button>
+                    <button className="flex-1 py-1.5 text-gray-500">{t('cart.pickup')}</button>
                   </div>
 
                   <div>
@@ -635,12 +637,12 @@ export default function CartPage() {
                     <span className="text-black font-medium">{cartItems.length}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Товары на сумму</span>
+                    <span className="text-gray-600">{t('cart.subtotal')}</span>
                     <span className="text-black font-medium">{subtotal.toLocaleString()} сом</span>
                   </div>
                   <div className="border-t pt-2.5 mt-2.5">
                     <div className="flex justify-between text-base font-bold">
-                      <span className="text-black">Итого</span>
+                      <span className="text-black">{t('cart.total')}</span>
                       <span className="text-brand">{total.toLocaleString()} сом</span>
                     </div>
                   </div>
@@ -651,7 +653,7 @@ export default function CartPage() {
                   className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-lg text-base"
                   onClick={handleCheckout}
                 >
-                  Перейти к оформлению
+                  {t('cart.checkout')}
                 </Button>
               </div>
             </div>
@@ -1334,7 +1336,7 @@ export default function CartPage() {
 
             {/* Delivery Information */}
             <div className="border-t pt-4">
-              <h3 className="text-base font-semibold text-black mb-3">Доставка</h3>
+              <h3 className="text-base font-semibold text-black mb-3">{t('cart.delivery')}</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Дата доставки:</span>

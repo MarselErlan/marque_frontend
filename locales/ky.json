@@ -17,7 +17,8 @@
     "yes": "Ооба",
     "no": "Жок",
     "continue": "Улантуу",
-    "back": "Артка"
+    "back": "Артка",
+    "and": "жана"
   },
   "profile": {
     "title": "Жеке кабинет",
@@ -97,15 +98,80 @@
     "emptyCart": "Себет бош",
     "subtotal": "Товарлардын суммасы",
     "delivery": "Жеткирүү",
+    "deliveryCost": "Жеткирүү 150 сом",
+    "pickup": "Өзү алып кетүү",
     "total": "Жалпы",
     "checkout": "Тариздөөгө өтүү",
     "remove": "Өчүрүү",
-    "mannequin3D": "3D манекен"
+    "mannequin3D": "3D манекен",
+    "items": "товар",
+    "itemsPlural": "товар",
+    "itemsMany": "товар"
   },
   "languages": {
     "russian": "Орусча",
     "kyrgyz": "Кыргызча",
     "english": "Англисче"
+  },
+  "auth": {
+    "logout": "Чыгуу",
+    "logoutSuccess": "Сиз ийгиликтүү аккаунттан чыктыңыз",
+    "logoutError": "Аккаунттан чыгууда ката кетти",
+    "enterPhone": "Телефон номерин киргизиңиз",
+    "enterCode": "Ырастоо кодун киргизиңиз",
+    "codeSent": "Ырастоо коду жөнөтүлдү",
+    "codeSentTo": "Биз кодду номерге жөнөттүк",
+    "verify": "Ырастоо",
+    "changePhone": "Телефон номерин өзгөртүү",
+    "invalidCode": "Туура эмес ырастоо коду",
+    "smsError": "SMS жөнөтүүдө ката",
+    "loginTitle": "Аккаунтка кирүү",
+    "loginSubtitle": "Биз сизге ырастоо кодун жөнөтөбүз",
+    "phoneNumber": "Телефон номери",
+    "continue": "Улантуу",
+    "sendingSms": "SMS жөнөтүлүүдө...",
+    "verifyingCode": "Код текшерилүүдө...",
+    "smsCodeTitle": "SMS код",
+    "smsCodeSubtitle": "Биз сизге номерге код жөнөттүк",
+    "verificationCode": "Ырастоо коду",
+    "privacyPolicy": "Купуялык саясаты",
+    "termsOfService": "Колдонуу келишими",
+    "agreeText": "\"Улантуу\" баскычын басуу менен, сиз макулдашасыз"
+  },
+  "product": {
+    "addToCart": "Себетке",
+    "addToWishlist": "Тандалгандарга",
+    "removeFromWishlist": "Тандалгандардан өчүрүү",
+    "inStock": "Бар",
+    "outOfStock": "Жок",
+    "selectSize": "Өлчөмдү тандаңыз",
+    "selectColor": "Түстү тандаңыз",
+    "about": "Товар жөнүндө",
+    "reviews": "Пикирлер",
+    "specifications": "Мүнөздөмөлөр",
+    "gender": "Жыныс",
+    "color": "Түс",
+    "composition": "Курамы",
+    "season": "Мезгил",
+    "sku": "Артикул",
+    "noReviews": "Азырынча пикирлер жок",
+    "writeReview": "Пикир калтыруу"
+  },
+  "search": {
+    "title": "Издөө натыйжалары",
+    "noResults": "Эч нерсе табылган жок",
+    "found": "Табылды",
+    "products": "товарлар"
+  },
+  "catalog": {
+    "title": "Каталог",
+    "allCategories": "Бардык категориялар",
+    "close": "Каталогду жабуу"
+  },
+  "wishlist": {
+    "title": "Тандалгандар",
+    "empty": "Сиздин тандалгандар тизмеңиз бош",
+    "addItems": "Товарларды тандалгандарга кошуңуз"
   }
 }
 
