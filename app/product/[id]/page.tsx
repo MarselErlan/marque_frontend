@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { useCart } from "@/hooks/useCart"
+import { useLanguage } from "@/contexts/LanguageContext"
 import { toast } from "@/lib/toast"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
@@ -77,6 +78,7 @@ export default function ProductDetailPage() {
   const router = useRouter()
   const auth = useAuth()
   const { isLoggedIn } = auth
+  const { t } = useLanguage()
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
   const { addToCart, cartItemCount } = useCart()
   const { openCatalog } = useCatalog()
@@ -310,11 +312,11 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     // Validate size and color selection
     if (!selectedSize) {
-      toast.error('Пожалуйста, выберите размер')
+      toast.error(t('product.selectSize'))
       return
     }
     if (!selectedColor) {
-      toast.error('Пожалуйста, выберите цвет')
+      toast.error(t('product.selectColor'))
       return
     }
     
@@ -488,7 +490,7 @@ export default function ProductDetailPage() {
         <main className="max-w-7xl mx-auto lg:px-8 py-20">
           <div className="flex items-center justify-center flex-col">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
-            <p className="text-gray-600">Загружаем товар...</p>
+            <p className="text-gray-600">{t('product.loading')}</p>
           </div>
         </main>
       </div>
@@ -501,11 +503,11 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-gray-50">
         <AuthModals {...auth} />
         <main className="max-w-7xl mx-auto lg:px-8 py-20 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Товар не найден</h1>
-          <p className="text-gray-600 mb-8">{error || 'Запрошенный товар не существует'}</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('product.notFound')}</h1>
+          <p className="text-gray-600 mb-8">{error || t('product.notFoundDesc')}</p>
           <Link href="/">
             <Button className="bg-brand hover:bg-brand-hover text-white">
-              Вернуться на главную
+              {t('product.backToHome')}
             </Button>
           </Link>
         </main>
@@ -521,7 +523,7 @@ export default function ProductDetailPage() {
         {/* Breadcrumb - Hidden on Mobile */}
         <nav className="hidden lg:flex items-center space-x-2 text-sm text-gray-600 mb-8 px-4">
           <Link href="/" className="hover:text-brand">
-            Главная
+            {t('product.home')}
           </Link>
           {/* Category Link - Opens Catalog Sidebar */}
           {product.category && (
@@ -595,7 +597,7 @@ export default function ProductDetailPage() {
                 className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand rounded-lg transition-colors shadow-sm"
               >
                 <SparklesIcon className="w-5 h-5" strokeWidth={1.5} />
-                <span className="text-sm font-medium">Манекен</span>
+                <span className="text-sm font-medium">{t('common.mannequin')}</span>
               </button>
             </div>
             
@@ -635,7 +637,7 @@ export default function ProductDetailPage() {
                   className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand rounded-lg transition-colors shadow-sm"
                 >
                   <SparklesIcon className="w-5 h-5" strokeWidth={1.5} />
-                  <span className="text-sm font-medium">Манекен</span>
+                  <span className="text-sm font-medium">{t('common.mannequin')}</span>
                 </button>
               </div>
             </div>
@@ -647,7 +649,7 @@ export default function ProductDetailPage() {
               <p className="text-sm text-gray-500">{product.brand?.name || 'MARQUE'}</p>
               <h1 className="text-xl lg:text-3xl font-bold text-black mb-2">{product.title}</h1>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
-                <span>Продано {product.sold_count || 0}</span>
+                <span>{t('product.sold')} {product.sold_count || 0}</span>
                 <div className="flex items-center space-x-1">
                   <StarRating rating={product.rating_avg || 0} size="w-4 h-4" />
                   <span>
@@ -660,7 +662,7 @@ export default function ProductDetailPage() {
             {/* Size Selection */}
             {product.available_sizes && product.available_sizes.length > 0 && (
               <div>
-                <h3 className="text-base lg:text-lg font-semibold text-black mb-3">Размер</h3>
+                <h3 className="text-base lg:text-lg font-semibold text-black mb-3">{t('product.size')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {product.available_sizes.map((size: string) => (
                     <button
@@ -689,8 +691,8 @@ export default function ProductDetailPage() {
             {colorsForSelectedSize && colorsForSelectedSize.length > 0 && (
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-base lg:text-lg font-semibold text-black">Цвет</h3>
-                  <span className="text-sm text-gray-600 capitalize">{selectedColor || 'Выберите цвет'}</span>
+                  <h3 className="text-base lg:text-lg font-semibold text-black">{t('product.color')}</h3>
+                  <span className="text-sm text-gray-600 capitalize">{selectedColor || t('product.selectColor')}</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {colorsForSelectedSize.map(({ name: colorName, hex }) => {
@@ -738,7 +740,7 @@ export default function ProductDetailPage() {
               </div>
               {product.price_min !== product.price_max && (
                 <p className="text-sm text-gray-500 mt-1">
-                  Цена варьируется от {product.price_min} до {product.price_max} сом в зависимости от размера и цвета
+                  {t('product.priceVaries').replace('{min}', product.price_min).replace('{max}', product.price_max)}
                 </p>
               )}
             </div>
@@ -752,14 +754,14 @@ export default function ProductDetailPage() {
                     disabled
                   >
                     <Check className="w-5 h-5 mr-2" />
-                    Добавлено в корзину
+                    {t('product.addedToCart')}
                   </Button>
                   <Button
                     variant="outline"
                     className="px-6 py-3 rounded-lg border-brand text-brand hover:bg-brand-50"
                     onClick={handleGoToCart}
                   >
-                    Перейти в корзину
+                    {t('product.goToCart')}
                   </Button>
                 </div>
               ) : (
@@ -768,7 +770,7 @@ export default function ProductDetailPage() {
                   onClick={handleAddToCart}
                   disabled={isAddingToCart}
                 >
-                  {isAddingToCart ? "Добавляем..." : "Добавить в корзину"}
+                  {isAddingToCart ? t('product.adding') : t('product.addToCart')}
                 </Button>
               )}
               
@@ -788,7 +790,7 @@ export default function ProductDetailPage() {
 
         {/* Product Description */}
         <section className="mb-12 px-4 lg:px-0">
-          <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">О товаре</h2>
+          <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">{t('product.about')}</h2>
           
           {/* Description Text */}
           {product.description && (
@@ -802,12 +804,12 @@ export default function ProductDetailPage() {
               {/* Пол (Gender) */}
               {product.category && (
                 <div className="flex justify-between items-center py-3 px-4">
-                  <span className="text-sm lg:text-base text-gray-600 font-normal">Пол</span>
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">{t('product.gender')}</span>
                   <span className="text-sm lg:text-base text-black font-medium">
                     {product.category.name === 'Мужчинам' || product.category.name === 'Мужской' 
-                      ? 'Мужской' 
+                      ? t('product.male')
                       : product.category.name === 'Женщинам' || product.category.name === 'Женский'
-                      ? 'Женский'
+                      ? t('product.female')
                       : product.category.name || '—'}
                   </span>
                 </div>
@@ -816,7 +818,7 @@ export default function ProductDetailPage() {
               {/* Цвет (Color) */}
               {selectedColor && (
                 <div className="flex justify-between items-center py-3 px-4">
-                  <span className="text-sm lg:text-base text-gray-600 font-normal">Цвет</span>
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">{t('product.color')}</span>
                   <span className="text-sm lg:text-base text-black font-medium capitalize">
                     {selectedColor}
                   </span>
@@ -826,7 +828,7 @@ export default function ProductDetailPage() {
               {/* Состав (Composition) */}
               {(product.attributes?.Состав || product.attributes?.состав || product.attributes?.Material || product.attributes?.material || product.attributes?.Composition || product.attributes?.composition) && (
                 <div className="flex justify-between items-center py-3 px-4">
-                  <span className="text-sm lg:text-base text-gray-600 font-normal">Состав</span>
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">{t('product.composition')}</span>
                   <span className="text-sm lg:text-base text-black font-medium">
                     {product.attributes?.Состав || product.attributes?.состав || product.attributes?.Material || product.attributes?.material || product.attributes?.Composition || product.attributes?.composition || '—'}
                   </span>
@@ -836,7 +838,7 @@ export default function ProductDetailPage() {
               {/* Сезон (Season) */}
               {(product.attributes?.Сезон || product.attributes?.сезон || product.attributes?.Season || product.attributes?.season) && (
                 <div className="flex justify-between items-center py-3 px-4">
-                  <span className="text-sm lg:text-base text-gray-600 font-normal">Сезон</span>
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">{t('product.season')}</span>
                   <span className="text-sm lg:text-base text-black font-medium">
                     {product.attributes?.Сезон || product.attributes?.сезон || product.attributes?.Season || product.attributes?.season || '—'}
                   </span>
@@ -846,7 +848,7 @@ export default function ProductDetailPage() {
               {/* Артикул (Article/SKU) */}
               {(product.skus && product.skus.length > 0 && product.skus[0]?.sku_code) || product.attributes?.Артикул || product.attributes?.артикул || product.attributes?.Article || product.attributes?.article || product.attributes?.SKU || product.attributes?.sku ? (
                 <div className="flex justify-between items-center py-3 px-4">
-                  <span className="text-sm lg:text-base text-gray-600 font-normal">Артикул</span>
+                  <span className="text-sm lg:text-base text-gray-600 font-normal">{t('product.sku')}</span>
                   <span className="text-sm lg:text-base text-black font-medium">
                     {product.skus && product.skus.length > 0 && product.skus[0]?.sku_code 
                       ? product.skus[0].sku_code 
@@ -885,10 +887,10 @@ export default function ProductDetailPage() {
           <section className="mb-12 px-4 lg:px-0">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl lg:text-2xl font-bold text-black">
-                Отзывы ({product.rating_count || product.reviews.length})
+                {t('product.reviews')} ({product.rating_count || product.reviews.length})
               </h2>
               <Link href={`/product/${params.id}/reviews`} className="text-brand hover:text-purple-700 text-sm font-medium flex items-center gap-1">
-                ВСЕ ОТЗЫВЫ
+                {t('product.allReviews')}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -904,19 +906,19 @@ export default function ProductDetailPage() {
                         {review.user_profile_image ? (
                           <img
                             src={getImageUrl(review.user_profile_image)}
-                            alt={review.user_name || "Покупатель"}
+                            alt={review.user_name || t('product.buyer')}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <span className="text-brand font-bold text-lg">
-                            {review.user_name ? review.user_name.charAt(0).toUpperCase() : "П"}
+                            {review.user_name ? review.user_name.charAt(0).toUpperCase() : t('product.buyer').charAt(0).toUpperCase()}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-semibold text-black text-sm">
-                            {review.user_name || "Покупатель"}
+                            {review.user_name || t('product.buyer')}
                           </h4>
                           {/* Date on the right */}
                           <span className="text-xs text-gray-500 whitespace-nowrap ml-auto">
@@ -979,11 +981,11 @@ export default function ProductDetailPage() {
         {similarProducts && similarProducts.length > 0 && (
           <section className="mb-12 px-4 lg:px-0">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl lg:text-2xl font-bold text-black">Похожие товары</h2>
+              <h2 className="text-xl lg:text-2xl font-bold text-black">{t('product.similarProducts')}</h2>
               {product.subcategory?.slug && (
                 <Link href={`/subcategory/${product.category?.slug}/${product.subcategory.slug}`}>
                   <Button variant="ghost" className="text-brand hover:text-purple-700 text-sm">
-                    ВСЕ ТОВАРЫ
+                    {t('product.allProducts')}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
@@ -1062,10 +1064,10 @@ export default function ProductDetailPage() {
           >
             {isAddedToCart ? (
               <div className="flex items-center justify-center">
-                <Check className="w-5 h-5 mr-2" /> Добавлено
+                <Check className="w-5 h-5 mr-2" /> {t('product.added')}
               </div>
             ) : (
-              isAddingToCart ? "Добавляем..." : "Добавить в корзину"
+              isAddingToCart ? t('product.adding') : t('product.addToCart')
             )}
           </Button>
           <Button
@@ -1073,7 +1075,7 @@ export default function ProductDetailPage() {
             className="flex-1 py-3 rounded-lg bg-brand-50 border-brand-light text-brand"
             onClick={handleGoToCart}
           >
-            Оформить заказ
+            {t('product.checkout')}
           </Button>
         </div>
       </footer>

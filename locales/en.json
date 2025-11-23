@@ -155,23 +155,59 @@
     "season": "Season",
     "sku": "SKU",
     "noReviews": "No reviews yet",
-    "writeReview": "Write a Review"
+    "writeReview": "Write a Review",
+    "loading": "Loading product...",
+    "notFound": "Product not found",
+    "notFoundDesc": "The requested product does not exist",
+    "backToHome": "Back to Home",
+    "home": "Home",
+    "size": "Size",
+    "sold": "Sold",
+    "priceVaries": "Price varies from {min} to {max} som depending on size and color",
+    "addedToCart": "Added to Cart",
+    "goToCart": "Go to Cart",
+    "adding": "Adding...",
+    "added": "Added",
+    "checkout": "Checkout",
+    "allReviews": "ALL REVIEWS",
+    "similarProducts": "Similar Products",
+    "allProducts": "ALL PRODUCTS",
+    "buyer": "Buyer",
+    "male": "Male",
+    "female": "Female"
   },
   "search": {
     "title": "Search Results",
     "noResults": "Nothing found",
     "found": "Found",
-    "products": "products"
+    "products": "products",
+    "product": "product",
+    "productsPlural": "products",
+    "searching": "Searching products...",
+    "useSearch": "Use the search bar to search for products",
+    "enterQuery": "Enter search query",
+    "searchQuery": "Search:",
+    "loading": "Loading products...",
+    "sortRelevance": "By Relevance",
+    "sortPopular": "Popular",
+    "sortNewest": "Newest",
+    "sortPriceAsc": "Price: Low to High",
+    "sortPriceDesc": "Price: High to Low",
+    "sortRating": "By Rating"
   },
   "catalog": {
     "title": "Catalog",
     "allCategories": "All Categories",
-    "close": "Close Catalog"
+    "close": "Close Catalog",
+    "noCategories": "No categories",
+    "noSubcategories": "No subcategories"
   },
   "wishlist": {
     "title": "Wishlist",
-    "empty": "Your wishlist is empty",
-    "addItems": "Add items to wishlist"
+    "empty": "List is empty",
+    "addItems": "Go to catalog to add items to wishlist",
+    "toCatalog": "To Catalog",
+    "items": "items"
   }
 }
 

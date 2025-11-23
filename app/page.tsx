@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
+import { useLanguage } from "@/contexts/LanguageContext"
 import { ProductCardSkeletonGrid } from "@/components/ProductCardSkeleton"
 import { getImageUrl } from "@/lib/utils"
 
@@ -23,6 +24,7 @@ export default function MarquePage() {
   const searchParams = useSearchParams()
   const auth = useAuth()
   const { isLoggedIn } = auth
+  const { t } = useLanguage()
   const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItemCount } = useWishlist()
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
@@ -351,7 +353,7 @@ export default function MarquePage() {
           {/* Main Categories List */}
           <nav className="p-4">
             {loadingCategories ? (
-              <div className="text-center py-8 text-gray-500">Загрузка...</div>
+              <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
             ) : apiCategories.length > 0 ? (
               apiCategories.map((category) => (
                 <div
@@ -368,7 +370,7 @@ export default function MarquePage() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">Нет категорий</div>
+              <div className="text-center py-8 text-gray-500">{t('catalog.noCategories')}</div>
             )}
           </nav>
           </div>
@@ -384,7 +386,7 @@ export default function MarquePage() {
             {/* Subcategories List */}
             <div className="p-4">
               {loadingSubcategories ? (
-                <div className="text-center py-8 text-gray-500">Загрузка...</div>
+                <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
               ) : apiSubcategories.length > 0 ? (
                 apiSubcategories.map((subcat) => (
                   <Link
@@ -421,7 +423,7 @@ export default function MarquePage() {
                   </Link>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">Нет подкатегорий</div>
+                <div className="text-center py-8 text-gray-500">{t('catalog.noSubcategories')}</div>
               )}
             </div>
           </div>

@@ -9,27 +9,29 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
+import { useLanguage } from "@/contexts/LanguageContext"
 import { useSearchParams } from "next/navigation"
 import { productsApi } from "@/lib/api"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
 import { API_CONFIG } from "@/lib/config"
 
-const sortOptions = [
-  { value: "relevance", label: "По релевантности" },
-  { value: "popular", label: "Популярное" },
-  { value: "newest", label: "Новинки" },
-  { value: "price_asc", label: "Сначала дешёвые" },
-  { value: "price_desc", label: "Сначала дорогие" },
-  { value: "rating", label: "По рейтингу" },
-]
-
 export default function SearchPage() {
   const auth = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useLanguage()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { openCatalog } = useCatalog()
+  
+  const sortOptions = [
+    { value: "relevance", label: t('search.sortRelevance') },
+    { value: "popular", label: t('search.sortPopular') },
+    { value: "newest", label: t('search.sortNewest') },
+    { value: "price_asc", label: t('search.sortPriceAsc') },
+    { value: "price_desc", label: t('search.sortPriceDesc') },
+    { value: "rating", label: t('search.sortRating') },
+  ]
   
   const query = searchParams.get('q') || ''
   
@@ -255,7 +257,7 @@ export default function SearchPage() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="flex items-center justify-center flex-col">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
-            <p className="text-gray-600">Поиск товаров...</p>
+            <p className="text-gray-600">{t('search.searching')}</p>
           </div>
         </main>
       </div>
@@ -268,11 +270,11 @@ export default function SearchPage() {
       <div className="min-h-screen bg-gray-50">
         <AuthModals {...auth} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Введите поисковый запрос</h1>
-          <p className="text-gray-600 mb-8">Используйте поисковую строку для поиска товаров</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('search.enterQuery')}</h1>
+          <p className="text-gray-600 mb-8">{t('search.useSearch')}</p>
           <Link href="/">
             <Button className="bg-brand hover:bg-brand-hover text-white">
-              Вернуться на главную
+              {t('product.backToHome')}
             </Button>
           </Link>
         </main>
@@ -288,15 +290,15 @@ export default function SearchPage() {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-4 text-sm">
           <Link href="/" className="text-gray-600 hover:text-brand">
-            Главная
+            {t('product.home')}
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="font-medium text-black">Поиск: "{query}"</span>
+          <span className="font-medium text-black">{t('search.searchQuery')} "{query}"</span>
         </div>
 
         {/* Title and Count */}
             <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">Поиск: "{query}" <span className="text-gray-500 font-normal text-lg">{total} товаров</span></h1>
+          <h1 className="text-2xl font-bold text-black">{t('search.searchQuery')} "{query}" <span className="text-gray-500 font-normal text-lg">{total} {t('search.products')}</span></h1>
             </div>
             
         {/* Horizontal Filter Bar */}
@@ -625,7 +627,7 @@ export default function SearchPage() {
             {isLoading && currentPage === 1 ? (
               <div className="flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mr-3"></div>
-            <p className="text-gray-600">Загружаем товары...</p>
+            <p className="text-gray-600">{t('search.loading')}</p>
               </div>
             ) : products.length > 0 ? (
               <>

@@ -6,12 +6,14 @@ import Link from "next/link"
 import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { useWishlist } from "@/hooks/useWishlist"
+import { useLanguage } from "@/contexts/LanguageContext"
 import { AuthModals } from "@/components/AuthModals"
 import { getImageUrl } from "@/lib/utils"
 
 export default function WishlistPage() {
   const router = useRouter()
   const auth = useAuth()
+  const { t } = useLanguage()
   const { wishlistItems, removeFromWishlist } = useWishlist()
   const [isClient, setIsClient] = useState(false)
 
@@ -28,8 +30,8 @@ export default function WishlistPage() {
       <AuthModals {...auth} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">Избранные</h1>
-          {wishlistItems.length > 0 && <span className="text-gray-500 text-sm">{wishlistItems.length} товаров</span>}
+          <h1 className="text-2xl font-bold text-black">{t('wishlist.title')}</h1>
+          {wishlistItems.length > 0 && <span className="text-gray-500 text-sm">{wishlistItems.length} {t('wishlist.items')}</span>}
         </div>
 
         {wishlistItems.length === 0 ? (
@@ -38,10 +40,10 @@ export default function WishlistPage() {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
               <Heart className="w-10 h-10 text-gray-400" />
             </div>
-            <h2 className="text-2xl font-semibold text-black mb-2">Список пуст</h2>
-            <p className="text-gray-600 mb-8 max-w-xs">Перейдите в каталог чтобы добавить товары в избранное</p>
+            <h2 className="text-2xl font-semibold text-black mb-2">{t('wishlist.empty')}</h2>
+            <p className="text-gray-600 mb-8 max-w-xs">{t('wishlist.addItems')}</p>
             <Button className="bg-brand hover:bg-brand-hover text-white px-8 py-3 rounded-lg" onClick={() => router.push('/?catalog=true')}>
-              В каталог
+              {t('wishlist.toCatalog')}
             </Button>
           </div>
         ) : (
@@ -88,7 +90,7 @@ export default function WishlistPage() {
                     <span className="text-base font-bold text-brand">{product.price} сом</span>
                   </div>
                   
-                  <div className="text-xs text-gray-500">Продано {product.salesCount || 23}</div>
+                  <div className="text-xs text-gray-500">{t('product.sold')} {product.salesCount || 23}</div>
                 </Link>
               </div>
             ))}
