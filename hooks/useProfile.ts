@@ -120,7 +120,7 @@ export const useProfile = () => {
       })
     } catch (error) {
       console.error('Error fetching profile:', error)
-      toast.error('Failed to load profile')
+      // Silent error - profile is optional for guests
     } finally {
       setIsLoadingProfile(false)
     }
@@ -162,7 +162,7 @@ export const useProfile = () => {
       return []
     } catch (error) {
       console.error('Error fetching addresses:', error)
-      toast.error('Failed to load addresses')
+      // Silent error - addresses are optional for guests
       return []
     } finally {
       setIsLoadingAddresses(false)

@@ -200,10 +200,6 @@ export default function CartPage() {
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const taxes = Math.round(subtotal * taxRate)
-  const discount = cartItems.reduce((sum, item) => {
-    const originalPrice = item.originalPrice || item.price
-    return sum + (originalPrice - item.price) * item.quantity
-  }, 0)
   const total = subtotal + deliveryCost
 
   const handleCheckout = async () => {
@@ -641,10 +637,6 @@ export default function CartPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Товары на сумму</span>
                     <span className="text-black font-medium">{subtotal.toLocaleString()} сом</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Скидка</span>
-                    <span className="text-black font-medium">-{discount.toLocaleString()} сом</span>
                   </div>
                   <div className="border-t pt-2.5 mt-2.5">
                     <div className="flex justify-between text-base font-bold">
@@ -1429,12 +1421,6 @@ export default function CartPage() {
                   <span className="text-gray-600">Доставка:</span>
                   <span className="text-black font-medium">{deliveryCost.toLocaleString()} сом</span>
                 </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Скидка:</span>
-                    <span className="text-green-600 font-medium">-{discount.toLocaleString()} сом</span>
-                  </div>
-                )}
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between text-base font-bold">
                     <span className="text-black">Итого к оплате:</span>
