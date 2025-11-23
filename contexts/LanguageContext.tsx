@@ -13,18 +13,28 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('ru')
-  const [translations, setTranslations] = useState<Record<string, any>>({})
-
-  // Load language from localStorage on mount
-  useEffect(() => {
+  // Initialize with saved language or default to 'ru'
+  // Use lazy initializer to read from localStorage only on first render
+  const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
       const savedLang = localStorage.getItem('language') as Language
       if (savedLang && ['ru', 'ky', 'en'].includes(savedLang)) {
+        return savedLang
+      }
+    }
+    return 'ru'
+  })
+  const [translations, setTranslations] = useState<Record<string, any>>({})
+
+  // Load language from localStorage on mount (in case it was changed externally)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('language') as Language
+      if (savedLang && ['ru', 'ky', 'en'].includes(savedLang) && savedLang !== language) {
         setLanguageState(savedLang)
       }
     }
-  }, [])
+  }, [language])
 
   // Load translations when language changes
   useEffect(() => {

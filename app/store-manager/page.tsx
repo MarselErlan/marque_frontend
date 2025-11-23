@@ -1031,7 +1031,7 @@ export default function AdminDashboard() {
                         <p className={`text-sm ${revenueData.orders_change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                           {revenueData.orders_change}
                         </p>
-                    <p className="text-sm text-gray-500">Кол-во заказов</p>
+                    <p className="text-sm text-gray-500">{t('admin.dashboard.ordersCount')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -1045,7 +1045,7 @@ export default function AdminDashboard() {
                         <p className={`text-sm ${revenueData.average_change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                           {revenueData.average_change}
                         </p>
-                    <p className="text-sm text-gray-500">Средний чек</p>
+                    <p className="text-sm text-gray-500">{t('admin.dashboard.averageCheck')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -1053,7 +1053,7 @@ export default function AdminDashboard() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Сегодняшний доход по часам</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('admin.dashboard.todayRevenueByHours')}</h3>
             <div className="space-y-2">
                   {revenueData.hourly_revenue.map((hour, index) => (
                 <div
@@ -1070,7 +1070,7 @@ export default function AdminDashboard() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Последние заказы</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('admin.dashboard.recentOrders')}</h3>
             <div className="space-y-3">
                   {revenueData.recent_orders.map((order, index) => (
                 <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
@@ -1078,7 +1078,7 @@ export default function AdminDashboard() {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <div className="flex items-center space-x-2 mb-1">
-                          <h4 className="font-semibold text-gray-900">Заказ {order.id}</h4>
+                          <h4 className="font-semibold text-gray-900">{t('admin.orders.order')} {order.id}</h4>
                               <Badge className={`${order.status_color} text-xs`}>{order.status}</Badge>
                         </div>
                         <p className="text-sm text-gray-500">
@@ -1130,7 +1130,7 @@ export default function AdminDashboard() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder="№ заказа, номер телефона, адрес"
+              placeholder={t('admin.orders.searchPlaceholder')}
               className="pl-10 pr-4 py-2 bg-gray-100 border-0 rounded-lg"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1246,10 +1246,10 @@ export default function AdminDashboard() {
                   {isLoadingOrders ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Загрузка...
+                      {t('common.loading')}
                     </>
                   ) : (
-                    'Загрузить еще'
+                    t('admin.orders.loadMore')
                   )}
                 </Button>
               )}
@@ -1308,8 +1308,8 @@ export default function AdminDashboard() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Управление заказами</h1>
-                <p className="text-sm text-gray-500">{ordersTotal} заказов</p>
+                <h1 className="text-lg font-semibold text-gray-900">{t('admin.dashboard.allOrders')}</h1>
+                <p className="text-sm text-gray-500">{ordersTotal} {t('admin.orders.count')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -1326,7 +1326,7 @@ export default function AdminDashboard() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder="№ заказа, номер телефона, адрес"
+              placeholder={t('admin.orders.searchPlaceholder')}
               className="pl-10 pr-4 py-2 bg-gray-100 border-0 rounded-lg"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1442,10 +1442,10 @@ export default function AdminDashboard() {
                   {isLoadingOrders ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Загрузка...
+                      {t('common.loading')}
                     </>
                   ) : (
-                    'Загрузить еще'
+                    t('admin.orders.loadMore')
                   )}
                 </Button>
               )}

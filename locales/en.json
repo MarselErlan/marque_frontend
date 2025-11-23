@@ -408,7 +408,11 @@
       "todayOrders": "Today's Orders",
       "todayOrdersDesc": "List of orders for the last 24 hours",
       "allOrders": "Order Management",
-      "allOrdersDesc": "List of all orders for all time"
+      "allOrdersDesc": "List of all orders for all time",
+      "ordersCount": "Number of Orders",
+      "averageCheck": "Average Check",
+      "todayRevenueByHours": "Today's Revenue by Hours",
+      "recentOrders": "Recent Orders"
     },
     "orders": {
       "order": "Order",

@@ -40,6 +40,9 @@ export const useAuth = () => {
   const handleLogout = useCallback(async () => {
     console.log('🔴 Starting logout process...')
     
+    // Save language preference before clearing localStorage
+    const savedLanguage = localStorage.getItem('language')
+    
     try {
       // Call backend logout API first
       const token = localStorage.getItem('authToken')
@@ -53,11 +56,8 @@ export const useAuth = () => {
       // Continue with local logout even if API fails
     }
 
-    // Clear ALL localStorage items
+    // Clear auth-related localStorage items (but preserve language preference)
     console.log('🔴 Clearing localStorage...')
-    localStorage.clear() // Clear everything to ensure complete logout
-    
-    // Or be specific:
     localStorage.removeItem('authToken')
     localStorage.removeItem('sessionId')
     localStorage.removeItem('expiresInMinutes')
@@ -66,6 +66,11 @@ export const useAuth = () => {
     localStorage.removeItem('userData')
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('tokenExpiration')
+    
+    // Restore language preference after clearing
+    if (savedLanguage) {
+      localStorage.setItem('language', savedLanguage)
+    }
 
     console.log('🔴 Setting auth state to logged out...')
     setAuthState({

@@ -457,7 +457,11 @@
       "todayOrders": "Сегодняшние заказы",
       "todayOrdersDesc": "Список заказов на последние 24 часа",
       "allOrders": "Управление заказами",
-      "allOrdersDesc": "Список всех заказов за все время"
+      "allOrdersDesc": "Список всех заказов за все время",
+      "ordersCount": "Кол-во заказов",
+      "averageCheck": "Средний чек",
+      "todayRevenueByHours": "Сегодняшний доход по часам",
+      "recentOrders": "Последние заказы"
     },
     "orders": {
       "order": "Заказ",
