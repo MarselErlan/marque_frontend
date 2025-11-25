@@ -248,7 +248,9 @@
     "orderAccepted": "Заказ принят к исполнению!",
     "orderDetailsSent": "Мы отправили детали заказа на ваш номер телефона",
     "goToProfile": "Перейти в профиль",
-    "notSelected": "Не выбран"
+    "notSelected": "Не выбран",
+    "deliveryAddress": "Адрес доставки",
+    "paymentMethod": "Способ оплаты"
   },
   "auth": {
     "logout": "Выйти",
@@ -312,6 +314,9 @@
     "buyer": "Покупатель",
     "male": "Мужской",
     "female": "Женский",
+    "forWomen": "Для женщин",
+    "forMen": "Для мужчин",
+    "forBoys": "Для мальчиков",
     "reviewRatingRequired": "Пожалуйста, поставьте оценку",
     "reviewProductMissing": "Товар не выбран",
     "reviewTextRequired": "Пожалуйста, добавьте текст отзыва",
@@ -420,7 +425,10 @@
   },
   "category": {
     "notFound": "Категория не найдена",
-    "notExists": "Запрошенная категория не существует"
+    "notExists": "Запрошенная категория не существует",
+    "loading": "Загружаем категорию...",
+    "products": "товаров",
+    "recommended": "Рекомендуем из этой категории"
   },
   "home": {
     "categories": "Категории",
@@ -428,6 +436,7 @@
     "noProducts": "Товары не найдены",
     "noCategories": "Нет категорий",
     "tryRefreshOrFilters": "Попробуйте обновить страницу или изменить фильтры",
+    "loadingMore": "Загружаем ещё товары...",
     "searchSuggestions": {
       "tShirt": "футболка",
       "mensTShirt": "футболка мужская",
@@ -444,7 +453,8 @@
     },
     "loading": {
       "redirecting": "Перенаправление на страницу входа...",
-      "checkingAccess": "Проверка доступа..."
+      "checkingAccess": "Проверка доступа...",
+      "checkingStatus": "Проверка статуса менеджера..."
     },
     "dashboard": {
       "welcome": "Добро пожаловать,",

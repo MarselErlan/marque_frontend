@@ -847,7 +847,7 @@ export default function ProductDetailPage() {
               {!isAddedToCart && (
                 <>
                   <Button variant="outline" className="px-6 py-3 rounded-lg bg-transparent hidden" onClick={handleCompare}>
-                    Сравнить товар
+                    {t('product.compare')}
                   </Button>
                   <Button variant="outline" size="icon" className="p-3 rounded-lg bg-transparent" onClick={handleWishlist}>
                     <Heart className={`w-5 h-5 ${isInWishlist(product.id as string) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />

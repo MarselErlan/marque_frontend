@@ -705,10 +705,10 @@ export default function SearchPage() {
                           )}
                         </div>
                         {product.sold_count > 0 && (
-                          <div className="text-xs text-gray-500 leading-tight">Продано {product.sold_count}</div>
+                          <div className="text-xs text-gray-500 leading-tight">{t('product.sold')} {product.sold_count}</div>
                         )}
                         {product.in_stock === false && (
-                          <div className="text-xs text-red-500">Нет в наличии</div>
+                          <div className="text-xs text-red-500">{t('product.outOfStock')}</div>
                         )}
                       </div>
                     </Link>

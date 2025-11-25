@@ -888,7 +888,7 @@ export default function MarquePage() {
                       
                       {/* Sales Count */}
                       {product.sold_count && (
-                        <div className="text-xs text-gray-500 leading-tight">Продано {product.sold_count}</div>
+                        <div className="text-xs text-gray-500 leading-tight">{t('product.sold')} {product.sold_count}</div>
                       )}
                     </div>
                   </Link>
@@ -900,7 +900,7 @@ export default function MarquePage() {
             {isLoadingMore && (
               <div className="flex justify-center items-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
-                <span className="ml-3 text-gray-600">Загружаем ещё товары...</span>
+                <span className="ml-3 text-gray-600">{t('home.loadingMore')}</span>
                   </div>
             )}
           </section>

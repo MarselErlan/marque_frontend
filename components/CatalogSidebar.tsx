@@ -160,7 +160,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                   </button>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">Нет категорий</div>
+                <div className="text-center py-8 text-gray-500">{t('catalog.noCategories')}</div>
               )}
             </nav>
           </>
@@ -224,7 +224,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                   </Link>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">Нет подкатегорий</div>
+                <div className="text-center py-8 text-gray-500">{t('catalog.noSubcategories')}</div>
               )}
             </div>
           </>
@@ -239,7 +239,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
         >
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-black">Каталог</h2>
+            <h2 className="text-xl font-bold text-black">{t('catalog.title')}</h2>
             <button
               onClick={handleClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -251,7 +251,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
           {/* Main Categories List */}
           <nav className="p-4">
             {loadingCategories ? (
-              <div className="text-center py-8 text-gray-500">Загрузка...</div>
+              <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
             ) : apiCategories.length > 0 ? (
               apiCategories.map((category) => (
                 <div
@@ -327,7 +327,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                   </Link>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">Нет подкатегорий</div>
+                <div className="text-center py-8 text-gray-500">{t('catalog.noSubcategories')}</div>
               )}
             </div>
           </div>

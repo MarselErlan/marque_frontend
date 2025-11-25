@@ -128,7 +128,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="flex items-center justify-center flex-col">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand mb-4"></div>
-            <p className="text-gray-600">Загружаем категорию...</p>
+            <p className="text-gray-600">{t('category.loading')}</p>
           </div>
         </main>
       </div>
@@ -161,7 +161,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-6">
           <Link href="/" className="text-gray-600 hover:text-brand">
-            Главная
+            {t('product.home')}
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <span className="font-medium text-black">{category.name}</span>
@@ -186,21 +186,21 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 />
                 <div className="flex-1">
                   <h3 className="font-medium text-black group-hover:text-brand">{subcategory.name}</h3>
-                  <p className="text-gray-500 text-sm">{subcategory.product_count} товаров</p>
+                  <p className="text-gray-500 text-sm">{subcategory.product_count} {t('category.products')}</p>
                 </div>
               </Link>
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500">Подкатегории не найдены</p>
+            <p className="text-gray-500">{t('catalog.noSubcategories')}</p>
           </div>
         )}
 
         {/* Recommended Products */}
         {recommendedProducts && recommendedProducts.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-black mb-6">Рекомендуем из этой категории</h2>
+            <h2 className="text-2xl font-bold text-black mb-6">{t('category.recommended')}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {recommendedProducts.map((product) => (
                 <Link 
@@ -245,7 +245,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                       )}
                     </div>
                     {product.sold_count !== undefined && (
-                      <div className="text-xs text-gray-500">Продано {product.sold_count}</div>
+                      <div className="text-xs text-gray-500">{t('product.sold')} {product.sold_count}</div>
                     )}
                   </div>
                 </Link>

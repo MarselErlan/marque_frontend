@@ -23,6 +23,7 @@
     "yesterday": "yesterday",
     "unknownDate": "Date unknown",
     "notSpecified": "Not specified",
+    "buyer": "Buyer",
     "loadingOrders": "Loading orders...",
     "loadingDetails": "Loading details...",
     "sending": "Sending...",
@@ -219,7 +220,23 @@
     "serverError": "Server error. Please try again.",
     "itemNotFound": "Item not found in cart",
     "updateQuantityError": "Failed to update quantity",
-    "synced": "Cart synced!"
+    "synced": "Cart synced!",
+    "orderCreateError": "Error placing order. Please try again.",
+    "selectOrCreateAddress": "Please select or create a delivery address",
+    "orderConfirmation": "Order Confirmation",
+    "orderComment": "Order Comment",
+    "orderCommentPlaceholder": "Add a comment for the courier (e.g., intercom code, delivery time, etc.)",
+    "shipping": "Shipping",
+    "totalToPay": "Total to Pay",
+    "processing": "Processing...",
+    "confirmOrder": "Confirm Order",
+    "orderPlaced": "Order Placed",
+    "orderAccepted": "Order accepted for processing!",
+    "orderDetailsSent": "We have sent order details to your phone number",
+    "goToProfile": "Go to Profile",
+    "notSelected": "Not selected",
+    "deliveryAddress": "Delivery Address",
+    "paymentMethod": "Payment Method"
   },
   "auth": {
     "logout": "Logout",
@@ -271,6 +288,7 @@
     "home": "Home",
     "size": "Size",
     "sold": "Sold",
+    "compare": "Compare Product",
     "priceVaries": "Price varies from {min} to {max} som depending on size and color",
     "addedToCart": "Added to Cart",
     "goToCart": "Go to Cart",
@@ -283,6 +301,9 @@
     "buyer": "Buyer",
     "male": "Male",
     "female": "Female",
+    "forWomen": "For Women",
+    "forMen": "For Men",
+    "forBoys": "For Boys",
     "reviewRatingRequired": "Please provide a rating",
     "reviewProductMissing": "Product not selected",
     "reviewTextRequired": "Please add review text",
@@ -320,7 +341,16 @@
     "sortRating": "By Rating",
     "from": "From",
     "to": "To",
-    "price": "Price"
+    "price": "Price",
+    "filters": "Filters",
+    "showAll": "Show all",
+    "selected": "selected",
+    "all": "All",
+    "allFilters": "All Filters",
+    "allCategories": "All Categories",
+    "allSubcategories": "All Subcategories",
+    "noColorsAvailable": "No available colors",
+    "noBrandsAvailable": "No available brands"
   },
   "catalog": {
     "title": "Catalog",
@@ -371,7 +401,10 @@
   },
   "category": {
     "notFound": "Category not found",
-    "notExists": "The requested category does not exist"
+    "notExists": "The requested category does not exist",
+    "loading": "Loading category...",
+    "products": "products",
+    "recommended": "Recommended from this category"
   },
   "home": {
     "categories": "Categories",
@@ -379,6 +412,7 @@
     "noProducts": "No products found",
     "noCategories": "No categories",
     "tryRefreshOrFilters": "Try refreshing the page or changing filters",
+    "loadingMore": "Loading more products...",
     "searchSuggestions": {
       "tShirt": "t-shirt",
       "mensTShirt": "men's t-shirt",
@@ -395,7 +429,8 @@
     },
     "loading": {
       "redirecting": "Redirecting to login page...",
-      "checkingAccess": "Checking access..."
+      "checkingAccess": "Checking access...",
+      "checkingStatus": "Checking manager status..."
     },
     "dashboard": {
       "welcome": "Welcome,",

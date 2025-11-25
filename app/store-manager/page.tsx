@@ -833,7 +833,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
-          <p className="text-gray-600">Проверка статуса менеджера...</p>
+          <p className="text-gray-600">{t('admin.loading.checkingStatus')}</p>
         </div>
       </div>
     )

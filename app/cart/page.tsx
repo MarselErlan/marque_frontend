@@ -491,7 +491,7 @@ export default function CartPage() {
       
       // Create order via API with user's currency
       const order = await ordersApi.create({
-        customer_name: profile.full_name || profile.name || 'Покупатель',
+        customer_name: profile.full_name || profile.name || t('common.buyer'),
         customer_phone: profile.phone,
         delivery_address: checkoutAddress,
         delivery_city: selectedAddress?.city || undefined,
@@ -847,23 +847,23 @@ export default function CartPage() {
                 {isUSLocation ? (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Street address *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.streetAddress')} *</label>
                       <Input
                         type="text"
                         value={newAddress.street}
                         onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                        placeholder="123 Main St"
+                        placeholder={t('addresses.streetAddressPlaceholder')}
                         className="w-full"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Full address (optional)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.fullAddress')} ({t('addresses.optional')})</label>
                       <Input
                         type="text"
                         value={newAddress.fullAddress}
                         onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
-                        placeholder="123 Main St, Suite 5"
+                        placeholder={t('addresses.fullAddressPlaceholder')}
                         className="w-full"
                       />
                     </div>
@@ -960,24 +960,24 @@ export default function CartPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Штат / Регион *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.state')} *</label>
                       <Input
                         type="text"
                         value={newAddress.state}
                         onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                        placeholder="IL"
+                        placeholder={t('addresses.statePlaceholder')}
                         className="w-full"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">ZIP / Почтовый индекс *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.postalCode')} *</label>
                       <Input
                         type="text"
                         value={newAddress.postalCode}
                         onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
-                        placeholder="60074"
+                        placeholder={t('addresses.postalCodePlaceholder')}
                         className="w-full"
                         required
                       />
@@ -1105,23 +1105,23 @@ export default function CartPage() {
                 {isUSLocation ? (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Street address *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.streetAddress')} *</label>
                       <Input
                         type="text"
                         value={newAddress.street}
                         onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                        placeholder="123 Main St"
+                        placeholder={t('addresses.streetAddressPlaceholder')}
                         className="w-full"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Full address (optional)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.fullAddress')} ({t('addresses.optional')})</label>
                       <Input
                         type="text"
                         value={newAddress.fullAddress}
                         onChange={(e) => setNewAddress({ ...newAddress, fullAddress: e.target.value })}
-                        placeholder="123 Main St, Suite 5"
+                        placeholder={t('addresses.fullAddressPlaceholder')}
                         className="w-full"
                       />
                     </div>
@@ -1217,24 +1217,24 @@ export default function CartPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Штат / Регион *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.state')} *</label>
                       <Input
                         type="text"
                         value={newAddress.state}
                         onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                        placeholder="IL"
+                        placeholder={t('addresses.statePlaceholder')}
                         className="w-full"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">ZIP / Почтовый индекс *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('addresses.postalCode')} *</label>
                       <Input
                         type="text"
                         value={newAddress.postalCode}
                         onChange={(e) => setNewAddress({ ...newAddress, postalCode: e.target.value })}
-                        placeholder="60074"
+                        placeholder={t('addresses.postalCodePlaceholder')}
                         className="w-full"
                         required
                       />
@@ -1252,7 +1252,7 @@ export default function CartPage() {
                     className="w-4 h-4 text-brand"
                   />
                   <label htmlFor="is_default_new" className="text-sm text-gray-600">
-                    Сделать адресом по умолчанию
+                    {t('addresses.defaultAddress')}
                   </label>
                 </div>
 
