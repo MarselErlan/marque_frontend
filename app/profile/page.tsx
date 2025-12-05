@@ -466,7 +466,10 @@ export default function ProfilePage() {
 
       // Check if all products have been reviewed
       const reviewedProductIds = (order as any).reviewed_product_ids || []
+      // Only consider all reviewed if we have products AND all products are in reviewed list
+      // If reviewedProductIds is empty, definitely not all reviewed
       const allProductsReviewed = uniqueProductIds.size > 0 && 
+        reviewedProductIds.length > 0 &&
         Array.from(uniqueProductIds).every(id => reviewedProductIds.includes(id))
 
       return {
@@ -480,6 +483,7 @@ export default function ProfilePage() {
         deliveryDate: formatDate(order.requested_delivery_date || order.delivery_date),
         items,
         isActive: !["delivered", "cancelled", "refunded"].includes(order.status),
+        // Allow review if order is delivered AND (no reviews exist OR not all products reviewed)
         canReview: order.status === "delivered" && !allProductsReviewed,
         hasReview: allProductsReviewed,
         reviewedProductIds: reviewedProductIds,
@@ -1148,15 +1152,31 @@ export default function ProfilePage() {
                             size="sm" 
                             onClick={async () => {
                               setSelectedOrder(order)
-                              // Fetch order detail to get latest has_review status
+                              // Fetch order detail to get latest review status
                               try {
                                 const orderDetail = await profileApi.getOrderDetail(order.id)
-                                if (orderDetail.order?.has_review !== undefined) {
+                                // Calculate canReview based on actual reviewed products, not just has_review flag
+                                if (orderDetail.order?.items) {
+                                  const uniqueProductIds = new Set<number>()
+                                  orderDetail.order.items.forEach((item: any) => {
+                                    if (item.product_id) {
+                                      uniqueProductIds.add(item.product_id)
+                                    }
+                                  })
+                                  const reviewedProductIds = (orderDetail.order as any)?.reviewed_product_ids || []
+                                  const allProductsReviewed = uniqueProductIds.size > 0 && 
+                                    reviewedProductIds.length > 0 &&
+                                    Array.from(uniqueProductIds).every(id => reviewedProductIds.includes(id))
+                                  
                                   setSelectedOrder({
                                     ...order,
-                                    hasReview: orderDetail.order.has_review,
-                                    canReview: order.status === "delivered" && !orderDetail.order.has_review
+                                    hasReview: allProductsReviewed,
+                                    canReview: order.status === "delivered" && !allProductsReviewed,
+                                    reviewedProductIds: reviewedProductIds
                                   })
+                                } else {
+                                  // If no items, use the order's existing canReview status
+                                  setSelectedOrder(order)
                                 }
                               } catch (error) {
                                 console.error('Failed to fetch order detail:', error)
