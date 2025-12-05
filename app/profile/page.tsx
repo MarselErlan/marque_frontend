@@ -695,7 +695,26 @@ export default function ProfilePage() {
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : []
-    const newPhotos: ReviewPhoto[] = files.map((file) => ({
+    
+    // Check current count and limit to max 5 images total
+    const currentCount = reviewPhotos.length
+    const maxImages = 5
+    const remainingSlots = maxImages - currentCount
+    
+    if (remainingSlots <= 0) {
+      toast.error(t('product.reviewMaxImages', { max: maxImages }))
+      e.target.value = ''
+      return
+    }
+    
+    // Limit new files to remaining slots
+    const filesToAdd = files.slice(0, remainingSlots)
+    
+    if (files.length > remainingSlots) {
+      toast.error(t('product.reviewMaxImages', { max: maxImages }))
+    }
+    
+    const newPhotos: ReviewPhoto[] = filesToAdd.map((file) => ({
       id: Date.now() + Math.random(),
       file,
       url: URL.createObjectURL(file),

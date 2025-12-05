@@ -1026,9 +1026,12 @@ export default function ProductDetailPage() {
                       {review.images.slice(0, 6).map((img: any, idx: number) => (
                         <div key={img.id || idx} className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                           <img
-                            src={getImageUrl(img.url || img)}
+                            src={getImageUrl(img.image_url || img.url || img)}
                             alt={`Review image ${idx + 1}`}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "/images/product_placeholder_adobe.png"
+                            }}
                           />
                         </div>
                       ))}
@@ -1036,9 +1039,9 @@ export default function ProductDetailPage() {
                   )}
 
                   {/* Review Text */}
-                  {review.text && (
+                  {(review.comment || review.text) && (
                     <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
-                      {review.text}
+                      {review.comment || review.text}
                     </p>
                   )}
                 </div>

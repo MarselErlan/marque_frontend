@@ -225,9 +225,12 @@ export default function ProductReviewsPage() {
                       {review.images.map((img: any, idx: number) => (
                         <div key={img.id || idx} className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                           <img
-                            src={getImageUrl(img.url)}
+                            src={getImageUrl(img.image_url || img.url || img)}
                             alt={`Review image ${idx + 1}`}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "/images/product_placeholder_adobe.png"
+                            }}
                           />
                         </div>
                       ))}
@@ -235,9 +238,9 @@ export default function ProductReviewsPage() {
                   )}
 
                   {/* Review Text */}
-                  {review.text && (
+                  {(review.comment || review.text) && (
                     <p className="text-gray-700 text-sm leading-relaxed">
-                      {review.text}
+                      {review.comment || review.text}
                     </p>
                   )}
 

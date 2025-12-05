@@ -334,6 +334,7 @@
     "reviewSelectFiles": "Выберите файлы (можно несколько)",
     "reviewPhotosUploaded": "Загружено фото: {count}. Вы можете добавить еще.",
     "reviewPhotoAlt": "Фото отзыва",
+    "reviewMaxImages": "Максимум {max} фото. Пожалуйста, удалите некоторые фото перед добавлением новых.",
     "submitReview": "Отправить отзыв",
     "reviewNoItems": "В заказе нет товаров",
     "priceOnRequest": "Цена по запросу"

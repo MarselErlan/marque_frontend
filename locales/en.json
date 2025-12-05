@@ -318,6 +318,7 @@
     "reviewSelectFiles": "Select files (you can select multiple)",
     "reviewPhotosUploaded": "Photos uploaded: {count}. You can add more.",
     "reviewPhotoAlt": "Review photo",
+    "reviewMaxImages": "Maximum {max} images. Please remove some images before adding new ones.",
     "submitReview": "Submit Review",
     "reviewNoItems": "No items in order"
   },
