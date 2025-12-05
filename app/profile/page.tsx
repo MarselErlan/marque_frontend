@@ -1465,18 +1465,26 @@ export default function ProfilePage() {
                           className="w-full bg-brand hover:bg-brand-hover text-white"
                           onClick={async () => {
                             try {
-                              if (orderDetail.items && orderDetail.items.length > 0) {
+                              // Always fetch fresh order detail to get latest reviewed_product_ids from backend
+                              const detail = await profileApi.getOrderDetail(selectedOrder.id)
+                              if (detail.order?.items && detail.order.items.length > 0) {
+                                // Update orderDetail with fresh data
+                                setOrderDetail(detail.order)
+                                
                                 // Get unique product IDs
                                 const uniqueProductIds = new Set<number>()
-                                orderDetail.items.forEach((item: any) => {
+                                detail.order.items.forEach((item: any) => {
                                   if (item.product_id) {
                                     uniqueProductIds.add(item.product_id)
                                   }
                                 })
                                 
-                                // Filter out reviewed products
-                                const reviewedIds = selectedOrder?.reviewedProductIds || []
-                                const unreviewedProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+                                // Get reviewed product IDs from backend (most reliable source)
+                                const reviewedIdsFromBackend = (detail.order as any)?.reviewed_product_ids || []
+                                // Only filter if backend has review data, otherwise show all products
+                                const unreviewedProducts = reviewedIdsFromBackend.length > 0
+                                  ? Array.from(uniqueProductIds).filter(id => !reviewedIdsFromBackend.includes(id))
+                                  : Array.from(uniqueProductIds) // Show all if no review data
                                 
                                 if (unreviewedProducts.length === 0) {
                                   toast.error(t('orders.allReviewed'))
@@ -1545,16 +1553,19 @@ export default function ProfilePage() {
                                   }
                                 })
                                 
-                                // Filter out reviewed products
-                                const reviewedIds = selectedOrder?.reviewedProductIds || []
-                                const unreviewedProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+                                // Get reviewed product IDs from backend (most reliable source)
+                                const reviewedIdsFromBackend = (detail.order as any)?.reviewed_product_ids || []
+                                // Only filter if backend has review data, otherwise show all products
+                                const unreviewedProducts = reviewedIdsFromBackend.length > 0
+                                  ? Array.from(uniqueProductIds).filter(id => !reviewedIdsFromBackend.includes(id))
+                                  : Array.from(uniqueProductIds) // Show all if no review data
                                 
                                 if (unreviewedProducts.length === 0) {
                                   toast.error(t('orders.allReviewed'))
                                   return
                                 } else {
                                   // Always show product selection first, even for single product
-                                  setOrderDetail(detail)
+                                  setOrderDetail(detail.order)
                                   setShowProductSelection(true)
                                   setShowReviewForm(false)
                                 }
@@ -1597,17 +1608,22 @@ export default function ProfilePage() {
                   {/* Get unique unreviewed products */}
                   {(() => {
                     const uniqueProducts = new Map<number, any>()
-                    // Get reviewed product IDs from both order list and order detail
+                    // Get reviewed product IDs from backend order detail (most reliable source)
+                    // orderDetail is already the order object (not wrapped in .order)
+                    const reviewedIdsFromDetail = (orderDetail as any)?.reviewed_product_ids || []
+                    // Also check selectedOrder for any local updates
                     const reviewedIdsFromOrder = selectedOrder.reviewedProductIds || []
-                    const reviewedIdsFromDetail = (orderDetail.order as any)?.reviewed_product_ids || []
-                    // Combine both sources and remove duplicates
-                    const reviewedIds = [...new Set([...reviewedIdsFromOrder, ...reviewedIdsFromDetail])]
+                    // Use backend data as primary source, fallback to local state
+                    // Only use local state if backend doesn't have the data
+                    const reviewedIds = reviewedIdsFromDetail.length > 0 
+                      ? reviewedIdsFromDetail 
+                      : reviewedIdsFromOrder
                     
-                    // If we have items, show all products with product_id (only filter if we have confirmed review data)
-                    if (orderDetail.order?.items && orderDetail.order.items.length > 0) {
-                      orderDetail.order.items.forEach((item: any) => {
+                    // orderDetail is the order object itself, so use orderDetail.items (not orderDetail.order.items)
+                    if (orderDetail.items && orderDetail.items.length > 0) {
+                      orderDetail.items.forEach((item: any) => {
                         if (item.product_id) {
-                          // Only filter out if we have review data AND this product is in the reviewed list
+                          // Only filter out if we have confirmed review data from backend
                           // If reviewedIds is empty, show all products (assume none are reviewed yet)
                           if (reviewedIds.length === 0 || !reviewedIds.includes(item.product_id)) {
                             if (!uniqueProducts.has(item.product_id)) {
