@@ -802,8 +802,8 @@ export default function ProfilePage() {
       setReviewText("")
       setReviewPhotos([])
       
-      // Check if there are more products to review
-      if (selectedOrder && orderDetail?.order?.items) {
+      // Check if there are more products to review using UPDATED reviewedIds
+      if (selectedOrder && selectedProductId && orderDetail?.order?.items) {
         const uniqueProductIds = new Set<number>()
         orderDetail.order.items.forEach((item: any) => {
           if (item.product_id) {
@@ -811,21 +811,24 @@ export default function ProfilePage() {
           }
         })
         
-        const reviewedIds = selectedOrder.reviewedProductIds || []
-        const remainingProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+        // Use the UPDATED reviewedIds (includes the just-submitted review)
+        const updatedReviewedIds = [...(selectedOrder.reviewedProductIds || []), selectedProductId]
+        const remainingProducts = Array.from(uniqueProductIds).filter(id => !updatedReviewedIds.includes(id))
         
         if (remainingProducts.length > 0) {
-          // More products to review - go back to product selection
+          // More products to review - go back to product selection to show remaining items
           setSelectedProductId(null)
           setShowReviewForm(false)
           setShowProductSelection(true)
         } else {
-          // All products reviewed - go back to order list
+          // All products reviewed - go back to order detail view (review button will be hidden)
           setShowReviewForm(false)
           setShowProductSelection(false)
           setSelectedProductId(null)
-          setSelectedOrder(null)
-          setOrderDetail(null)
+          // Refresh orders to update review status from backend
+          if (fetchOrders) {
+            fetchOrders()
+          }
         }
       } else {
         setShowReviewForm(false)
@@ -1574,13 +1577,26 @@ export default function ProfilePage() {
                   {/* Get unique unreviewed products */}
                   {(() => {
                     const uniqueProducts = new Map<number, any>()
-                    const reviewedIds = selectedOrder.reviewedProductIds || []
+                    // Get reviewed product IDs from both order list and order detail
+                    const reviewedIdsFromOrder = selectedOrder.reviewedProductIds || []
+                    const reviewedIdsFromDetail = (orderDetail.order as any)?.reviewed_product_ids || []
+                    // Combine both sources and remove duplicates
+                    const reviewedIds = [...new Set([...reviewedIdsFromOrder, ...reviewedIdsFromDetail])]
                     
-                    orderDetail.order?.items?.forEach((item: any) => {
-                      if (item.product_id && !reviewedIds.includes(item.product_id) && !uniqueProducts.has(item.product_id)) {
-                        uniqueProducts.set(item.product_id, item)
-                      }
-                    })
+                    // If we have items, show all products with product_id (only filter if we have confirmed review data)
+                    if (orderDetail.order?.items && orderDetail.order.items.length > 0) {
+                      orderDetail.order.items.forEach((item: any) => {
+                        if (item.product_id) {
+                          // Only filter out if we have review data AND this product is in the reviewed list
+                          // If reviewedIds is empty, show all products (assume none are reviewed yet)
+                          if (reviewedIds.length === 0 || !reviewedIds.includes(item.product_id)) {
+                            if (!uniqueProducts.has(item.product_id)) {
+                              uniqueProducts.set(item.product_id, item)
+                            }
+                          }
+                        }
+                      })
+                    }
                     
                     const unreviewedProducts = Array.from(uniqueProducts.values())
                     
