@@ -1157,7 +1157,7 @@ export default function ProfilePage() {
                                 try {
                                   const orderDetail = await profileApi.getOrderDetail(order.id)
                                   if (orderDetail.order?.items && orderDetail.order.items.length > 0) {
-                                    // Get unique product IDs (total products in order)
+                                    // Get unique product IDs
                                     const uniqueProductIds = new Set<number>()
                                     orderDetail.order.items.forEach((item: any) => {
                                       if (item.product_id) {
@@ -1172,16 +1172,16 @@ export default function ProfilePage() {
                                     if (unreviewedProducts.length === 0) {
                                       toast.error(t('orders.allReviewed'))
                                       return
-                                    } else if (uniqueProductIds.size >= 2) {
-                                      // 2+ products in order - always show product selection
-                                      setOrderDetail(orderDetail)
-                                      setShowProductSelection(true)
-                                      setShowReviewForm(false)
-                                    } else {
-                                      // Single product in order - go directly to review
+                                    } else if (unreviewedProducts.length === 1) {
+                                      // Single product - go directly to review
                                       setSelectedProductId(unreviewedProducts[0])
                                       setShowProductSelection(false)
                                       setShowReviewForm(true)
+                                    } else {
+                                      // Multiple products - show selection
+                                      setOrderDetail(orderDetail)
+                                      setShowProductSelection(true)
+                                      setShowReviewForm(false)
                                     }
                                   } else {
                                     toast.error(t('orders.noItems'))
@@ -1429,7 +1429,7 @@ export default function ProfilePage() {
                           onClick={async () => {
                             try {
                               if (orderDetail.items && orderDetail.items.length > 0) {
-                                // Get unique product IDs (total products in order)
+                                // Get unique product IDs
                                 const uniqueProductIds = new Set<number>()
                                 orderDetail.items.forEach((item: any) => {
                                   if (item.product_id) {
@@ -1444,15 +1444,15 @@ export default function ProfilePage() {
                                 if (unreviewedProducts.length === 0) {
                                   toast.error(t('orders.allReviewed'))
                                   return
-                                } else if (uniqueProductIds.size >= 2) {
-                                  // 2+ products in order - always show product selection
-                                  setShowProductSelection(true)
-                                  setShowReviewForm(false)
-                                } else {
-                                  // Single product in order - go directly to review
+                                } else if (unreviewedProducts.length === 1) {
+                                  // Single product - go directly to review
                                   setSelectedProductId(unreviewedProducts[0])
                                   setShowProductSelection(false)
                                   setShowReviewForm(true)
+                                } else {
+                                  // Multiple products - show selection
+                                  setShowProductSelection(true)
+                                  setShowReviewForm(false)
                                 }
                               } else {
                                 toast.error(t('orders.noItems'))
@@ -1505,7 +1505,7 @@ export default function ProfilePage() {
                             try {
                               const detail = await profileApi.getOrderDetail(selectedOrder.id)
                               if (detail.order?.items && detail.order.items.length > 0) {
-                                // Get unique product IDs (total products in order)
+                                // Get unique product IDs
                                 const uniqueProductIds = new Set<number>()
                                 detail.order.items.forEach((item: any) => {
                                   if (item.product_id) {
@@ -1520,16 +1520,16 @@ export default function ProfilePage() {
                                 if (unreviewedProducts.length === 0) {
                                   toast.error(t('orders.allReviewed'))
                                   return
-                                } else if (uniqueProductIds.size >= 2) {
-                                  // 2+ products in order - always show product selection
-                                  setOrderDetail(detail)
-                                  setShowProductSelection(true)
-                                  setShowReviewForm(false)
-                                } else {
-                                  // Single product in order - go directly to review
+                                } else if (unreviewedProducts.length === 1) {
+                                  // Single product - go directly to review
                                   setSelectedProductId(unreviewedProducts[0])
                                   setShowProductSelection(false)
                                   setShowReviewForm(true)
+                                } else {
+                                  // Multiple products - show selection
+                                  setOrderDetail(detail)
+                                  setShowProductSelection(true)
+                                  setShowReviewForm(false)
                                 }
                               } else {
                                 toast.error(t('orders.noItems'))
