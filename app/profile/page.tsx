@@ -91,6 +91,7 @@ interface UiOrder {
   isActive: boolean
   canReview: boolean
   hasReview?: boolean
+  reviewedProductIds?: number[] // Track which products have been reviewed
 }
 
 interface UiNotification {
@@ -183,6 +184,7 @@ export default function ProfilePage() {
   const [reviewText, setReviewText] = useState("")
   const [reviewPhotos, setReviewPhotos] = useState<ReviewPhoto[]>([])
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [showProductSelection, setShowProductSelection] = useState(false) // New: Show product selection view
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
   const [editingAddress, setEditingAddress] = useState<BackendAddress | null>(null)
   const [showAddressForm, setShowAddressForm] = useState(false)
@@ -454,6 +456,19 @@ export default function ProfilePage() {
           color: item.color,
         })) ?? []
 
+      // Get unique product IDs from order items
+      const uniqueProductIds = new Set<number>()
+      order.items?.forEach((item: any) => {
+        if (item.product_id) {
+          uniqueProductIds.add(item.product_id)
+        }
+      })
+
+      // Check if all products have been reviewed
+      const reviewedProductIds = (order as any).reviewed_product_ids || []
+      const allProductsReviewed = uniqueProductIds.size > 0 && 
+        Array.from(uniqueProductIds).every(id => reviewedProductIds.includes(id))
+
       return {
         id: order.id,
         orderNumber: order.order_number,
@@ -465,7 +480,9 @@ export default function ProfilePage() {
         deliveryDate: formatDate(order.requested_delivery_date || order.delivery_date),
         items,
         isActive: !["delivered", "cancelled", "refunded"].includes(order.status),
-        canReview: order.status === "delivered" && !order.has_review,
+        canReview: order.status === "delivered" && !allProductsReviewed,
+        hasReview: allProductsReviewed,
+        reviewedProductIds: reviewedProductIds,
       }
     })
   }, [backendOrders, statusMeta, formatDate, t, language])
@@ -724,14 +741,80 @@ export default function ProfilePage() {
 
       toast.success(t('product.reviewSubmitted'))
       
+      // Update reviewedProductIds locally
+      if (selectedOrder && selectedProductId) {
+        const updatedReviewedIds = [...(selectedOrder.reviewedProductIds || []), selectedProductId]
+        
+        // Get unique product IDs from order items
+        const uniqueProductIds = new Set<number>()
+        if (orderDetail?.order?.items) {
+          orderDetail.order.items.forEach((item: any) => {
+            if (item.product_id) {
+              uniqueProductIds.add(item.product_id)
+            }
+          })
+        }
+        
+        // Check if all products are now reviewed
+        const allReviewed = uniqueProductIds.size > 0 && 
+          Array.from(uniqueProductIds).every(id => updatedReviewedIds.includes(id))
+        
+        setSelectedOrder({
+          ...selectedOrder,
+          reviewedProductIds: updatedReviewedIds,
+          hasReview: allReviewed,
+          canReview: !allReviewed,
+        })
+        
+        // Also update orderDetail if it exists
+        if (orderDetail?.order) {
+          setOrderDetail({
+            ...orderDetail,
+            order: {
+              ...orderDetail.order,
+              reviewed_product_ids: updatedReviewedIds,
+            }
+          })
+        }
+      }
+      
       // Reset form
-      setShowReviewForm(false)
       setReviewRating(0)
       setReviewText("")
       setReviewPhotos([])
-      setSelectedProductId(null)
       
-      // Refresh orders to update review status
+      // Check if there are more products to review
+      if (selectedOrder && orderDetail?.order?.items) {
+        const uniqueProductIds = new Set<number>()
+        orderDetail.order.items.forEach((item: any) => {
+          if (item.product_id) {
+            uniqueProductIds.add(item.product_id)
+          }
+        })
+        
+        const reviewedIds = selectedOrder.reviewedProductIds || []
+        const remainingProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+        
+        if (remainingProducts.length > 0) {
+          // More products to review - go back to product selection
+          setSelectedProductId(null)
+          setShowReviewForm(false)
+          setShowProductSelection(true)
+        } else {
+          // All products reviewed - go back to order list
+          setShowReviewForm(false)
+          setShowProductSelection(false)
+          setSelectedProductId(null)
+          setSelectedOrder(null)
+          setOrderDetail(null)
+        }
+      } else {
+        setShowReviewForm(false)
+        setShowProductSelection(false)
+        setSelectedProductId(null)
+      }
+      
+      // Refresh orders to update review status from backend
       fetchOrders()
     } catch (error: any) {
       console.error('Review submission error:', error)
@@ -1070,17 +1153,35 @@ export default function ProfilePage() {
                               className="px-6 py-2 text-brand border-brand hover:bg-brand hover:text-white transition-colors"
                               onClick={async () => {
                                 setSelectedOrder(order)
-                                // Fetch order detail to get product_id
+                                // Fetch order detail to get products
                                 try {
                                   const orderDetail = await profileApi.getOrderDetail(order.id)
                                   if (orderDetail.order?.items && orderDetail.order.items.length > 0) {
-                                    // Use the first product's product_id
-                                    const firstItem = orderDetail.order.items[0] as any
-                                    if (firstItem.product_id) {
-                                      setSelectedProductId(firstItem.product_id)
-                                    } else {
-                                      toast.error(t('orders.reviewError'))
+                                    // Get unique product IDs
+                                    const uniqueProductIds = new Set<number>()
+                                    orderDetail.order.items.forEach((item: any) => {
+                                      if (item.product_id) {
+                                        uniqueProductIds.add(item.product_id)
+                                      }
+                                    })
+                                    
+                                    // Filter out reviewed products
+                                    const reviewedIds = order.reviewedProductIds || []
+                                    const unreviewedProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+                                    
+                                    if (unreviewedProducts.length === 0) {
+                                      toast.error(t('orders.allReviewed'))
                                       return
+                                    } else if (unreviewedProducts.length === 1) {
+                                      // Single product - go directly to review
+                                      setSelectedProductId(unreviewedProducts[0])
+                                      setShowProductSelection(false)
+                                      setShowReviewForm(true)
+                                    } else {
+                                      // Multiple products - show selection
+                                      setOrderDetail(orderDetail)
+                                      setShowProductSelection(true)
+                                      setShowReviewForm(false)
                                     }
                                   } else {
                                     toast.error(t('orders.noItems'))
@@ -1091,7 +1192,6 @@ export default function ProfilePage() {
                                   toast.error(t('profile.fetchDetailError'))
                                   return
                                 }
-                                setShowReviewForm(true)
                               }}
                             >
                               {t('orders.writeReview')}
@@ -1105,7 +1205,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {activeTab === "orders" && selectedOrder && !showReviewForm && (
+            {activeTab === "orders" && selectedOrder && !showReviewForm && !showProductSelection && (
               <div className="bg-white rounded-lg p-6">
                 <div className="flex items-center space-x-4 mb-6">
                   <Button variant="ghost" size="sm" onClick={() => {
@@ -1329,15 +1429,30 @@ export default function ProfilePage() {
                           onClick={async () => {
                             try {
                               if (orderDetail.items && orderDetail.items.length > 0) {
-                                const firstItem = orderDetail.items[0] as any
-                                if (firstItem.product_id) {
-                                  setSelectedProductId(firstItem.product_id)
-                                } else {
-                                  toast.error(t('orders.reviewError'))
+                                // Get unique product IDs
+                                const uniqueProductIds = new Set<number>()
+                                orderDetail.items.forEach((item: any) => {
+                                  if (item.product_id) {
+                                    uniqueProductIds.add(item.product_id)
+                                  }
+                                })
+                                
+                                // Filter out reviewed products
+                                const reviewedIds = selectedOrder?.reviewedProductIds || []
+                                const unreviewedProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+                                
+                                if (unreviewedProducts.length === 0) {
+                                  toast.error(t('orders.allReviewed'))
                                   return
-                                }
-                                if (orderDetail.has_review) {
-                                  setSelectedOrder({ ...selectedOrder, hasReview: true, canReview: false })
+                                } else if (unreviewedProducts.length === 1) {
+                                  // Single product - go directly to review
+                                  setSelectedProductId(unreviewedProducts[0])
+                                  setShowProductSelection(false)
+                                  setShowReviewForm(true)
+                                } else {
+                                  // Multiple products - show selection
+                                  setShowProductSelection(true)
+                                  setShowReviewForm(false)
                                 }
                               } else {
                                 toast.error(t('orders.noItems'))
@@ -1348,7 +1463,6 @@ export default function ProfilePage() {
                               toast.error(t('orders.reviewError'))
                               return
                             }
-                            setShowReviewForm(true)
                           }}
                         >
                           {t('orders.writeReview')}
@@ -1391,15 +1505,31 @@ export default function ProfilePage() {
                             try {
                               const detail = await profileApi.getOrderDetail(selectedOrder.id)
                               if (detail.order?.items && detail.order.items.length > 0) {
-                                const firstItem = detail.order.items[0] as any
-                                if (firstItem.product_id) {
-                                  setSelectedProductId(firstItem.product_id)
-                                } else {
-                                  toast.error(t('orders.reviewError'))
+                                // Get unique product IDs
+                                const uniqueProductIds = new Set<number>()
+                                detail.order.items.forEach((item: any) => {
+                                  if (item.product_id) {
+                                    uniqueProductIds.add(item.product_id)
+                                  }
+                                })
+                                
+                                // Filter out reviewed products
+                                const reviewedIds = selectedOrder?.reviewedProductIds || []
+                                const unreviewedProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+                                
+                                if (unreviewedProducts.length === 0) {
+                                  toast.error(t('orders.allReviewed'))
                                   return
-                                }
-                                if (detail.order.has_review) {
-                                  setSelectedOrder({ ...selectedOrder, hasReview: true, canReview: false })
+                                } else if (unreviewedProducts.length === 1) {
+                                  // Single product - go directly to review
+                                  setSelectedProductId(unreviewedProducts[0])
+                                  setShowProductSelection(false)
+                                  setShowReviewForm(true)
+                                } else {
+                                  // Multiple products - show selection
+                                  setOrderDetail(detail)
+                                  setShowProductSelection(true)
+                                  setShowReviewForm(false)
                                 }
                               } else {
                                 toast.error(t('orders.noItems'))
@@ -1410,7 +1540,6 @@ export default function ProfilePage() {
                               toast.error(t('orders.reviewError'))
                               return
                             }
-                            setShowReviewForm(true)
                           }}
                         >
                           {t('orders.writeReview')}
@@ -1422,10 +1551,122 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* Product Selection View */}
+            {activeTab === "orders" && showProductSelection && selectedOrder && orderDetail && (
+              <div className="bg-white rounded-lg p-6">
+                <div className="flex items-center space-x-4 mb-6">
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    setShowProductSelection(false)
+                    setSelectedProductId(null)
+                  }} className="p-0">
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <h2 className="text-xl font-semibold text-black">{t('orders.orderNumber')}{selectedOrder.orderNumber}</h2>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 mb-4">{t('orders.selectProductToReview')}</p>
+                  
+                  {/* Get unique unreviewed products */}
+                  {(() => {
+                    const uniqueProducts = new Map<number, any>()
+                    const reviewedIds = selectedOrder.reviewedProductIds || []
+                    
+                    orderDetail.order?.items?.forEach((item: any) => {
+                      if (item.product_id && !reviewedIds.includes(item.product_id) && !uniqueProducts.has(item.product_id)) {
+                        uniqueProducts.set(item.product_id, item)
+                      }
+                    })
+                    
+                    const unreviewedProducts = Array.from(uniqueProducts.values())
+                    
+                    if (unreviewedProducts.length === 0) {
+                      return (
+                        <div className="text-center py-8">
+                          <p className="text-gray-500">{t('orders.allProductsReviewed')}</p>
+                          <Button
+                            variant="outline"
+                            className="mt-4"
+                            onClick={() => {
+                              setShowProductSelection(false)
+                              setSelectedOrder(null)
+                              setOrderDetail(null)
+                            }}
+                          >
+                            {t('common.back')}
+                          </Button>
+                        </div>
+                      )
+                    }
+                    
+                    return (
+                      <div className="space-y-3">
+                        {unreviewedProducts.map((item: any) => (
+                          <button
+                            key={item.product_id}
+                            onClick={() => {
+                              setSelectedProductId(item.product_id)
+                              setShowProductSelection(false)
+                              setShowReviewForm(true)
+                            }}
+                            className="w-full flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors text-left"
+                          >
+                            <img
+                              src={getImageUrl(item.image_url) || "/images/product_placeholder_adobe.png"}
+                              alt={item.product_name}
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900">{item.product_name}</p>
+                              {item.size && (
+                                <p className="text-sm text-gray-500">{t('orders.size')}: {item.size}</p>
+                              )}
+                              {item.color && (
+                                <p className="text-sm text-gray-500">{t('orders.color')}: {item.color}</p>
+                              )}
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-gray-400" />
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  })()}
+                </div>
+              </div>
+            )}
+
             {activeTab === "orders" && showReviewForm && selectedOrder && (
               <div className="bg-white rounded-lg p-6">
                 <div className="flex items-center space-x-4 mb-6">
-                  <Button variant="ghost" size="sm" onClick={() => setShowReviewForm(false)} className="p-0">
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    // Check if there are more products to review
+                    if (orderDetail?.order?.items && selectedOrder) {
+                      const uniqueProductIds = new Set<number>()
+                      orderDetail.order.items.forEach((item: any) => {
+                        if (item.product_id) {
+                          uniqueProductIds.add(item.product_id)
+                        }
+                      })
+                      const reviewedIds = selectedOrder.reviewedProductIds || []
+                      const unreviewedProducts = Array.from(uniqueProductIds).filter(id => !reviewedIds.includes(id))
+                      
+                      if (unreviewedProducts.length > 1 || (unreviewedProducts.length === 1 && unreviewedProducts[0] !== selectedProductId)) {
+                        // More products to review - go back to product selection
+                        setShowReviewForm(false)
+                        setShowProductSelection(true)
+                        setSelectedProductId(null)
+                      } else {
+                        // No more products - go back to order detail
+                        setShowReviewForm(false)
+                        setShowProductSelection(false)
+                        setSelectedProductId(null)
+                      }
+                    } else {
+                      setShowReviewForm(false)
+                      setShowProductSelection(false)
+                      setSelectedProductId(null)
+                    }
+                  }} className="p-0">
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                   <h2 className="text-xl font-semibold text-black">{t('orders.orderNumber')}{selectedOrder.orderNumber}</h2>
