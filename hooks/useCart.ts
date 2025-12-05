@@ -50,15 +50,15 @@ export const useCart = () => {
             const cartItemId = item.cart_item_id || item.id
             return {
               id: cartItemId, // This should be cart_item_id from backend for authenticated users
-              name: item.name,
-              price: item.price,
-              originalPrice: item.original_price,
-              brand: item.brand || 'MARQUE',
-              image: item.image || '/images/product_placeholder_adobe.png',
-              quantity: item.quantity,
-              size: item.size,
-              color: item.color,
-              sku_id: item.sku_id
+            name: item.name,
+            price: item.price,
+            originalPrice: item.original_price,
+            brand: item.brand || 'MARQUE',
+            image: item.image || '/images/product_placeholder_adobe.png',
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            sku_id: item.sku_id
             }
           })
           setCartItems(items)
@@ -103,7 +103,7 @@ export const useCart = () => {
   const addToCart = useCallback(async (product: Omit<CartItem, 'quantity'>) => {
     const userId = getUserId()
     
-      if (userId && product.sku_id) {
+    if (userId && product.sku_id) {
       // Add to backend cart
       try {
         await cartApi.add(userId, product.sku_id, 1)
@@ -216,16 +216,16 @@ export const useCart = () => {
       }
     } else {
       // For non-authenticated users, update localStorage cart
-      setCartItems(prevItems => {
-        const newItems = prevItems.map(item =>
-          item.id === productId && item.size === size && item.color === color
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
-        saveCart(newItems)
-        return newItems
-      })
-    }
+    setCartItems(prevItems => {
+      const newItems = prevItems.map(item =>
+        item.id === productId && item.size === size && item.color === color
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+      saveCart(newItems)
+      return newItems
+    })
+  }
   }, [isAuthenticated, loadCart, saveCart, removeFromCart])
 
   // Clear cart

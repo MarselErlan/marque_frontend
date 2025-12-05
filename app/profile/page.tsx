@@ -326,10 +326,10 @@ export default function ProfilePage() {
     }
     
     fetchProfile()
-      fetchAddresses()
-      fetchPaymentMethods()
-      fetchOrders()
-      fetchNotifications()
+    fetchAddresses()
+    fetchPaymentMethods()
+    fetchOrders()
+    fetchNotifications()
   }, [auth.isLoggedIn, auth.isLoading, fetchProfile, fetchAddresses, fetchPaymentMethods, fetchOrders, fetchNotifications])
 
   // Fetch order detail when selectedOrder changes
@@ -512,7 +512,7 @@ export default function ProfilePage() {
       }
     }
     reader.readAsDataURL(file)
-    event.target.value = ''
+      event.target.value = ''
   }
 
   const handleUpdateProfile = async () => {
@@ -821,7 +821,7 @@ export default function ProfilePage() {
         
         if (remainingProducts.length > 0) {
           // More products to review - go back to product selection to show remaining items
-          setSelectedProductId(null)
+      setSelectedProductId(null)
           setShowReviewForm(false)
           setShowProductSelection(true)
         } else {
@@ -1025,7 +1025,7 @@ export default function ProfilePage() {
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg md:text-2xl font-semibold text-gray-900 mb-1">{userName}</h2>
                     <p className="text-sm md:text-lg text-gray-600 mb-3">{phoneNumber}</p>
-                    <Button
+                    <Button 
                       onClick={handleUpdateProfile}
                       disabled={isUpdatingProfile || !userName.trim()}
                       className="bg-brand/40 md:bg-transparent text-brand md:text-brand border-brand/40 md:border-brand hover:bg-brand/50 md:hover:bg-brand hover:text-white transition-colors text-xs md:text-sm"
@@ -1049,12 +1049,12 @@ export default function ProfilePage() {
                 <div className="space-y-4 md:space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">{t('profile.fullName')}</label>
-                    <Input
-                      type="text"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
+                      <Input
+                        type="text"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
                       className="w-full h-11 md:h-12 text-base md:text-lg border-gray-300 focus:border-brand focus:ring-brand"
-                    />
+                      />
                   </div>
 
                   <div>
@@ -1513,36 +1513,36 @@ export default function ProfilePage() {
                 ) : (
                   /* Fallback to basic order info if detail not loaded */
                   <>
-                    <div className="space-y-4 mb-6">
-                      {selectedOrder.items.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                          <img
-                            src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
-                            alt={item.name}
-                            className="w-16 h-16 object-cover rounded"
-                          />
-                          <div className="flex-1">
-                            <h3 className="font-medium">{item.name}</h3>
+                <div className="space-y-4 mb-6">
+                  {selectedOrder.items.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                      <img
+                        src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium">{item.name}</h3>
                             {item.size && <p className="text-sm text-gray-500">{t('orders.size')}: {item.size}</p>}
                             {item.color && <p className="text-sm text-gray-500">{t('orders.color')}: {item.color}</p>}
-                          </div>
-                        </div>
-                      ))}
+                      </div>
                     </div>
+                  ))}
+                </div>
 
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center mb-4">
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center mb-4">
                         <span className="text-lg font-semibold">{t('cart.total')}: {selectedOrder.totalLabel}</span>
                         {selectedOrder.deliveryDate && (
                           <span className="text-sm text-gray-500">{t('orders.estimatedDelivery')}: {selectedOrder.deliveryDate}</span>
                         )}
-                      </div>
+                  </div>
 
-                      {selectedOrder.canReview && !selectedOrder.hasReview && (
-                        <Button
-                          className="bg-brand hover:bg-brand-hover text-white"
-                          onClick={async () => {
-                            try {
+                  {selectedOrder.canReview && !selectedOrder.hasReview && (
+                    <Button
+                      className="bg-brand hover:bg-brand-hover text-white"
+                      onClick={async () => {
+                        try {
                               const detail = await profileApi.getOrderDetail(selectedOrder.id)
                               if (detail.order?.items && detail.order.items.length > 0) {
                                 // Get unique product IDs
@@ -1562,27 +1562,27 @@ export default function ProfilePage() {
                                 
                                 if (unreviewedProducts.length === 0) {
                                   toast.error(t('orders.allReviewed'))
-                                  return
+                              return
                                 } else {
                                   // Always show product selection first, even for single product
                                   setOrderDetail(detail.order)
                                   setShowProductSelection(true)
                                   setShowReviewForm(false)
-                                }
-                              } else {
-                                toast.error(t('orders.noItems'))
-                                return
-                              }
-                            } catch (error) {
-                              console.error('Failed to fetch order detail:', error)
-                              toast.error(t('orders.reviewError'))
-                              return
                             }
-                          }}
-                        >
+                          } else {
+                                toast.error(t('orders.noItems'))
+                            return
+                          }
+                        } catch (error) {
+                          console.error('Failed to fetch order detail:', error)
+                              toast.error(t('orders.reviewError'))
+                          return
+                        }
+                      }}
+                    >
                           {t('orders.writeReview')}
-                        </Button>
-                      )}
+                    </Button>
+                  )}
                     </div>
                   </>
                 )}
@@ -1827,7 +1827,7 @@ export default function ProfilePage() {
 
                 {/* Selected Product Preview */}
                 {selectedProductId && orderDetail?.items && (
-                  <div className="mt-8 pt-6 border-t">
+                <div className="mt-8 pt-6 border-t">
                     {(() => {
                       // Find the selected product from order items
                       const selectedProduct = orderDetail.items.find((item: any) => item.product_id === selectedProductId)
@@ -1838,7 +1838,7 @@ export default function ProfilePage() {
                               src={getImageUrl(selectedProduct.image_url) || "/images/product_placeholder_adobe.png"}
                               alt={selectedProduct.product_name || t('product.product')}
                               className="w-20 h-20 object-cover rounded"
-                            />
+                      />
                             <div className="flex-1">
                               <p className="font-medium text-gray-900">{selectedProduct.product_name}</p>
                               {selectedProduct.size && (
@@ -1847,8 +1847,8 @@ export default function ProfilePage() {
                               {selectedProduct.color && (
                                 <p className="text-sm text-gray-500">{t('orders.color')}: {selectedProduct.color}</p>
                               )}
-                            </div>
-                          </div>
+                  </div>
+                </div>
                         )
                       }
                       return null
@@ -2283,7 +2283,7 @@ export default function ProfilePage() {
                 <div className="mb-8">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('settings.title')}</h2>
                   <p className="text-gray-600">{t('settings.subtitle')}</p>
-                </div>
+                  </div>
 
                 <div className="space-y-6">
                   {/* Language Selection */}
@@ -2293,7 +2293,7 @@ export default function ProfilePage() {
                       {t('settings.language')}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <button
+                    <button
                         onClick={() => {
                           setLanguage('ru')
                           toast.success(t('languages.changedTo', { language: t('languages.russian') }))
@@ -2302,12 +2302,12 @@ export default function ProfilePage() {
                           language === 'ru'
                             ? 'border-brand bg-brand/5 hover:bg-brand/10'
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
+                      }`}
+                    >
                         <span className="text-lg">🇷🇺</span>
                         <span className="font-medium text-gray-900">{t('languages.russian')}</span>
-                      </button>
-                      <button
+                    </button>
+                    <button
                         onClick={() => {
                           setLanguage('ky')
                           toast.success(t('languages.changedTo', { language: t('languages.kyrgyz') }))
@@ -2316,12 +2316,12 @@ export default function ProfilePage() {
                           language === 'ky'
                             ? 'border-brand bg-brand/5 hover:bg-brand/10'
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
+                      }`}
+                    >
                         <span className="text-lg">🇰🇬</span>
                         <span className="font-medium text-gray-900">{t('languages.kyrgyz')}</span>
-                      </button>
-                      <button
+                    </button>
+                  <button
                         onClick={() => {
                           setLanguage('en')
                           toast.success(t('languages.changedTo', { language: t('languages.english') }))
@@ -2330,61 +2330,61 @@ export default function ProfilePage() {
                           language === 'en'
                             ? 'border-brand bg-brand/5 hover:bg-brand/10'
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
+                    }`}
+                  >
                         <span className="text-lg">🇬🇧</span>
                         <span className="font-medium text-gray-900">{t('languages.english')}</span>
-                      </button>
-                    </div>
-                  </div>
+                  </button>
+                </div>
+                </div>
 
-                  {/* Notification Settings */}
+                {/* Notification Settings */}
                   <div className="pt-6 border-t border-gray-200">
                     <h3 className="text-lg font-medium text-black mb-4 flex items-center gap-2">
                       <Bell className="w-5 h-5 text-brand" />
                       {t('settings.notifications')}
                     </h3>
-                    <div className="space-y-4">
+                  <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
+                      <div>
                           <p className="text-sm font-medium text-black">{t('settings.orderUpdates')}</p>
                           <p className="text-xs text-gray-500">{t('settings.orderUpdatesDesc')}</p>
-                        </div>
-                        <button
-                          onClick={() =>
-                            setNotificationSettings((prev) => ({ ...prev, orderUpdates: !prev.orderUpdates }))
-                          }
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            notificationSettings.orderUpdates ? "bg-brand" : "bg-gray-200"
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              notificationSettings.orderUpdates ? "translate-x-6" : "translate-x-1"
-                            }`}
-                          />
-                        </button>
                       </div>
+                      <button
+                        onClick={() =>
+                          setNotificationSettings((prev) => ({ ...prev, orderUpdates: !prev.orderUpdates }))
+                        }
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            notificationSettings.orderUpdates ? "bg-brand" : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            notificationSettings.orderUpdates ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
 
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
+                      <div>
                           <p className="text-sm font-medium text-black">{t('settings.salesPromotions')}</p>
                           <p className="text-xs text-gray-500">{t('settings.salesPromotionsDesc')}</p>
-                        </div>
-                        <button
-                          onClick={() =>
-                            setNotificationSettings((prev) => ({ ...prev, salesPromotions: !prev.salesPromotions }))
-                          }
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      </div>
+                      <button
+                        onClick={() =>
+                          setNotificationSettings((prev) => ({ ...prev, salesPromotions: !prev.salesPromotions }))
+                        }
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                             notificationSettings.salesPromotions ? "bg-brand" : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            notificationSettings.salesPromotions ? "translate-x-6" : "translate-x-1"
                           }`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              notificationSettings.salesPromotions ? "translate-x-6" : "translate-x-1"
-                            }`}
-                          />
-                        </button>
+                        />
+                      </button>
                       </div>
                     </div>
                   </div>

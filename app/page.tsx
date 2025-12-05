@@ -669,9 +669,9 @@ export default function MarquePage() {
       <main className="w-full relative">
         {/* Picture Carousel - Desktop Only */}
         {heroBanners.length > 0 && (
-        <section className="w-full mb-8 xl:mb-16 mt-8 xl:mt-16 hidden md:block">
+        <section className="w-full mb-8 mt-8 hidden md:block">
           <div 
-            className="flex items-center justify-center h-[506px] xl:h-[700px] 2xl:h-[800px] relative overflow-hidden w-full cursor-grab active:cursor-grabbing max-w-[1920px] mx-auto px-4 xl:px-12"
+            className="flex items-center justify-center h-[506px] relative overflow-hidden w-full cursor-grab active:cursor-grabbing"
             onTouchStart={onBannerTouchStart}
             onTouchMove={onBannerTouchMove}
             onTouchEnd={onBannerTouchEnd}
@@ -692,15 +692,11 @@ export default function MarquePage() {
                  }`}
                 onClick={() => handleBannerClick(index)}
                 style={{
-                  width: index === 1 
-                    ? 'clamp(900px, 50vw, 1200px)' // Center: responsive 900px-1200px
-                    : 'clamp(712px, 40vw, 900px)', // Sides: responsive 712px-900px
-                  height: index === 1 
-                    ? 'clamp(506px, 35vw, 700px)' // Center: responsive 506px-700px
-                    : 'clamp(400px, 28vw, 550px)', // Sides: responsive 400px-550px
+                  width: index === 1 ? '900px' : '712px', // Center 900px, sides 712px
+                  height: index === 1 ? '506px' : '400px', // Center 506px, sides 400px
                   left: index === 1 ? '50%' : 
-                        index === 0 ? 'clamp(-356px, -20vw, -450px)' : // Left: responsive off-screen
-                        'calc(100% - clamp(356px, 20vw, 450px))', // Right: responsive off-screen
+                        index === 0 ? '-356px' : // Left: half of 712px off screen
+                        'calc(100vw - 356px)', // Right: half of 712px off screen from right
                   transform: index === 1 ? 'translateX(-50%)' : 
                            index === 0 ? 'translateX(0)' : 
                            'translateX(0)'
@@ -723,10 +719,10 @@ export default function MarquePage() {
                     
                     {/* Display title if available */}
                     {banner.title && (
-                      <div className="absolute bottom-8 xl:bottom-16 left-8 xl:left-16 text-white">
-                        <h2 className="text-3xl xl:text-5xl 2xl:text-6xl font-bold drop-shadow-lg">{banner.title}</h2>
+                      <div className="absolute bottom-8 left-8 text-white">
+                        <h2 className="text-3xl font-bold drop-shadow-lg">{banner.title}</h2>
                         {banner.subtitle && (
-                          <p className="text-lg xl:text-2xl 2xl:text-3xl mt-2 xl:mt-4 drop-shadow-md">{banner.subtitle}</p>
+                          <p className="text-lg mt-2 drop-shadow-md">{banner.subtitle}</p>
                         )}
                       </div>
                     )}
@@ -816,7 +812,7 @@ export default function MarquePage() {
         )}
 
         {/* Content Container */}
-        <div className="w-full px-4 md:px-6 xl:px-12 2xl:px-16" style={{maxWidth: '1920px', margin: '0 auto'}}>
+        <div className="w-full px-4" style={{maxWidth: '1680px', margin: '0 auto'}}>
           {/* Products Grid */}
           <section className="mb-12">
             {isLoadingInitial ? (
@@ -827,23 +823,23 @@ export default function MarquePage() {
                 <p className="text-gray-400 text-sm">{t('home.tryRefreshOrFilters')}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-x-1 gap-y-0.5 md:gap-4 xl:gap-6" style={{minHeight: '1156px'}}>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-x-1 gap-y-0.5 md:gap-4" style={{minHeight: '1156px'}}>
                 {randomProducts.map((product, i) => (
                   <Link
                     key={`${product.id}-${i}`}
                     href={`/product/${product.slug || product.id}`}
-                    className="bg-white rounded-md p-1 md:p-2 xl:p-4 cursor-pointer hover:shadow-md xl:hover:shadow-lg transition-all block group border border-gray-100"
+                    className="bg-white rounded-md p-1 md:p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                   >
                     {/* Discount Badge */}
                     <div className="relative mb-0.5 md:mb-2">
                       {product.discount_percent && (
-                        <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 xl:top-4 xl:left-4 bg-red-500 text-white text-xs xl:text-base font-bold px-1.5 py-0.5 xl:px-3 xl:py-1.5 rounded z-10">
+                        <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
                           -{product.discount_percent}%
                         </div>
                       )}
-                      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 xl:top-4 xl:right-4 z-10">
+                      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10">
                         <button onClick={(e) => handleWishlistClick(e, product)}>
-                          <Heart className={`w-5 h-5 xl:w-7 xl:h-7 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
+                          <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
                         </button>
                       </div>
                       <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
@@ -866,16 +862,16 @@ export default function MarquePage() {
                     
                     {/* Product Info */}
                     <div className="space-y-0">
-                      <div className="text-xs xl:text-base text-gray-500 uppercase font-medium leading-tight">
+                      <div className="text-xs text-gray-500 uppercase font-medium leading-tight">
                         {product.brand_name || product.brand || 'MARQUE'}
                       </div>
-                      <h3 className="text-sm xl:text-lg font-medium text-black line-clamp-2 leading-tight">
+                      <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
                         {product.title || product.name}
                       </h3>
                       
                       {/* Price */}
                       <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
-                        <span className="text-base xl:text-xl font-bold text-brand">
+                        <span className="text-base font-bold text-brand">
                           {(product.price_min || product.price) > 0 
                             ? (formattedProductPrices[product.id]?.price || 
                                (isCurrencyLoading ? `${product.price_min || product.price} ${currency?.symbol || 'сом'}` : 
@@ -892,7 +888,7 @@ export default function MarquePage() {
                       
                       {/* Sales Count */}
                       {product.sold_count && (
-                        <div className="text-xs xl:text-base text-gray-500 leading-tight">{t('product.sold')} {product.sold_count}</div>
+                        <div className="text-xs text-gray-500 leading-tight">{t('product.sold')} {product.sold_count}</div>
                       )}
                     </div>
                   </Link>
@@ -902,10 +898,10 @@ export default function MarquePage() {
             
             {/* Loading Indicator */}
             {isLoadingMore && (
-              <div className="flex justify-center items-center py-8 xl:py-16">
-                <div className="animate-spin rounded-full h-8 w-8 xl:h-12 xl:w-12 border-b-2 xl:border-b-3 border-brand"></div>
-                <span className="ml-3 xl:ml-5 text-gray-600 xl:text-xl">{t('home.loadingMore')}</span>
-              </div>
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+                <span className="ml-3 text-gray-600">{t('home.loadingMore')}</span>
+                  </div>
             )}
           </section>
         </div>

@@ -675,7 +675,7 @@ export default function AdminDashboard() {
     
     formatOrderPrices()
   }, [selectedOrder, currency, isCurrencyLoading, format])
-
+  
   // Handle market change
   const handleMarketChange = (newMarket: Market) => {
     if (accessibleMarkets && !accessibleMarkets.includes(newMarket)) {
