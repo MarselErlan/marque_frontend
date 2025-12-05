@@ -7,8 +7,8 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Enable corepack and install pnpm (built into Node.js 18+, more reliable than npm)
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install dependencies based on the preferred package manager
 COPY package.json pnpm-lock.yaml* ./
@@ -20,8 +20,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Install pnpm
-RUN npm install -g pnpm
+# Enable corepack and install pnpm (built into Node.js 18+, more reliable than npm)
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
