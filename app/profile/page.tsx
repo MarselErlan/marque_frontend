@@ -1825,21 +1825,39 @@ export default function ProfilePage() {
                   )}
                 </Button>
 
-                {/* Order Items */}
-                <div className="mt-8 pt-6 border-t">
-                  <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-                    {selectedOrder.items.map((item) => (
-                      <img
-                        key={item.id}
-                        src={getImageUrl(item.image) || "/images/product_placeholder_adobe.png"}
-                        alt={item.name}
-                        className="w-full h-16 object-cover rounded"
-                      />
-                    ))}
+                {/* Selected Product Preview */}
+                {selectedProductId && orderDetail?.items && (
+                  <div className="mt-8 pt-6 border-t">
+                    {(() => {
+                      // Find the selected product from order items
+                      const selectedProduct = orderDetail.items.find((item: any) => item.product_id === selectedProductId)
+                      if (selectedProduct) {
+                        return (
+                          <div className="flex items-center space-x-4">
+                            <img
+                              src={getImageUrl(selectedProduct.image_url) || "/images/product_placeholder_adobe.png"}
+                              alt={selectedProduct.product_name || t('product.product')}
+                              className="w-20 h-20 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900">{selectedProduct.product_name}</p>
+                              {selectedProduct.size && (
+                                <p className="text-sm text-gray-500">{t('orders.size')}: {selectedProduct.size}</p>
+                              )}
+                              {selectedProduct.color && (
+                                <p className="text-sm text-gray-500">{t('orders.color')}: {selectedProduct.color}</p>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
+                    {selectedOrder.deliveryDate && (
+                      <p className="text-sm text-gray-500 mt-4">{t('orders.delivery')} {selectedOrder.deliveryDate}</p>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">{t('orders.delivery')} {selectedOrder.deliveryDate}</p>
-                  <p className="text-sm text-brand cursor-pointer hover:underline">{t('orders.writeReview')}</p>
-                </div>
+                )}
               </div>
             )}
 
