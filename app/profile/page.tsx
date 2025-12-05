@@ -1191,13 +1191,8 @@ export default function ProfilePage() {
                                     if (unreviewedProducts.length === 0) {
                                       toast.error(t('orders.allReviewed'))
                                       return
-                                    } else if (unreviewedProducts.length === 1) {
-                                      // Single product - go directly to review
-                                      setSelectedProductId(unreviewedProducts[0])
-                                      setShowProductSelection(false)
-                                      setShowReviewForm(true)
                                     } else {
-                                      // Multiple products - show selection
+                                      // Always show product selection first, even for single product
                                       setOrderDetail(orderDetail)
                                       setShowProductSelection(true)
                                       setShowReviewForm(false)
@@ -1463,13 +1458,8 @@ export default function ProfilePage() {
                                 if (unreviewedProducts.length === 0) {
                                   toast.error(t('orders.allReviewed'))
                                   return
-                                } else if (unreviewedProducts.length === 1) {
-                                  // Single product - go directly to review
-                                  setSelectedProductId(unreviewedProducts[0])
-                                  setShowProductSelection(false)
-                                  setShowReviewForm(true)
                                 } else {
-                                  // Multiple products - show selection
+                                  // Always show product selection first, even for single product
                                   setShowProductSelection(true)
                                   setShowReviewForm(false)
                                 }
@@ -1539,13 +1529,8 @@ export default function ProfilePage() {
                                 if (unreviewedProducts.length === 0) {
                                   toast.error(t('orders.allReviewed'))
                                   return
-                                } else if (unreviewedProducts.length === 1) {
-                                  // Single product - go directly to review
-                                  setSelectedProductId(unreviewedProducts[0])
-                                  setShowProductSelection(false)
-                                  setShowReviewForm(true)
                                 } else {
-                                  // Multiple products - show selection
+                                  // Always show product selection first, even for single product
                                   setOrderDetail(detail)
                                   setShowProductSelection(true)
                                   setShowReviewForm(false)
