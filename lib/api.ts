@@ -268,6 +268,26 @@ export const categoriesApi = {
   getSubcategories: (categorySlug: string) =>
     apiRequest<{ subcategories: any[] }>(`${API_CONFIG.ENDPOINTS.CATEGORIES}/${categorySlug}/subcategories`),
   
+  // Get category products (level 1: category -> products)
+  getCategoryProducts: (
+    categorySlug: string,
+    filters?: {
+      page?: number
+      limit?: number
+      sort_by?: string
+      price_min?: number
+      price_max?: number
+      sizes?: string
+      colors?: string
+      brands?: string
+    }
+  ) =>
+    apiRequest(
+      `${API_CONFIG.ENDPOINTS.CATEGORIES}/${categorySlug}/products`,
+      { params: filters as any }
+    ),
+  
+  // Get subcategory products (level 2: category -> subcategory -> products)
   getSubcategoryProducts: (
     categorySlug: string,
     subcategorySlug: string,
@@ -283,7 +303,28 @@ export const categoriesApi = {
     }
   ) =>
     apiRequest(
-      `${API_CONFIG.ENDPOINTS.SUBCATEGORY_PRODUCTS.replace('{category_slug}', categorySlug).replace('{subcategory_slug}', subcategorySlug)}`,
+      `${API_CONFIG.ENDPOINTS.CATEGORIES}/${categorySlug}/subcategories/${subcategorySlug}/products`,
+      { params: filters as any }
+    ),
+  
+  // Get second-level subcategory products (level 3: category -> subcategory -> subcategory -> products)
+  getSecondSubcategoryProducts: (
+    categorySlug: string,
+    subcategorySlug: string,
+    secondSubcategorySlug: string,
+    filters?: {
+      page?: number
+      limit?: number
+      sort_by?: string
+      price_min?: number
+      price_max?: number
+      sizes?: string
+      colors?: string
+      brands?: string
+    }
+  ) =>
+    apiRequest(
+      `${API_CONFIG.ENDPOINTS.CATEGORIES}/${categorySlug}/subcategories/${subcategorySlug}/subcategories/${secondSubcategorySlug}/products`,
       { params: filters as any }
     ),
 }

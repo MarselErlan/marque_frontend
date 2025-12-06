@@ -17,7 +17,9 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
   const { t } = useLanguage()
   const [apiCategories, setApiCategories] = useState<any[]>([])
   const [apiSubcategories, setApiSubcategories] = useState<any[]>([])
+  const [apiSecondSubcategories, setApiSecondSubcategories] = useState<any[]>([])
   const [selectedCatalogCategory, setSelectedCatalogCategory] = useState<string>('')
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('')
   const [loadingCategories, setLoadingCategories] = useState(false)
   const [loadingSubcategories, setLoadingSubcategories] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -35,8 +37,24 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
       loadSubcategories(selectedCatalogCategory)
     } else {
       setApiSubcategories([])
+      setApiSecondSubcategories([])
+      setSelectedSubcategory('')
     }
   }, [selectedCatalogCategory])
+  
+  // Load second-level subcategories when first-level subcategory is selected
+  useEffect(() => {
+    if (selectedSubcategory && selectedCatalogCategory) {
+      const subcat = apiSubcategories.find(s => s.slug === selectedSubcategory)
+      if (subcat?.child_subcategories && subcat.child_subcategories.length > 0) {
+        setApiSecondSubcategories(subcat.child_subcategories)
+      } else {
+        setApiSecondSubcategories([])
+      }
+    } else {
+      setApiSecondSubcategories([])
+    }
+  }, [selectedSubcategory, apiSubcategories, selectedCatalogCategory])
 
   const loadCategories = async () => {
     try {
@@ -70,13 +88,33 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
 
   const handleClose = () => {
     setSelectedCatalogCategory('')
+    setSelectedSubcategory('')
     setSearchQuery('')
+    setApiSubcategories([])
+    setApiSecondSubcategories([])
     onClose()
   }
 
   const handleBack = () => {
-    setSelectedCatalogCategory('')
-    setApiSubcategories([])
+    if (selectedSubcategory) {
+      // Go back from second-level to first-level subcategories
+      setSelectedSubcategory('')
+      setApiSecondSubcategories([])
+    } else {
+      // Go back from subcategories to categories
+      setSelectedCatalogCategory('')
+      setApiSubcategories([])
+    }
+  }
+  
+  const handleSubcategorySelect = (subcategorySlug: string, hasChildren: boolean) => {
+    if (hasChildren) {
+      // Has child subcategories, show them
+      setSelectedSubcategory(subcategorySlug)
+    } else {
+      // No children, navigate to products
+      handleSubcategoryClick()
+    }
   }
 
   const handleSubcategoryClick = () => {
@@ -164,8 +202,8 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
               )}
             </nav>
           </>
-        ) : (
-          /* Second Screen - Subcategories */
+        ) : !selectedSubcategory ? (
+          /* Second Screen - First-Level Subcategories */
           <>
             {/* Header with Back Button */}
             <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
@@ -180,15 +218,81 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
               </div>
             </div>
 
-            {/* Subcategories List */}
+            {/* First-Level Subcategories List */}
             <div className="px-4 py-2">
               {loadingSubcategories ? (
                 <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
               ) : apiSubcategories.length > 0 ? (
-                apiSubcategories.map((subcat) => (
+                apiSubcategories.map((subcat) => {
+                  const hasChildren = subcat.child_subcategories && subcat.child_subcategories.length > 0
+                  return (
+                    <button
+                      key={subcat.id || subcat.slug}
+                      onClick={() => handleSubcategorySelect(subcat.slug, hasChildren)}
+                      className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+                    >
+                      {/* Left: Thumbnail + Name */}
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        {/* Subcategory Thumbnail */}
+                        <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                          <img
+                            src={
+                              subcat.image_url 
+                                ? getImageUrl(subcat.image_url)
+                                : '/images/product_placeholder_adobe.png'
+                            }
+                            alt={subcat.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                            }}
+                          />
+                        </div>
+
+                        {/* Subcategory Name */}
+                        <span className="text-base font-normal text-black truncate">
+                          {subcat.name}
+                        </span>
+                      </div>
+
+                      {/* Right: Count + Arrow */}
+                      <div className="flex items-center space-x-3 flex-shrink-0">
+                        <span className="text-sm text-gray-500">{subcat.product_count || 0}</span>
+                        <ArrowRight className="w-5 h-5 text-gray-400" />
+                      </div>
+                    </button>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8 text-gray-500">{t('catalog.noSubcategories')}</div>
+              )}
+            </div>
+          </>
+        ) : (
+          /* Third Screen - Second-Level Subcategories */
+          <>
+            {/* Header with Back Button */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
+              <div className="flex items-center px-4 py-3">
+                <button
+                  onClick={handleBack}
+                  className="p-2 -ml-2 mr-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <h3 className="text-lg font-bold text-black">
+                  {apiSubcategories.find(s => s.slug === selectedSubcategory)?.name || selectedSubcategory}
+                </h3>
+              </div>
+            </div>
+
+            {/* Second-Level Subcategories List */}
+            <div className="px-4 py-2">
+              {apiSecondSubcategories.length > 0 ? (
+                apiSecondSubcategories.map((subcat) => (
                   <Link
                     key={subcat.id || subcat.slug}
-                    href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
+                    href={`/subcategory/${selectedCatalogCategory}/${selectedSubcategory}/${subcat.slug}`}
                     className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
                     onClick={handleSubcategoryClick}
                   >
@@ -273,8 +377,8 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
           </nav>
         </div>
 
-        {/* Second Sidebar - Subcategories */}
-        {selectedCatalogCategory && (
+        {/* Second Sidebar - First-Level Subcategories */}
+        {selectedCatalogCategory && !selectedSubcategory && (
           <div 
             className="fixed inset-y-0 left-80 w-96 bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200"
           >
@@ -283,15 +387,77 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
               <h3 className="text-xl font-bold text-black">{selectedCategoryName}</h3>
             </div>
 
-            {/* Subcategories List */}
+            {/* First-Level Subcategories List */}
             <div className="p-4">
               {loadingSubcategories ? (
                 <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
               ) : apiSubcategories.length > 0 ? (
-                apiSubcategories.map((subcat) => (
+                apiSubcategories.map((subcat) => {
+                  const hasChildren = subcat.child_subcategories && subcat.child_subcategories.length > 0
+                  return (
+                    <button
+                      key={subcat.id || subcat.slug}
+                      onClick={() => handleSubcategorySelect(subcat.slug, hasChildren)}
+                      className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
+                    >
+                      {/* Left: Icon + Name */}
+                      <div className="flex items-center space-x-4 flex-1">
+                        {/* Subcategory Icon/Image */}
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={
+                              subcat.image_url 
+                                ? getImageUrl(subcat.image_url)
+                                : '/images/product_placeholder_adobe.png'
+                            }
+                            alt={subcat.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                            }}
+                          />
+                        </div>
+
+                        {/* Subcategory Name */}
+                        <span className="text-base font-normal text-black group-hover:text-brand transition-colors">
+                          {subcat.name}
+                        </span>
+                      </div>
+
+                      {/* Right: Count + Arrow */}
+                      <div className="flex items-center space-x-4 flex-shrink-0">
+                        <span className="text-sm text-gray-500 font-normal">{subcat.product_count || 0}</span>
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
+                      </div>
+                    </button>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8 text-gray-500">{t('catalog.noSubcategories')}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Third Sidebar - Second-Level Subcategories */}
+        {selectedCatalogCategory && selectedSubcategory && (
+          <div 
+            className="fixed inset-y-0 left-[29rem] w-96 bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200"
+          >
+            {/* Second-Level Subcategories Header */}
+            <div className="p-5 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-black">
+                {apiSubcategories.find(s => s.slug === selectedSubcategory)?.name || selectedSubcategory}
+              </h3>
+            </div>
+
+            {/* Second-Level Subcategories List */}
+            <div className="p-4">
+              {apiSecondSubcategories.length > 0 ? (
+                apiSecondSubcategories.map((subcat) => (
                   <Link
                     key={subcat.id || subcat.slug}
-                    href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
+                    href={`/subcategory/${selectedCatalogCategory}/${selectedSubcategory}/${subcat.slug}`}
                     className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
                     onClick={handleSubcategoryClick}
                   >

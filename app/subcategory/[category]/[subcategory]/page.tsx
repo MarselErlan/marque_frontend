@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
 import { useWishlist } from "@/hooks/useWishlist"
 import { API_CONFIG } from "@/lib/config"
+import { categoriesApi } from "@/lib/api"
 import { useCatalog } from "@/contexts/CatalogContext"
 import { getImageUrl } from "@/lib/utils"
 import { useLanguage } from "@/contexts/LanguageContext"
@@ -119,53 +120,35 @@ export default function SubcategoryPage({
     }
   }, [category, allCategories.length])
 
-  // Load subcategory products from API
+  // Load subcategory products from API (Level 2: category -> subcategory -> products)
   useEffect(() => {
     const loadProducts = async () => {
       try {
         setIsLoading(true)
         setError(null)
         
-        // Build API URL - using simpler subcategory endpoint
-        const url = new URL(
-          `${API_CONFIG.BASE_URL}/subcategories/${params.subcategory}/products`
+        // Use new API endpoint for 2-level catalog
+        const response = await categoriesApi.getSubcategoryProducts(
+          params.category,
+          params.subcategory,
+          {
+            page: currentPage,
+            limit: itemsPerPage,
+            sort_by: sortBy,
+            sizes: selectedFilters.sizes.length > 0 ? selectedFilters.sizes.join(',') : undefined,
+            colors: selectedFilters.colors.length > 0 ? selectedFilters.colors.join(',') : undefined,
+            brands: selectedFilters.brands.length > 0 ? selectedFilters.brands.join(',') : undefined,
+            price_min: priceRange.min,
+            price_max: priceRange.max,
+          }
         )
         
-        // Add query parameters
-        url.searchParams.append('page', currentPage.toString())
-        url.searchParams.append('limit', itemsPerPage.toString())
-        url.searchParams.append('sort_by', sortBy)
-        
-        // Add filters
-        if (selectedFilters.sizes.length > 0) {
-          url.searchParams.append('sizes', selectedFilters.sizes.join(','))
-        }
-        if (selectedFilters.colors.length > 0) {
-          url.searchParams.append('colors', selectedFilters.colors.join(','))
-        }
-        if (selectedFilters.brands.length > 0) {
-          url.searchParams.append('brands', selectedFilters.brands.join(','))
-        }
-        if (priceRange.min) {
-          url.searchParams.append('price_min', priceRange.min.toString())
-        }
-        if (priceRange.max) {
-          url.searchParams.append('price_max', priceRange.max.toString())
-        }
-        
-        const response = await fetch(url.toString())
-        if (!response.ok) {
-          throw new Error('Failed to load products')
-        }
-        
-        const data = await response.json()
-        
-        setCategory(data.category)
-        setSubcategory(data.subcategory)
-        setProducts(data.products || [])
-        setFilters(data.filters || {})
-        setTotal(data.total || 0)
-        setTotalPages(data.total_pages || 1)
+        setCategory(response.category)
+        setSubcategory(response.subcategory)
+        setProducts(response.products || [])
+        setFilters(response.filters || {})
+        setTotal(response.total || 0)
+        setTotalPages(response.total_pages || 1)
       } catch (err: any) {
         console.error('Failed to load subcategory products:', err)
         setError(err.message || 'Failed to load products')
