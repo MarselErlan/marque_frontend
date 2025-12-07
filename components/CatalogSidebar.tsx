@@ -71,16 +71,38 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
     }
   }
 
-  const loadSubcategories = async (categorySlug: string) => {
+  const loadSubcategories = async (categorySlug: string, categoryProductCount?: number) => {
     try {
       setLoadingSubcategories(true)
       const response = await categoriesApi.getSubcategories(categorySlug)
       if (response?.subcategories) {
+        // If no subcategories but category has products, navigate directly to category products
+        if (response.subcategories.length === 0 && categoryProductCount && categoryProductCount > 0) {
+          // Navigate directly to category products page
+          handleSubcategoryClick()
+          window.location.href = `/category/${categorySlug}`
+          return
+        }
         setApiSubcategories(response.subcategories)
+      } else {
+        setApiSubcategories([])
+        // Check if category has products
+        if (categoryProductCount && categoryProductCount > 0) {
+          // Navigate directly to category products page
+          handleSubcategoryClick()
+          window.location.href = `/category/${categorySlug}`
+          return
+        }
       }
     } catch (error) {
       console.error('Failed to load subcategories:', error)
       setApiSubcategories([]) // Clear on error
+      // On error, check if category has products and navigate
+      if (categoryProductCount && categoryProductCount > 0) {
+        handleSubcategoryClick()
+        window.location.href = `/category/${categorySlug}`
+        return
+      }
     } finally {
       setLoadingSubcategories(false)
     }
@@ -362,35 +384,43 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
             {loadingCategories ? (
               <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
             ) : apiCategories.length > 0 ? (
-              apiCategories.map((category) => (
-                <div
-                  key={category.id || category.slug}
-                  className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between group ${
-                    selectedCatalogCategory === category.slug
-                      ? "bg-brand text-white font-semibold"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                  onClick={() => setSelectedCatalogCategory(category.slug)}
-                >
-                  <span>{category.name}</span>
-                  <div className="flex items-center space-x-2">
-                    {/* Link to category products page */}
-                    <Link
-                      href={`/category/${category.slug}`}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleSubcategoryClick()
-                      }}
-                      className={`p-1 rounded hover:bg-white/20 transition-colors ${
-                        selectedCatalogCategory === category.slug ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                      title="View all products in this category"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
+              apiCategories.map((category) => {
+                // Check if category has products but might not have subcategories
+                const hasProducts = category.product_count > 0
+                return (
+                  <div
+                    key={category.id || category.slug}
+                    className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between group ${
+                      selectedCatalogCategory === category.slug
+                        ? "bg-brand text-white font-semibold"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                    onClick={() => {
+                      // Load subcategories - if none exist but products do, it will navigate directly
+                      setSelectedCatalogCategory(category.slug)
+                      loadSubcategories(category.slug, category.product_count)
+                    }}
+                  >
+                    <span>{category.name}</span>
+                    <div className="flex items-center space-x-2">
+                      {/* Link to category products page - always available */}
+                      <Link
+                        href={`/category/${category.slug}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSubcategoryClick()
+                        }}
+                        className={`p-1 rounded hover:bg-white/20 transition-colors ${
+                          selectedCatalogCategory === category.slug ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                        title="View all products in this category"
+                      >
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             ) : (
               <div className="text-center py-8 text-gray-500">Нет категорий</div>
             )}
