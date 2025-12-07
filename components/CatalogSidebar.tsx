@@ -365,7 +365,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
               apiCategories.map((category) => (
                 <div
                   key={category.id || category.slug}
-                  className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between ${
+                  className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between group ${
                     selectedCatalogCategory === category.slug
                       ? "bg-brand text-white font-semibold"
                       : "text-gray-700 hover:bg-gray-100"
@@ -373,7 +373,22 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                   onClick={() => setSelectedCatalogCategory(category.slug)}
                 >
                   <span>{category.name}</span>
-                  <ArrowRight className={`w-4 h-4 ${selectedCatalogCategory === category.slug ? 'text-white' : 'text-gray-400'}`} />
+                  <div className="flex items-center space-x-2">
+                    {/* Link to category products page */}
+                    <Link
+                      href={`/category/${category.slug}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleSubcategoryClick()
+                      }}
+                      className={`p-1 rounded hover:bg-white/20 transition-colors ${
+                        selectedCatalogCategory === category.slug ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                      title="View all products in this category"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
               ))
             ) : (
@@ -387,9 +402,21 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
           <div 
             className="fixed inset-y-0 left-80 w-96 bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200"
           >
-            {/* Subcategories Header */}
-            <div className="p-5 border-b border-gray-200">
+            {/* Subcategories Header with X button */}
+            <div className="p-5 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-xl font-bold text-black">{selectedCategoryName}</h3>
+              <button
+                onClick={() => {
+                  setSelectedCatalogCategory('')
+                  setSelectedSubcategory('')
+                  setApiSubcategories([])
+                  setApiSecondSubcategories([])
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Close subcategories"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
 
             {/* First-Level Subcategories List */}
@@ -443,51 +470,64 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                     )
                   }
                   
-                  // If has children, use button to show Level 3
+                  // If has children, allow both expanding and navigating
                   return (
-                    <button
-                      key={subcat.id || subcat.slug}
-                      onClick={() => handleSubcategorySelect(subcat.slug, hasChildren)}
-                      className={`w-full flex items-center justify-between px-4 py-4 rounded-lg transition-colors group mb-2 ${
-                        isSelected 
-                          ? "bg-brand/10 border border-brand" 
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      {/* Left: Icon + Name */}
-                      <div className="flex items-center space-x-4 flex-1">
-                        {/* Subcategory Icon/Image */}
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={
-                              subcat.image_url 
-                                ? getImageUrl(subcat.image_url)
-                                : '/images/product_placeholder_adobe.png'
-                            }
-                            alt={subcat.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src = '/images/product_placeholder_adobe.png'
-                            }}
-                          />
+                    <div key={subcat.id || subcat.slug} className="flex items-center gap-2 mb-2">
+                      <button
+                        onClick={() => handleSubcategorySelect(subcat.slug, hasChildren)}
+                        className={`flex-1 flex items-center justify-between px-4 py-4 rounded-lg transition-colors group ${
+                          isSelected 
+                            ? "bg-brand/10 border border-brand" 
+                            : "hover:bg-gray-50"
+                        }`}
+                      >
+                        {/* Left: Icon + Name */}
+                        <div className="flex items-center space-x-4 flex-1">
+                          {/* Subcategory Icon/Image */}
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            <img
+                              src={
+                                subcat.image_url 
+                                  ? getImageUrl(subcat.image_url)
+                                  : '/images/product_placeholder_adobe.png'
+                              }
+                              alt={subcat.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                              }}
+                            />
+                          </div>
+
+                          {/* Subcategory Name */}
+                          <span className={`text-base font-normal group-hover:text-brand transition-colors ${
+                            isSelected ? "text-brand font-semibold" : "text-black"
+                          }`}>
+                            {subcat.name}
+                          </span>
                         </div>
 
-                        {/* Subcategory Name */}
-                        <span className={`text-base font-normal group-hover:text-brand transition-colors ${
-                          isSelected ? "text-brand font-semibold" : "text-black"
-                        }`}>
-                          {subcat.name}
-                        </span>
-                      </div>
-
-                      {/* Right: Count + Arrow */}
-                      <div className="flex items-center space-x-4 flex-shrink-0">
-                        <span className="text-sm text-gray-500 font-normal">{subcat.product_count || 0}</span>
-                        <ArrowRight className={`w-5 h-5 transition-colors ${
-                          isSelected ? "text-brand" : "text-gray-400 group-hover:text-brand"
-                        }`} />
-                      </div>
-                    </button>
+                        {/* Right: Count + Arrow */}
+                        <div className="flex items-center space-x-4 flex-shrink-0">
+                          <span className="text-sm text-gray-500 font-normal">{subcat.product_count || 0}</span>
+                          <ArrowRight className={`w-5 h-5 transition-colors ${
+                            isSelected ? "text-brand" : "text-gray-400 group-hover:text-brand"
+                          }`} />
+                        </div>
+                      </button>
+                      {/* Direct link to products */}
+                      <Link
+                        href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSubcategoryClick()
+                        }}
+                        className="px-3 py-4 text-gray-400 hover:text-brand transition-colors"
+                        title="View products"
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </Link>
+                    </div>
                   )
                 })
               ) : (
@@ -502,11 +542,21 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
           <div 
             className="fixed inset-y-0 left-[29rem] w-96 bg-white shadow-2xl z-50 overflow-y-auto animate-in slide-in-from-left duration-200 border-l border-gray-200"
           >
-            {/* Second-Level Subcategories Header */}
-            <div className="p-5 border-b border-gray-200">
+            {/* Second-Level Subcategories Header with X button */}
+            <div className="p-5 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-xl font-bold text-black">
                 {apiSubcategories.find(s => s.slug === selectedSubcategory)?.name || selectedSubcategory}
               </h3>
+              <button
+                onClick={() => {
+                  setSelectedSubcategory('')
+                  setApiSecondSubcategories([])
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Close second-level subcategories"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
 
             {/* Second-Level Subcategories List */}

@@ -23,9 +23,15 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   
   const [category, setCategory] = useState<any>(null)
   const [subcategories, setSubcategories] = useState<any[]>([])
-  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [filters, setFilters] = useState<any>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [sortBy, setSortBy] = useState("popular")
+  const itemsPerPage = 20
 
   // Load category data from API
   useEffect(() => {
@@ -68,9 +74,17 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           }
         }
         
-        // Load recommended products (best sellers from any category)
-        const products = await productsApi.getBestSellers(8)
-        setRecommendedProducts(products)
+        // Load category products (Level 1: category -> products)
+        const productsResponse = await categoriesApi.getCategoryProducts(params.slug, {
+          page: currentPage,
+          limit: itemsPerPage,
+          sort_by: sortBy,
+        })
+        
+        setProducts(productsResponse.products || [])
+        setFilters(productsResponse.filters || {})
+        setTotal(productsResponse.total || 0)
+        setTotalPages(productsResponse.total_pages || 1)
       } catch (err: any) {
         console.error('Failed to load category:', err)
         setError(err.message || 'Failed to load category')
@@ -82,16 +96,16 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     if (params.slug) {
       loadCategory()
     }
-  }, [params.slug])
+  }, [params.slug, currentPage, sortBy])
 
   // Format prices when products or currency changes
   useEffect(() => {
     const formatAllPrices = async () => {
-      if (!recommendedProducts.length || isCurrencyLoading || !currency) return
+      if (!products.length || isCurrencyLoading || !currency) return
       
       const formattedPrices: Record<string, { price: string; originalPrice?: string }> = {}
       await Promise.all(
-        recommendedProducts.map(async (product: any) => {
+        products.map(async (product: any) => {
           const productCurrency = product.currency?.code || 'KGS'
           const price = await format(product.price_min || product.price || 0, productCurrency)
           let originalPrice: string | undefined
@@ -105,7 +119,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     }
     
     formatAllPrices()
-  }, [recommendedProducts, currency, isCurrencyLoading, format])
+  }, [products, currency, isCurrencyLoading, format])
 
   const handleWishlistClick = (e: React.MouseEvent, product: any) => {
     e.preventDefault()
@@ -197,12 +211,16 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           </div>
         )}
 
-        {/* Recommended Products */}
-        {recommendedProducts && recommendedProducts.length > 0 && (
+        {/* Category Products */}
+        {products && products.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-black mb-6">{t('category.recommended')}</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-black">
+                {category.name} - {total} {t('category.products')}
+              </h2>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {recommendedProducts.map((product) => (
+              {products.map((product) => (
                 <Link 
                   key={product.id} 
                   href={`/product/${product.slug || product.id}`} 
@@ -251,6 +269,35 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                 </Link>
               ))}
             </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="flex items-center px-4">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {products.length === 0 && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t('search.noProducts')}</p>
           </div>
         )}
       </main>
