@@ -129,13 +129,20 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
     }
   }
   
-  const handleSubcategorySelect = (subcategorySlug: string, hasChildren: boolean) => {
+  const handleSubcategorySelect = (subcategorySlug: string, hasChildren: boolean, productCount?: number) => {
     if (hasChildren) {
       // Has child subcategories, show Level 3
       setSelectedSubcategory(subcategorySlug)
     } else {
-      // No children, navigate directly to products (Level 2)
-      handleSubcategoryClick()
+      // No children, check if has products before navigating
+      if (productCount && productCount > 0) {
+        // Has products, navigate directly to product list
+        handleSubcategoryClick()
+        window.location.href = `/subcategory/${selectedCatalogCategory}/${subcategorySlug}`
+      } else {
+        // No products, just close the sidebar or show empty state
+        handleSubcategoryClick()
+      }
     }
   }
   
@@ -255,7 +262,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                   return (
                     <button
                       key={subcat.id || subcat.slug}
-                      onClick={() => handleSubcategorySelect(subcat.slug, hasChildren)}
+                      onClick={() => handleSubcategorySelect(subcat.slug, hasChildren, subcat.product_count)}
                       className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
                     >
                       {/* Left: Thumbnail + Name */}
@@ -458,15 +465,17 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                   const hasChildren = subcat.child_subcategories && subcat.child_subcategories.length > 0
                   const isSelected = selectedSubcategory === subcat.slug
                   
-                  // If no children, use Link to navigate directly
+                  // If no children, check if has products before navigating
                   if (!hasChildren) {
-                    return (
-                      <Link
-                        key={subcat.id || subcat.slug}
-                        href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
-                        className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
-                        onClick={handleSubcategoryClick}
-                      >
+                    // If has products, navigate directly; otherwise show empty state
+                    if (subcat.product_count && subcat.product_count > 0) {
+                      return (
+                        <Link
+                          key={subcat.id || subcat.slug}
+                          href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
+                          className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
+                          onClick={handleSubcategoryClick}
+                        >
                         {/* Left: Icon + Name */}
                         <div className="flex items-center space-x-4 flex-1">
                           {/* Subcategory Icon/Image */}
@@ -497,14 +506,46 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                           <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
                         </div>
                       </Link>
-                    )
+                      )
+                    } else {
+                      // No products, show empty state or just display the subcategory
+                      return (
+                        <div
+                          key={subcat.id || subcat.slug}
+                          className="flex items-center justify-between px-4 py-4 rounded-lg mb-2 opacity-50"
+                        >
+                          <div className="flex items-center space-x-4 flex-1">
+                            <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                              <img
+                                src={
+                                  subcat.image_url 
+                                    ? getImageUrl(subcat.image_url)
+                                    : '/images/product_placeholder_adobe.png'
+                                }
+                                alt={subcat.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                                }}
+                              />
+                            </div>
+                            <span className="text-base font-normal text-black">
+                              {subcat.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-4 flex-shrink-0">
+                            <span className="text-sm text-gray-500 font-normal">0</span>
+                          </div>
+                        </div>
+                      )
+                    }
                   }
                   
                   // If has children, allow both expanding and navigating
                   return (
                     <div key={subcat.id || subcat.slug} className="flex items-center gap-2 mb-2">
                       <button
-                        onClick={() => handleSubcategorySelect(subcat.slug, hasChildren)}
+                        onClick={() => handleSubcategorySelect(subcat.slug, hasChildren, subcat.product_count)}
                         className={`flex-1 flex items-center justify-between px-4 py-4 rounded-lg transition-colors group ${
                           isSelected 
                             ? "bg-brand/10 border border-brand" 
