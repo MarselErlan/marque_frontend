@@ -117,8 +117,8 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
     }
   }
   
-  const handleSecondSubcategoryClick = () => {
-    // Navigate to Level 3 products
+  const handleSecondSubcategoryClick = (e: React.MouseEvent) => {
+    // Close catalog sidebar when navigating to products
     handleSubcategoryClick()
   }
 

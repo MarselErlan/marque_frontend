@@ -16,10 +16,10 @@ import { getImageUrl } from "@/lib/utils"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { useCurrency } from "@/hooks/useCurrency"
 
-export default function SecondSubcategoryPage({
+export default function SubcategoryPage({
   params,
 }: {
-  params: { category: string; subcategory: string; secondSubcategory: string }
+  params: { category: string; subcategory: string }
 }) {
   const auth = useAuth()
   const router = useRouter()
@@ -42,7 +42,6 @@ export default function SecondSubcategoryPage({
   // API State
   const [category, setCategory] = useState<any>(null)
   const [subcategory, setSubcategory] = useState<any>(null)
-  const [secondSubcategory, setSecondSubcategory] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
   const [filters, setFilters] = useState<any>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -121,18 +120,17 @@ export default function SecondSubcategoryPage({
     }
   }, [category, allCategories.length])
 
-  // Load second-level subcategory products from API (Level 3: category -> subcategory -> secondSubcategory -> products)
+  // Load subcategory products from API (Level 2: category -> subcategory -> products)
   useEffect(() => {
     const loadProducts = async () => {
       try {
         setIsLoading(true)
         setError(null)
         
-        // Use new API endpoint for 3-level catalog
-        const response = await categoriesApi.getSecondSubcategoryProducts(
+        // Use new API endpoint for 2-level catalog
+        const response = await categoriesApi.getSubcategoryProducts(
           params.category,
           params.subcategory,
-          params.secondSubcategory,
           {
             page: currentPage,
             limit: itemsPerPage,
@@ -147,23 +145,22 @@ export default function SecondSubcategoryPage({
         
         setCategory(response.category)
         setSubcategory(response.subcategory)
-        setSecondSubcategory(response.second_subcategory)
         setProducts(response.products || [])
         setFilters(response.filters || {})
         setTotal(response.total || 0)
         setTotalPages(response.total_pages || 1)
       } catch (err: any) {
-        console.error('Failed to load second-level subcategory products:', err)
+        console.error('Failed to load subcategory products:', err)
         setError(err.message || 'Failed to load products')
       } finally {
         setIsLoading(false)
       }
     }
     
-    if (params.category && params.subcategory && params.secondSubcategory) {
+    if (params.category && params.subcategory) {
       loadProducts()
     }
-  }, [params.category, params.subcategory, params.secondSubcategory, currentPage, sortBy, selectedFilters, priceRange])
+  }, [params.category, params.subcategory, currentPage, sortBy, selectedFilters, priceRange])
 
   // Format prices when products or currency changes
   useEffect(() => {
@@ -258,14 +255,7 @@ export default function SecondSubcategoryPage({
             {category?.name || params.category}
           </button>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <Link 
-            href={`/subcategory/${params.category}/${params.subcategory}`}
-            className="text-gray-600 hover:text-brand"
-          >
-            {subcategory?.name || params.subcategory}
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="font-medium text-black">{secondSubcategory?.name || params.secondSubcategory}</span>
+          <span className="font-medium text-black">{subcategory?.name || params.subcategory}</span>
         </div>
 
         {/* Mobile: Back Button with Category Name */}
@@ -281,7 +271,7 @@ export default function SecondSubcategoryPage({
 
         {/* Title and Count */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">{secondSubcategory?.name || params.secondSubcategory} <span className="text-gray-500 font-normal text-lg">{total} {t('category.products')}</span></h1>
+          <h1 className="text-2xl font-bold text-black">{subcategory?.name || t('search.products')} <span className="text-gray-500 font-normal text-lg">{total} {t('category.products')}</span></h1>
         </div>
 
         {/* Mobile: Simplified Filter Bar - Only 2 buttons */}
@@ -417,8 +407,8 @@ export default function SecondSubcategoryPage({
                     <button
                       key={cat.slug}
                       onClick={() => {
-                        // Navigate to same subcategory under different category
-                        router.push(`/subcategory/${cat.slug}/${params.subcategory}/${params.secondSubcategory}`)
+                        // Stay on same page, navigate to same subcategory under different category
+                        router.push(`/subcategory/${cat.slug}/${params.subcategory}`)
                         setShowCategoryDropdown(false)
                       }}
                       className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm ${
@@ -738,7 +728,7 @@ export default function SecondSubcategoryPage({
             )}
       </main>
 
-      {/* All Filters Modal - Same as Level 2 page */}
+      {/* All Filters Modal */}
       {showAllFiltersModal && (
         <>
           {/* Mobile: Full Screen Overlay */}
@@ -891,19 +881,6 @@ export default function SecondSubcategoryPage({
                 </div>
               )}
 
-              {/* Second Subcategory Filter */}
-              {secondSubcategory && (
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                    <span className="text-base font-normal text-black">{t('search.subcategory')}</span>
-                  <button 
-                    onClick={openCatalog}
-                    className="flex items-center gap-1 text-sm text-black"
-                  >
-                    {secondSubcategory.name} <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
               {/* Color Filter */}
               {filters.available_colors && filters.available_colors.length > 0 && (
                 <button
@@ -938,7 +915,7 @@ export default function SecondSubcategoryPage({
             </div>
           </div>
 
-          {/* Desktop: Left Sidebar */}
+          {/* Desktop: Left Sidebar (unchanged) */}
           <div className="hidden md:block">
             {/* Light backdrop - click to close */}
             <div 
@@ -977,7 +954,7 @@ export default function SecondSubcategoryPage({
                     {allCategories.map((cat) => (
                       <Link 
                         key={cat.slug}
-                        href={`/subcategory/${cat.slug}/${params.subcategory}/${params.secondSubcategory}`}
+                        href={`/subcategory/${cat.slug}/${params.subcategory}`}
                         className={`block px-4 py-2 rounded-lg ${category?.slug === cat.slug ? 'bg-brand text-white' : 'bg-gray-50 hover:bg-gray-100'}`}
                       >
                         {cat.name}
