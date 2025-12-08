@@ -293,8 +293,8 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                       <div className="flex items-center space-x-3 flex-shrink-0">
                         <span className="text-sm text-gray-500">
                           {hasChildren 
-                            ? `${subcat.child_subcategories?.length || 0} ${t('catalog.subcategories') || 'subcategories'}`
-                            : `${subcat.product_count || 0}`
+                            ? subcat.child_subcategories?.length || 0
+                            : subcat.product_count || 0
                           }
                         </span>
                         <ArrowRight className="w-5 h-5 text-gray-400" />
@@ -587,7 +587,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                       {/* Right: Count + Arrow */}
                       <div className="flex items-center space-x-4 flex-shrink-0">
                         <span className="text-sm text-gray-500 font-normal">
-                          {subcat.child_subcategories?.length || 0} {t('catalog.subcategories') || 'subcategories'}
+                          {subcat.child_subcategories?.length || 0}
                         </span>
                         <ArrowRight className={`w-5 h-5 transition-colors ${
                           isSelected ? "text-brand" : "text-gray-400 group-hover:text-brand"
