@@ -405,9 +405,9 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                       className="block px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm"
                     >
                       {subcat.name}
-                    </Link>
-                  ))}
-                </div>
+              </Link>
+            ))}
+          </div>
               )}
             </div>
           )}

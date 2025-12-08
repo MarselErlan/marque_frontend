@@ -124,8 +124,8 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
       setApiSecondSubcategories([])
     } else {
       // Go back from subcategories to categories
-      setSelectedCatalogCategory('')
-      setApiSubcategories([])
+    setSelectedCatalogCategory('')
+    setApiSubcategories([])
     }
   }
   
@@ -291,7 +291,12 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
 
                       {/* Right: Count + Arrow */}
                       <div className="flex items-center space-x-3 flex-shrink-0">
-                        <span className="text-sm text-gray-500">{subcat.product_count || 0}</span>
+                        <span className="text-sm text-gray-500">
+                          {hasChildren 
+                            ? `${subcat.child_subcategories?.length || 0} ${t('catalog.subcategories') || 'subcategories'}`
+                            : `${subcat.product_count || 0}`
+                          }
+                        </span>
                         <ArrowRight className="w-5 h-5 text-gray-400" />
                       </div>
                     </button>
@@ -395,20 +400,20 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                 // Check if category has products but might not have subcategories
                 const hasProducts = category.product_count > 0
                 return (
-                  <div
-                    key={category.id || category.slug}
+                <div
+                  key={category.id || category.slug}
                     className={`px-4 py-3 rounded-lg cursor-pointer transition-colors mb-1 flex items-center justify-between group ${
-                      selectedCatalogCategory === category.slug
-                        ? "bg-brand text-white font-semibold"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                    selectedCatalogCategory === category.slug
+                      ? "bg-brand text-white font-semibold"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
                     onClick={() => {
                       // Load subcategories - if none exist but products do, it will navigate directly
                       setSelectedCatalogCategory(category.slug)
                       loadSubcategories(category.slug, category.product_count)
                     }}
-                  >
-                    <span>{category.name}</span>
+                >
+                  <span>{category.name}</span>
                     <div className="flex items-center space-x-2">
                       {/* Link to category products page - always available */}
                       <Link
@@ -425,7 +430,7 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
-                  </div>
+                </div>
                 )
               })
             ) : (
@@ -470,42 +475,42 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                     // If has products, navigate directly; otherwise show empty state
                     if (subcat.product_count && subcat.product_count > 0) {
                       return (
-                        <Link
-                          key={subcat.id || subcat.slug}
-                          href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
-                          className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
-                          onClick={handleSubcategoryClick}
-                        >
-                        {/* Left: Icon + Name */}
-                        <div className="flex items-center space-x-4 flex-1">
-                          {/* Subcategory Icon/Image */}
-                          <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                            <img
-                              src={
-                                subcat.image_url 
-                                  ? getImageUrl(subcat.image_url)
-                                  : '/images/product_placeholder_adobe.png'
-                              }
-                              alt={subcat.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.currentTarget.src = '/images/product_placeholder_adobe.png'
-                              }}
-                            />
-                          </div>
+                  <Link
+                    key={subcat.id || subcat.slug}
+                    href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
+                    className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 rounded-lg transition-colors group mb-2"
+                    onClick={handleSubcategoryClick}
+                  >
+                    {/* Left: Icon + Name */}
+                    <div className="flex items-center space-x-4 flex-1">
+                      {/* Subcategory Icon/Image */}
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <img
+                          src={
+                            subcat.image_url 
+                              ? getImageUrl(subcat.image_url)
+                              : '/images/product_placeholder_adobe.png'
+                          }
+                          alt={subcat.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                          }}
+                        />
+                      </div>
 
-                          {/* Subcategory Name */}
-                          <span className="text-base font-normal text-black group-hover:text-brand transition-colors">
-                            {subcat.name}
-                          </span>
-                        </div>
+                      {/* Subcategory Name */}
+                      <span className="text-base font-normal text-black group-hover:text-brand transition-colors">
+                        {subcat.name}
+                      </span>
+                    </div>
 
-                        {/* Right: Count + Arrow */}
-                        <div className="flex items-center space-x-4 flex-shrink-0">
-                          <span className="text-sm text-gray-500 font-normal">{subcat.product_count || 0}</span>
-                          <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
-                        </div>
-                      </Link>
+                    {/* Right: Count + Arrow */}
+                    <div className="flex items-center space-x-4 flex-shrink-0">
+                      <span className="text-sm text-gray-500 font-normal">{subcat.product_count || 0}</span>
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors" />
+                    </div>
+                  </Link>
                       )
                     } else {
                       // No products, show empty state or just display the subcategory
@@ -541,64 +546,54 @@ export const CatalogSidebar = ({ isOpen, onClose }: CatalogSidebarProps) => {
                     }
                   }
                   
-                  // If has children, allow both expanding and navigating
+                  // If has children (subcategory_2), only allow expanding - NO direct link to products
+                  // According to validation: if subcategory_1 has subcategory_2, all products must be in subcategory_2
                   return (
-                    <div key={subcat.id || subcat.slug} className="flex items-center gap-2 mb-2">
-                      <button
-                        onClick={() => handleSubcategorySelect(subcat.slug, hasChildren, subcat.product_count)}
-                        className={`flex-1 flex items-center justify-between px-4 py-4 rounded-lg transition-colors group ${
-                          isSelected 
-                            ? "bg-brand/10 border border-brand" 
-                            : "hover:bg-gray-50"
-                        }`}
-                      >
-                        {/* Left: Icon + Name */}
-                        <div className="flex items-center space-x-4 flex-1">
-                          {/* Subcategory Icon/Image */}
-                          <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                            <img
-                              src={
-                                subcat.image_url 
-                                  ? getImageUrl(subcat.image_url)
-                                  : '/images/product_placeholder_adobe.png'
-                              }
-                              alt={subcat.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.currentTarget.src = '/images/product_placeholder_adobe.png'
-                              }}
-                            />
-                          </div>
-
-                          {/* Subcategory Name */}
-                          <span className={`text-base font-normal group-hover:text-brand transition-colors ${
-                            isSelected ? "text-brand font-semibold" : "text-black"
-                          }`}>
-                            {subcat.name}
-                          </span>
+                    <button
+                      key={subcat.id || subcat.slug}
+                      onClick={() => handleSubcategorySelect(subcat.slug, hasChildren, subcat.product_count)}
+                      className={`w-full flex items-center justify-between px-4 py-4 rounded-lg transition-colors group mb-2 ${
+                        isSelected 
+                          ? "bg-brand/10 border border-brand" 
+                          : "hover:bg-gray-50"
+                      }`}
+                    >
+                      {/* Left: Icon + Name */}
+                      <div className="flex items-center space-x-4 flex-1">
+                        {/* Subcategory Icon/Image */}
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={
+                              subcat.image_url 
+                                ? getImageUrl(subcat.image_url)
+                                : '/images/product_placeholder_adobe.png'
+                            }
+                            alt={subcat.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/images/product_placeholder_adobe.png'
+                            }}
+                          />
                         </div>
 
-                        {/* Right: Count + Arrow */}
-                        <div className="flex items-center space-x-4 flex-shrink-0">
-                          <span className="text-sm text-gray-500 font-normal">{subcat.product_count || 0}</span>
-                          <ArrowRight className={`w-5 h-5 transition-colors ${
-                            isSelected ? "text-brand" : "text-gray-400 group-hover:text-brand"
-                          }`} />
-                        </div>
-                      </button>
-                      {/* Direct link to products */}
-                      <Link
-                        href={`/subcategory/${selectedCatalogCategory}/${subcat.slug}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleSubcategoryClick()
-                        }}
-                        className="px-3 py-4 text-gray-400 hover:text-brand transition-colors"
-                        title="View products"
-                      >
-                        <ArrowRight className="w-5 h-5" />
-                      </Link>
-                    </div>
+                        {/* Subcategory Name */}
+                        <span className={`text-base font-normal group-hover:text-brand transition-colors ${
+                          isSelected ? "text-brand font-semibold" : "text-black"
+                        }`}>
+                          {subcat.name}
+                        </span>
+                      </div>
+
+                      {/* Right: Count + Arrow */}
+                      <div className="flex items-center space-x-4 flex-shrink-0">
+                        <span className="text-sm text-gray-500 font-normal">
+                          {subcat.child_subcategories?.length || 0} {t('catalog.subcategories') || 'subcategories'}
+                        </span>
+                        <ArrowRight className={`w-5 h-5 transition-colors ${
+                          isSelected ? "text-brand" : "text-gray-400 group-hover:text-brand"
+                        }`} />
+                      </div>
+                    </button>
                   )
                 })
               ) : (
