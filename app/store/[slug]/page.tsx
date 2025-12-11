@@ -194,7 +194,6 @@ export default function StorePage({
         {/* Store Profile Section */}
         {store && (
           <div className="border-b border-gray-200 py-4 lg:py-6">
-            <div>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
               {/* Left: Logo and Name */}
               <div className="flex items-center gap-4">
@@ -577,11 +576,11 @@ export default function StorePage({
                     <h3 className="text-sm font-medium text-black mb-2 line-clamp-2">{product.title}</h3>
                     <div className="flex items-center gap-2">
                       <span className="text-base font-bold text-brand">
-                        {isCurrencyLoading ? '...' : format(product.price_min)}
+                        {isCurrencyLoading ? '...' : String(format(product.price_min))}
                       </span>
                       {product.original_price_min && product.original_price_min > product.price_min && (
                         <span className="text-sm text-gray-400 line-through">
-                          {isCurrencyLoading ? '...' : format(product.original_price_min)}
+                          {isCurrencyLoading ? '...' : String(format(product.original_price_min))}
                         </span>
                       )}
                     </div>
