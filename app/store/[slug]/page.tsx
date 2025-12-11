@@ -232,7 +232,7 @@ export default function StorePage({
                     <div className="flex items-center gap-1 mb-1">
                       <Star className="w-5 h-5 text-yellow-400 fill-current" />
                       <span className="text-lg font-semibold text-gray-900">
-                        {(store.rating || 0).toFixed(1)}
+                        {Number(store.rating || 0).toFixed(1)}
                       </span>
                     </div>
                     <span className="text-xs text-gray-500">
