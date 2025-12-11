@@ -279,7 +279,7 @@ export default function StorePage({
       )}
 
       {/* Filters Section */}
-      <div className="bg-gray-100 border-b border-gray-200">
+      <div className="border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             {/* Sort by Popularity */}
