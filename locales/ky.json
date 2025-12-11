@@ -330,7 +330,8 @@
     "store": "Дүкөн",
     "noDescription": "Сыпаттама жок",
     "readMore": "Толугу менен окуу",
-    "readLess": "Жыйыштыруу"
+    "readLess": "Жыйыштыруу",
+    "viewStore": "Баракка өтүү"
   },
   "store": {
     "follow": "Жазылуу",

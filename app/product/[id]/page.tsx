@@ -739,7 +739,7 @@ export default function ProductDetailPage() {
             {product.store && (
               <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 mt-4">
                 <h3 className="text-base lg:text-lg font-semibold text-black mb-4">{t('product.store')}</h3>
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     {/* Store Logo */}
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -773,8 +773,9 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                   
-                  {/* Subscribe Button */}
-                  <div className="ml-4">
+                  {/* Right side: Follow Button and Rating */}
+                  <div className="ml-4 flex flex-col items-end gap-2">
+                    {/* Subscribe Button */}
                     <Button
                       variant="outline"
                       className={`px-4 py-2 text-sm border-gray-300 hover:bg-gray-50 ${
@@ -786,18 +787,18 @@ export default function ProductDetailPage() {
                       <Heart className={`w-4 h-4 mr-2 ${isFollowingStore ? 'text-red-500 fill-current' : ''}`} />
                       {isTogglingFollow ? t('store.loading') : isFollowingStore ? t('store.unfollow') : t('store.follow')}
                     </Button>
+                    
+                    {/* Rating Box - Small box on the right */}
+                    {product.store.rating !== undefined && product.store.rating !== null && (
+                      <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 flex flex-col items-center">
+                        <StarRating rating={product.store.rating || 0} size="w-4 h-4" />
+                        <span className="text-sm font-semibold text-gray-700 mt-1">
+                          {(product.store.rating || 0).toFixed(1)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                {/* Rating - Below store name and follow button */}
-                {product.store.rating > 0 && (
-                  <div className="flex items-center space-x-1">
-                    <StarRating rating={product.store.rating} size="w-3.5 h-3.5" />
-                    <span className="text-sm text-gray-600">
-                      {product.store.rating.toFixed(1)}
-                    </span>
-                  </div>
-                )}
               </div>
             )}
 
