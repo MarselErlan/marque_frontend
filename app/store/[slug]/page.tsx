@@ -189,6 +189,9 @@ export default function StorePage({
     <div className="min-h-screen bg-gray-50">
       <AuthModals {...auth} />
       
+      {/* Spacing after top bar */}
+      <div className="h-4 lg:h-6"></div>
+      
       {/* Store Profile Section */}
       {store && (
         <div className="bg-white border-b border-gray-200">
@@ -280,7 +283,7 @@ export default function StorePage({
 
       {/* Filters Section */}
       <div className="bg-gray-100 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             {/* Sort by Popularity */}
             <div className="relative">
@@ -530,7 +533,7 @@ export default function StorePage({
       </div>
 
       {/* Products Grid */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
         {isLoading ? (
           <div className="text-center py-12">
             <p className="text-gray-500">{t('common.loading')}</p>
