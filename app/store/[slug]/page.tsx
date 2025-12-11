@@ -230,7 +230,7 @@ export default function StorePage({
       <AuthModals {...auth} />
       
       {/* Store Page Container */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-4 lg:pt-6">
         {/* Store Profile Section */}
         {store && (
           <div className="bg-white border border-gray-200 rounded-lg px-4 lg:px-8 py-4 lg:py-6">
@@ -641,17 +641,18 @@ export default function StorePage({
           </div>
         ) : products.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-1 gap-y-0.5 md:gap-6 mb-8">
-              {products.map((product) => (
-                <Link 
-                  key={product.id} 
-                  href={`/product/${product.slug || product.id}`} 
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-x-1 gap-y-0.5 md:gap-4 mb-8">
+              {products.map((product, i) => (
+                <Link
+                  key={`${product.id}-${i}`}
+                  href={`/product/${product.slug || product.id}`}
                   className="bg-white rounded-md p-1 md:p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                 >
+                  {/* Discount Badge */}
                   <div className="relative mb-0.5 md:mb-2">
-                    {(product.discount_percentage || product.discount_percent || product.discount) && (
+                    {product.discount_percent && (
                       <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
-                        -{product.discount_percentage || product.discount_percent || product.discount}%
+                        -{product.discount_percent}%
                       </div>
                     )}
                     <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10">
@@ -661,36 +662,51 @@ export default function StorePage({
                     </div>
                     <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
                       <img
-                        src={getImageUrl(product.image) || "/images/product_placeholder_adobe.png"}
-                        alt={product.title}
+                        src={
+                          product.images && product.images.length > 0 && product.images[0].url
+                            ? getImageUrl(product.images[0].url)
+                            : product.image && product.image.trim() !== ''
+                            ? getImageUrl(product.image)
+                            : '/images/product_placeholder_adobe.png'
+                        }
+                        alt={product.title || product.name || 'Product'}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/product_placeholder_adobe.png"
+                        }}
                       />
                     </div>
                   </div>
+                  
+                  {/* Product Info */}
                   <div className="space-y-0">
                     <div className="text-xs text-gray-500 uppercase font-medium leading-tight">
-                      {product.brand?.name || product.brand_name || 'MARQUE'}
+                      {product.brand_name || product.brand?.name || product.brand || 'MARQUE'}
                     </div>
                     <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
-                      {product.title}
+                      {product.title || product.name}
                     </h3>
+                    
+                    {/* Price */}
                     <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
                       <span className="text-base font-bold text-brand">
-                        {formattedProductPrices[product.id]?.price || 
-                         (isCurrencyLoading ? `${product.price || product.price_min} ${currency?.symbol || 'сом'}` : 
-                          `${product.price || product.price_min} ${currency?.symbol || 'сом'}`)}
+                        {(product.price_min || product.price) > 0 
+                          ? (formattedProductPrices[product.id]?.price || 
+                             (isCurrencyLoading ? `${product.price_min || product.price} ${currency?.symbol || 'сом'}` : 
+                              `${product.price_min || product.price} ${currency?.symbol || 'сом'}`))
+                          : t('product.priceOnRequest')
+                        }
                       </span>
-                      {formattedProductPrices[product.id]?.originalPrice && (
+                      {product.original_price_min && formattedProductPrices[product.id]?.originalPrice && (
                         <span className="text-xs text-gray-400 line-through">
                           {formattedProductPrices[product.id].originalPrice}
                         </span>
                       )}
                     </div>
-                    {product.sold_count > 0 && (
+                    
+                    {/* Sales Count */}
+                    {product.sold_count && (
                       <div className="text-xs text-gray-500 leading-tight">{t('product.sold')} {product.sold_count}</div>
-                    )}
-                    {product.in_stock === false && (
-                      <div className="text-xs text-red-500">{t('product.outOfStock')}</div>
                     )}
                   </div>
                 </Link>
