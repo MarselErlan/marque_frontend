@@ -191,7 +191,7 @@ export default function StorePage({
       
       {/* Store Profile Section */}
       {store && (
-        <div className="bg-white border-b border-gray-200">
+        <div className="border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
               {/* Left: Logo and Name */}
