@@ -347,7 +347,26 @@
   "store": {
     "follow": "Подписаться",
     "unfollow": "Отписаться",
-    "loading": "Загрузка..."
+    "loading": "Загрузка...",
+    "followed": "Вы подписались на магазин",
+    "unfollowed": "Вы отписались от магазина",
+    "followError": "Не удалось обновить статус подписки",
+    "store": "Магазин",
+    "reviews": "отзывов",
+    "orders": "Заказов",
+    "likes": "Нравится",
+    "allFilters": "Все фильтры",
+    "category": "Категория",
+    "subcategory": "Подкатегория",
+    "size": "Размер",
+    "price": "Цена",
+    "color": "Цвет",
+    "allCategories": "Все категории",
+    "allSubcategories": "Все подкатегории",
+    "minPrice": "От",
+    "maxPrice": "До",
+    "apply": "Применить",
+    "noProducts": "Товары не найдены"
   },
   "search": {
     "title": "Результаты поиска",

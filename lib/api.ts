@@ -1217,6 +1217,46 @@ export const currencyApi = {
 
 // Stores API
 export const storesApi = {
+  // Get store detail
+  getStoreDetail: (slug: string) =>
+    apiRequest<{
+      success: boolean
+      store: any
+    }>(`${API_CONFIG.ENDPOINTS.STORE_FOLLOW}/${slug}`, {
+      method: 'GET',
+    }),
+
+  // Get store products with filters
+  getStoreProducts: (
+    slug: string,
+    params?: {
+      category?: string
+      subcategory?: string
+      sizes?: string
+      colors?: string
+      brands?: string
+      price_min?: number
+      price_max?: number
+      sort_by?: string
+      limit?: number
+      offset?: number
+      market?: string
+    }
+  ) =>
+    apiRequest<{
+      success: boolean
+      store: { id: number; name: string; slug: string }
+      products: any[]
+      filters?: any
+      total: number
+      limit: number
+      offset: number
+      has_more: boolean
+    }>(`${API_CONFIG.ENDPOINTS.STORE_FOLLOW}/${slug}/products`, {
+      method: 'GET',
+      params: params as any,
+    }),
+
   // Follow/Unfollow store
   toggleFollow: (slug: string) =>
     apiRequest<{

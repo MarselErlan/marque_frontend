@@ -330,7 +330,26 @@
   "store": {
     "follow": "Follow",
     "unfollow": "Unfollow",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "followed": "You are now following this store",
+    "unfollowed": "You have unfollowed this store",
+    "followError": "Failed to update follow status",
+    "store": "Store",
+    "reviews": "reviews",
+    "orders": "Orders",
+    "likes": "Likes",
+    "allFilters": "All Filters",
+    "category": "Category",
+    "subcategory": "Subcategory",
+    "size": "Size",
+    "price": "Price",
+    "color": "Color",
+    "allCategories": "All Categories",
+    "allSubcategories": "All Subcategories",
+    "minPrice": "Min",
+    "maxPrice": "Max",
+    "apply": "Apply",
+    "noProducts": "No products found"
   },
   "search": {
     "title": "Search Results",
