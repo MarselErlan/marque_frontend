@@ -222,7 +222,7 @@ export default function StorePage({
                 {/* Store Name and Label */}
                 <div>
                   <h1 className="text-2xl lg:text-3xl font-bold text-black mb-1">{store.name}</h1>
-                  <p className="text-sm text-gray-500">{t('store.store')}</p>
+                  <p className="inline-block px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded">{t('store.store')}</p>
                 </div>
               </div>
 
@@ -549,9 +549,9 @@ export default function StorePage({
                 <Link
                   key={product.id}
                   href={`/product/${product.id}`}
-                  className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                  className="rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  <div className="relative aspect-square">
+                  <div className="relative aspect-square bg-white rounded-t-lg overflow-hidden">
                     <img
                       src={getImageUrl(product.image)}
                       alt={product.title}
@@ -576,7 +576,7 @@ export default function StorePage({
                       <Heart className={`w-4 h-4 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
                     </button>
                   </div>
-                  <div className="p-3">
+                  <div className="p-3 bg-white rounded-b-lg">
                     <p className="text-xs text-gray-500 mb-1">{product.brand?.name || 'MARQUE'}</p>
                     <h3 className="text-sm font-medium text-black mb-2 line-clamp-2">{product.title}</h3>
                     <div className="flex items-center gap-2">
