@@ -339,7 +339,9 @@
     "reviewNoItems": "В заказе нет товаров",
     "priceOnRequest": "Цена по запросу",
     "store": "Магазин",
-    "noDescription": "Описание отсутствует"
+    "noDescription": "Описание отсутствует",
+    "readMore": "Читать полностью",
+    "readLess": "Свернуть"
   },
   "store": {
     "follow": "Подписаться",

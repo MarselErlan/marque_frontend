@@ -106,6 +106,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isFollowingStore, setIsFollowingStore] = useState(false)
   const [isTogglingFollow, setIsTogglingFollow] = useState(false)
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   
   // Currency state
   const [formattedPrice, setFormattedPrice] = useState<string>('')
@@ -738,8 +739,8 @@ export default function ProductDetailPage() {
             {product.store && (
               <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 mt-4">
                 <h3 className="text-base lg:text-lg font-semibold text-black mb-4">{t('product.store')}</h3>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3 flex-1">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start space-x-3 flex-1">
                     {/* Store Logo */}
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       {product.store.logo ? (
@@ -768,15 +769,7 @@ export default function ProductDetailPage() {
                       >
                         {product.store.name}
                       </Link>
-                      <p className="text-xs text-gray-500 mb-1">{t('product.viewStore')}</p>
-                      {product.store.rating > 0 && (
-                        <div className="flex items-center space-x-1">
-                          <StarRating rating={product.store.rating} size="w-3.5 h-3.5" />
-                          <span className="text-sm text-gray-600">
-                            {product.store.rating.toFixed(1)}
-                          </span>
-                        </div>
-                      )}
+                      <p className="text-xs text-gray-500">{t('product.viewStore')}</p>
                     </div>
                   </div>
                   
@@ -795,22 +788,40 @@ export default function ProductDetailPage() {
                     </Button>
                   </div>
                 </div>
+                
+                {/* Rating - Below store name and follow button */}
+                {product.store.rating > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <StarRating rating={product.store.rating} size="w-3.5 h-3.5" />
+                    <span className="text-sm text-gray-600">
+                      {product.store.rating.toFixed(1)}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Product Description - Below store, same width */}
-            <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 mt-4">
-              <h3 className="text-base lg:text-lg font-semibold text-black mb-4">{t('product.about')}</h3>
-              {product.description ? (
-                <p className="text-sm lg:text-base text-gray-700 leading-relaxed">
-                  {product.description}
-                </p>
-              ) : (
-                <p className="text-sm lg:text-base text-gray-500 italic">
-                  {t('product.noDescription')}
-                </p>
-              )}
-            </div>
+            {/* Product Description - Below store, same width, no background */}
+            {product.description && (
+              <div className="mt-4">
+                <h3 className="text-base lg:text-lg font-semibold text-black mb-3">{t('product.about')}</h3>
+                <div>
+                  <p className={`text-sm lg:text-base text-gray-700 leading-relaxed ${
+                    !isDescriptionExpanded ? 'line-clamp-3' : ''
+                  }`}>
+                    {product.description}
+                  </p>
+                  {product.description.length > 150 && (
+                    <button
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className="text-sm text-brand hover:text-brand-hover mt-2 font-medium"
+                    >
+                      {isDescriptionExpanded ? t('product.readLess') : t('product.readMore')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Product Info */}

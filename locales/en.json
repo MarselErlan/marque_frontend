@@ -322,7 +322,9 @@
     "submitReview": "Submit Review",
     "reviewNoItems": "No items in order",
     "store": "Store",
-    "noDescription": "No description available"
+    "noDescription": "No description available",
+    "readMore": "Read more",
+    "readLess": "Read less"
   },
   "store": {
     "follow": "Follow",

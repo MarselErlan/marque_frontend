@@ -328,7 +328,9 @@
     "submitReview": "Пикирди жөнөтүү",
     "reviewNoItems": "Буйрутмада товарлар жок",
     "store": "Дүкөн",
-    "noDescription": "Сыпаттама жок"
+    "noDescription": "Сыпаттама жок",
+    "readMore": "Толугу менен окуу",
+    "readLess": "Жыйыштыруу"
   },
   "store": {
     "follow": "Жазылуу",
