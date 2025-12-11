@@ -189,10 +189,12 @@ export default function StorePage({
     <div className="min-h-screen bg-gray-50">
       <AuthModals {...auth} />
       
-      {/* Store Profile Section */}
-      {store && (
-        <div className="border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
+      {/* Store Page Container */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        {/* Store Profile Section */}
+        {store && (
+          <div className="border-b border-gray-200 py-4 lg:py-6">
+            <div>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
               {/* Left: Logo and Name */}
               <div className="flex items-center gap-4">
@@ -275,12 +277,10 @@ export default function StorePage({
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Filters Section */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
+        {/* Filters Section */}
+        <div className="border-b border-gray-200 py-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             {/* Sort by Popularity */}
             <div className="relative">
@@ -527,10 +527,9 @@ export default function StorePage({
             )}
           </div>
         </div>
-      </div>
 
-      {/* Products Grid */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
+        {/* Products Grid */}
+        <div className="py-4 lg:py-6">
         {isLoading ? (
           <div className="text-center py-12">
             <p className="text-gray-500">{t('common.loading')}</p>
@@ -616,6 +615,7 @@ export default function StorePage({
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   )
