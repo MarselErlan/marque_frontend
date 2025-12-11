@@ -233,7 +233,7 @@ export default function StorePage({
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         {/* Store Profile Section */}
         {store && (
-          <div className="py-4 lg:py-6">
+          <div className="bg-white border border-gray-200 rounded-lg px-4 lg:px-8 py-4 lg:py-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
               {/* Left: Logo and Name */}
               <div className="flex items-center gap-4">
@@ -634,93 +634,140 @@ export default function StorePage({
         </div>
 
         {/* Products Grid */}
-        <div className="py-4 lg:py-6">
-        {isLoading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">{t('common.loading')}</p>
+        {isLoading && currentPage === 1 ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mr-3"></div>
+            <p className="text-gray-600">{t('search.loading')}</p>
           </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">{t('store.noProducts')}</p>
-          </div>
-        ) : (
+        ) : products.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-1 gap-y-0.5 md:gap-6 mb-8">
               {products.map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/product/${product.id}`}
-                  className="rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                <Link 
+                  key={product.id} 
+                  href={`/product/${product.slug || product.id}`} 
+                  className="bg-white rounded-md p-1 md:p-2 cursor-pointer hover:shadow-md transition-all block group border border-gray-100"
                 >
-                  <div className="relative aspect-square bg-white rounded-t-lg overflow-hidden">
-                    <img
-                      src={getImageUrl(product.image)}
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {product.discount > 0 && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                        {product.discount}%
+                  <div className="relative mb-0.5 md:mb-2">
+                    {(product.discount_percentage || product.discount_percent || product.discount) && (
+                      <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded z-10">
+                        -{product.discount_percentage || product.discount_percent || product.discount}%
                       </div>
                     )}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        if (isInWishlist(product.id.toString())) {
-                          removeFromWishlist(product.id.toString())
-                        } else {
-                          addToWishlist(product.id.toString())
-                        }
-                      }}
-                      className="absolute top-2 right-2 p-2 bg-white/80 rounded-full hover:bg-white"
-                    >
-                      <Heart className={`w-4 h-4 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-700'}`} />
-                    </button>
+                    <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10">
+                      <button onClick={(e) => handleWishlistClick(e, product)}>
+                        <Heart className={`w-5 h-5 ${isInWishlist(product.id.toString()) ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
+                      </button>
+                    </div>
+                    <div className="aspect-square relative overflow-hidden rounded-md bg-gray-100">
+                      <img
+                        src={getImageUrl(product.image) || "/images/product_placeholder_adobe.png"}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
                   </div>
-                  <div className="p-3 bg-white rounded-b-lg">
-                    <p className="text-xs text-gray-500 mb-1">{product.brand?.name || 'MARQUE'}</p>
-                    <h3 className="text-sm font-medium text-black mb-2 line-clamp-2">{product.title}</h3>
-                    <div className="flex items-center gap-2">
+                  <div className="space-y-0">
+                    <div className="text-xs text-gray-500 uppercase font-medium leading-tight">
+                      {product.brand?.name || product.brand_name || 'MARQUE'}
+                    </div>
+                    <h3 className="text-sm font-medium text-black line-clamp-2 leading-tight">
+                      {product.title}
+                    </h3>
+                    <div className="flex items-baseline space-x-2 mt-0.5 md:mt-0">
                       <span className="text-base font-bold text-brand">
-                        {isCurrencyLoading ? '...' : String(format(product.price_min))}
+                        {formattedProductPrices[product.id]?.price || 
+                         (isCurrencyLoading ? `${product.price || product.price_min} ${currency?.symbol || 'сом'}` : 
+                          `${product.price || product.price_min} ${currency?.symbol || 'сом'}`)}
                       </span>
-                      {product.original_price_min && product.original_price_min > product.price_min && (
-                        <span className="text-sm text-gray-400 line-through">
-                          {isCurrencyLoading ? '...' : String(format(product.original_price_min))}
+                      {formattedProductPrices[product.id]?.originalPrice && (
+                        <span className="text-xs text-gray-400 line-through">
+                          {formattedProductPrices[product.id].originalPrice}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{t('product.sold')} {product.sold_count || 0}</p>
+                    {product.sold_count > 0 && (
+                      <div className="text-xs text-gray-500 leading-tight">{t('product.sold')} {product.sold_count}</div>
+                    )}
+                    {product.in_stock === false && (
+                      <div className="text-xs text-red-500">{t('product.outOfStock')}</div>
+                    )}
                   </div>
                 </Link>
               ))}
             </div>
 
             {/* Pagination */}
-            {total > itemsPerPage && (
-              <div className="flex justify-center gap-2 mt-8">
-                <Button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  variant="outline"
+                  className="p-2 rounded-lg border border-gray-300 hover:border-brand disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Previous
-                </Button>
-                <span className="flex items-center px-4">
-                  {t('common.page')} {currentPage} {t('common.of')} {Math.ceil(total / itemsPerPage)}
-                </span>
-                <Button
-                  onClick={() => setCurrentPage(prev => prev + 1)}
-                  disabled={!hasMore}
-                  variant="outline"
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number
+                  if (totalPages <= 5) {
+                    pageNum = i + 1
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i
+                  } else {
+                    pageNum = currentPage - 2 + i
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 rounded-lg text-sm ${
+                        currentPage === pageNum
+                          ? "bg-brand text-white"
+                          : "border border-gray-300 hover:border-brand"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+
+                {totalPages > 5 && currentPage < totalPages - 2 && (
+                  <>
+                    <span className="px-2">...</span>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="px-3 py-2 rounded-lg border border-gray-300 hover:border-brand text-sm"
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-gray-300 hover:border-brand disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Next
-                </Button>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             )}
           </>
+        ) : (
+          <div className="text-center py-20">
+            <p className="text-gray-500 mb-4">{t('store.noProducts')}</p>
+            <Button 
+              variant="outline"
+              onClick={clearFilters}
+            >
+              {t('search.resetFilters')}
+            </Button>
+          </div>
         )}
-        </div>
       </div>
     </div>
   )
