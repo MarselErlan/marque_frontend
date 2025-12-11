@@ -192,8 +192,8 @@ export default function StorePage({
       {/* Store Profile Section */}
       {store && (
         <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
               {/* Left: Logo and Name */}
               <div className="flex items-center gap-4">
                 {/* Store Logo - Match design size */}
@@ -218,48 +218,48 @@ export default function StorePage({
                 
                 {/* Store Name and Label */}
                 <div>
-                  <h1 className="text-2xl lg:text-3xl font-bold text-black mb-1">{store.name}</h1>
-                  <p className="inline-block px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded">{t('store.store')}</p>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-black mb-2">{store.name}</h1>
+                  <p className="inline-block px-2 py-0.5 text-xs text-gray-600 border border-gray-300 rounded">{t('store.store')}</p>
                 </div>
               </div>
 
               {/* Right: Stats and Follow Button */}
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-8">
                 {/* Stats */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 lg:gap-6">
                   {/* Rating */}
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-1 mb-1">
+                    <div className="flex items-center gap-1 mb-0.5">
                       <Star className="w-5 h-5 text-yellow-400 fill-current" />
                       <span className="text-lg font-semibold text-gray-900">
                         {Number(store.rating || 0).toFixed(1)}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 text-center">
                       {store.reviews_count || 0} {t('store.reviews')}
                     </span>
                   </div>
 
                   {/* Orders */}
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-1 mb-1">
+                    <div className="flex items-center gap-1 mb-0.5">
                       <Package className="w-5 h-5 text-gray-600" />
                       <span className="text-lg font-semibold text-gray-900">
                         {store.orders_count || 0}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-500">{t('store.orders')}</span>
+                    <span className="text-xs text-gray-500 text-center">{t('store.orders')}</span>
                   </div>
 
                   {/* Likes */}
                   <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-1 mb-1">
+                    <div className="flex items-center gap-1 mb-0.5">
                       <Heart className="w-5 h-5 text-gray-600" />
                       <span className="text-lg font-semibold text-gray-900">
                         {store.likes_count || 0}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-500">{t('store.likes')}</span>
+                    <span className="text-xs text-gray-500 text-center">{t('store.likes')}</span>
                   </div>
                 </div>
 
