@@ -233,7 +233,7 @@ export default function StorePage({
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         {/* Store Profile Section */}
         {store && (
-          <div className="border-b border-gray-200 py-4 lg:py-6">
+          <div className="py-4 lg:py-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
               {/* Left: Logo and Name */}
               <div className="flex items-center gap-4">
@@ -319,7 +319,7 @@ export default function StorePage({
         )}
 
         {/* Filters Section */}
-        <div className="border-b border-gray-200 py-4 mb-6">
+        <div className="py-4 mb-6">
           <div className="flex flex-wrap items-center gap-3">
             {/* Sort Dropdown */}
             <div className="relative">
