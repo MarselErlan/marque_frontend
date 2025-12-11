@@ -4,7 +4,7 @@ import { Star, ArrowRight, Check, Heart, ArrowLeft } from "lucide-react"
 import { SparklesIcon } from "@/components/SparklesIcon"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { productsApi } from "@/lib/api"
+import { productsApi, storesApi } from "@/lib/api"
 import { useParams, useRouter } from "next/navigation"
 import { API_CONFIG } from "@/lib/config"
 import { useAuth } from "@/hooks/useAuth"
@@ -104,6 +104,8 @@ export default function ProductDetailPage() {
   const [similarProducts, setSimilarProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isFollowingStore, setIsFollowingStore] = useState(false)
+  const [isTogglingFollow, setIsTogglingFollow] = useState(false)
   
   // Currency state
   const [formattedPrice, setFormattedPrice] = useState<string>('')
@@ -120,6 +122,11 @@ export default function ProductDetailPage() {
         const slug = params.id as string
         const productData = await productsApi.getDetail(slug)
         setProduct(productData)
+        
+        // Set initial follow state if store exists
+        if (productData?.store?.is_following !== undefined) {
+          setIsFollowingStore(productData.store.is_following)
+        }
         
         // Format prices will be handled in separate useEffect when currency is loaded
 
@@ -453,6 +460,29 @@ export default function ProductDetailPage() {
     }
   }
 
+  const handleStoreFollow = async () => {
+    if (!product?.store?.slug) return
+    
+    if (!isLoggedIn) {
+      auth.requireAuth(() => {
+        handleStoreFollow()
+      })
+      return
+    }
+    
+    setIsTogglingFollow(true)
+    try {
+      const response = await storesApi.toggleFollow(product.store.slug)
+      setIsFollowingStore(response.is_following)
+      toast.success(response.message || (response.is_following ? 'Following store' : 'Unfollowed store'))
+    } catch (err: any) {
+      console.error('Failed to toggle follow:', err)
+      toast.error(err.message || 'Failed to update follow status')
+    } finally {
+      setIsTogglingFollow(false)
+    }
+  }
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchQuery(value)
@@ -703,6 +733,84 @@ export default function ProductDetailPage() {
                 </button>
               </div>
             </div>
+
+            {/* Store Information - Below product images, same width */}
+            {product.store && (
+              <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 mt-4">
+                <h3 className="text-base lg:text-lg font-semibold text-black mb-4">{t('product.store')}</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1">
+                    {/* Store Logo */}
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      {product.store.logo ? (
+                        <img
+                          src={getImageUrl(product.store.logo)}
+                          alt={product.store.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/images/product_placeholder_adobe.png"
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-brand/10">
+                          <span className="text-brand font-bold text-base">
+                            {product.store.name?.charAt(0).toUpperCase() || 'S'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Store Info */}
+                    <div className="flex-1 min-w-0">
+                      <Link 
+                        href={`/store/${product.store.slug}`}
+                        className="text-base font-semibold text-black hover:text-brand transition-colors block mb-1"
+                      >
+                        {product.store.name}
+                      </Link>
+                      <p className="text-xs text-gray-500 mb-1">{t('product.viewStore')}</p>
+                      {product.store.rating > 0 && (
+                        <div className="flex items-center space-x-1">
+                          <StarRating rating={product.store.rating} size="w-3.5 h-3.5" />
+                          <span className="text-sm text-gray-600">
+                            {product.store.rating.toFixed(1)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Subscribe Button */}
+                  <div className="ml-4">
+                    <Button
+                      variant="outline"
+                      className={`px-4 py-2 text-sm border-gray-300 hover:bg-gray-50 ${
+                        isFollowingStore ? 'bg-gray-100' : ''
+                      }`}
+                      onClick={handleStoreFollow}
+                      disabled={isTogglingFollow}
+                    >
+                      <Heart className={`w-4 h-4 mr-2 ${isFollowingStore ? 'text-red-500 fill-current' : ''}`} />
+                      {isTogglingFollow ? t('store.loading') : isFollowingStore ? t('store.unfollow') : t('store.follow')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Product Description - Below store, same width */}
+            <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200 mt-4">
+              <h3 className="text-base lg:text-lg font-semibold text-black mb-4">{t('product.about')}</h3>
+              {product.description ? (
+                <p className="text-sm lg:text-base text-gray-700 leading-relaxed">
+                  {product.description}
+                </p>
+              ) : (
+                <p className="text-sm lg:text-base text-gray-500 italic">
+                  {t('product.noDescription')}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Product Info */}
@@ -858,16 +966,9 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Product Description */}
+        {/* Product Specifications */}
         <section className="mb-12 px-4 lg:px-0">
-          <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">{t('product.about')}</h2>
-          
-          {/* Description Text */}
-          {product.description && (
-            <p className="text-gray-700 leading-relaxed mb-6 text-sm lg:text-base">
-              {product.description}
-            </p>
-          )}
+          <h2 className="text-xl lg:text-2xl font-bold text-black mb-4">{t('product.specifications')}</h2>
 
           {/* Specifications Table */}
           <div className="divide-y divide-gray-200">

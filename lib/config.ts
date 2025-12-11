@@ -61,6 +61,10 @@ export const API_CONFIG = {
     CURRENCIES: '/currencies',
     CURRENCY_CONVERT: '/currencies/convert',
     MARKET_CURRENCY: '/currencies/market',
+    
+    // Stores
+    STORES: '/stores',
+    STORE_FOLLOW: '/stores',
   }
 } as const
 

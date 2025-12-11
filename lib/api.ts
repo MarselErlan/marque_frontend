@@ -1215,5 +1215,19 @@ export const currencyApi = {
   },
 }
 
+// Stores API
+export const storesApi = {
+  // Follow/Unfollow store
+  toggleFollow: (slug: string) =>
+    apiRequest<{
+      success: boolean
+      is_following: boolean
+      message: string
+    }>(`${API_CONFIG.ENDPOINTS.STORE_FOLLOW}/${slug}/follow`, {
+      method: 'POST',
+      requiresAuth: true,
+    }),
+}
+
 export { ApiError }
 

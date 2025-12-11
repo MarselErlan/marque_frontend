@@ -320,7 +320,14 @@
     "reviewPhotoAlt": "Review photo",
     "reviewMaxImages": "Maximum {max} images. Please remove some images before adding new ones.",
     "submitReview": "Submit Review",
-    "reviewNoItems": "No items in order"
+    "reviewNoItems": "No items in order",
+    "store": "Store",
+    "noDescription": "No description available"
+  },
+  "store": {
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "loading": "Loading..."
   },
   "search": {
     "title": "Search Results",
