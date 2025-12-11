@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronDown, Heart, X, Package, Star } from "lucide-react"
+import { ChevronDown, Heart, X, Package, Star, ChevronRight, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
@@ -24,6 +25,9 @@ export default function StorePage({
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { t } = useLanguage()
   const { format, currency, isLoading: isCurrencyLoading } = useCurrency()
+  
+  // Store formatted prices
+  const [formattedProductPrices, setFormattedProductPrices] = useState<Record<string, { price: string; originalPrice?: string }>>({})
   
   // Store data
   const [store, setStore] = useState<any>(null)
@@ -47,6 +51,7 @@ export default function StorePage({
   const [currentPage, setCurrentPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [hasMore, setHasMore] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
   
   // UI State
   const [showSortDropdown, setShowSortDropdown] = useState(false)
@@ -109,6 +114,8 @@ export default function StorePage({
           setProducts(response.products || [])
           setTotal(response.total || 0)
           setHasMore(response.has_more || false)
+          const calculatedTotalPages = Math.ceil((response.total || 0) / itemsPerPage)
+          setTotalPages(calculatedTotalPages)
           if (response.filters) {
             setFilters(response.filters)
           }
@@ -157,12 +164,45 @@ export default function StorePage({
     setCurrentPage(1)
   }
 
+  const handleFilterChange = (filterType: string, value: string, checked: boolean) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      [filterType]: checked
+        ? [...(prev[filterType] || []), value]
+        : (prev[filterType] || []).filter((v) => v !== value),
+    }))
+    setCurrentPage(1)
+  }
+
   const clearFilters = () => {
     setSelectedFilters({ sizes: [], colors: [], brands: [] })
     setSelectedCategory('')
     setSelectedSubcategory('')
     setPriceRange({})
     setCurrentPage(1)
+  }
+
+  // Close all dropdowns
+  const closeAllDropdowns = () => {
+    setShowSortDropdown(false)
+    setShowSizeDropdown(false)
+    setShowPriceDropdown(false)
+    setShowColorDropdown(false)
+    setShowCategoryDropdown(false)
+    setShowSubcategoryDropdown(false)
+  }
+
+  const handleWishlistClick = (e: React.MouseEvent, product: any) => {
+    e.preventDefault()
+    e.stopPropagation()
+    auth.requireAuth(() => {
+      const productId = product.id.toString()
+      if (isInWishlist(productId)) {
+        removeFromWishlist(productId)
+      } else {
+        addToWishlist(productId)
+      }
+    })
   }
 
   const hasActiveFilters = 
@@ -279,23 +319,27 @@ export default function StorePage({
         )}
 
         {/* Filters Section */}
-        <div className="border-b border-gray-200 py-4">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            {/* Sort by Popularity */}
+        <div className="border-b border-gray-200 py-4 mb-6">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Sort Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className={`flex items-center gap-2 px-4 py-2 bg-white rounded-lg border ${
-                  sortBy !== 'popular' ? 'border-brand' : 'border-gray-300'
-                } text-sm font-medium whitespace-nowrap`}
+                onClick={() => {
+                  if (showSortDropdown) {
+                    setShowSortDropdown(false)
+                  } else {
+                    closeAllDropdowns()
+                    setShowSortDropdown(true)
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm"
               >
-                {hasActiveFilters && <X className="w-4 h-4" />}
-                {sortOptions.find(opt => opt.value === sortBy)?.label || t('search.sortPopular')}
-                <ChevronDown className={`w-4 h-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
+                <span>{sortOptions.find((opt) => opt.value === sortBy)?.label}</span>
+                <ChevronDown className="w-4 h-4" />
               </button>
               {showSortDropdown && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 min-w-[200px]">
-                  {sortOptions.map(option => (
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[200px]">
+                  {sortOptions.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => {
@@ -303,8 +347,8 @@ export default function StorePage({
                         setShowSortDropdown(false)
                         setCurrentPage(1)
                       }}
-                      className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                        sortBy === option.value ? 'bg-brand/10 text-brand' : ''
+                      className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg text-sm ${
+                        sortBy === option.value ? 'bg-gray-50 text-brand font-medium' : ''
                       }`}
                     >
                       {option.label}
@@ -315,11 +359,16 @@ export default function StorePage({
             </div>
 
             {/* All Filters Button */}
-            <button
-              onClick={() => setShowAllFiltersModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-300 text-sm font-medium whitespace-nowrap"
+            <button 
+              onClick={() => {
+                closeAllDropdowns()
+                setShowAllFiltersModal(true)
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm font-medium"
             >
-              <span>=</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
               {t('store.allFilters')}
             </button>
 
@@ -373,24 +422,36 @@ export default function StorePage({
             {filters.subcategories && filters.subcategories.length > 0 && (
               <div className="relative">
                 <button
-                  onClick={() => setShowSubcategoryDropdown(!showSubcategoryDropdown)}
-                  className={`flex items-center gap-2 px-4 py-2 bg-white rounded-lg border ${
-                    selectedSubcategory ? 'border-brand' : 'border-gray-300'
-                  } text-sm font-medium whitespace-nowrap`}
+                  onClick={() => {
+                    if (showSubcategoryDropdown) {
+                      setShowSubcategoryDropdown(false)
+                    } else {
+                      closeAllDropdowns()
+                      setShowSubcategoryDropdown(true)
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm ${
+                    selectedSubcategory ? 'border-brand' : ''
+                  }`}
                 >
-                  {selectedSubcategory || t('store.subcategory')}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showSubcategoryDropdown ? 'rotate-180' : ''}`} />
+                  <span>{selectedSubcategory || t('store.subcategory')}</span>
+                  {selectedSubcategory && (
+                    <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      1
+                    </span>
+                  )}
+                  <ChevronDown className="w-4 h-4" />
                 </button>
                 {showSubcategoryDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 min-w-[200px] max-h-60 overflow-y-auto">
+                  <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[200px] max-h-60 overflow-y-auto">
                     <button
                       onClick={() => {
                         setSelectedSubcategory('')
                         setShowSubcategoryDropdown(false)
                         setCurrentPage(1)
                       }}
-                      className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                        !selectedSubcategory ? 'bg-brand/10 text-brand' : ''
+                      className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 first:rounded-t-lg text-sm ${
+                        !selectedSubcategory ? 'bg-gray-50 text-brand font-medium' : ''
                       }`}
                     >
                       {t('store.allSubcategories')}
@@ -403,8 +464,8 @@ export default function StorePage({
                           setShowSubcategoryDropdown(false)
                           setCurrentPage(1)
                         }}
-                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                          selectedSubcategory === subcat.slug ? 'bg-brand/10 text-brand' : ''
+                        className={`block w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm ${
+                          selectedSubcategory === subcat.slug ? 'bg-gray-50 text-brand font-medium' : ''
                         }`}
                       >
                         {subcat.name}
@@ -419,29 +480,43 @@ export default function StorePage({
             {filters.sizes && filters.sizes.length > 0 && (
               <div className="relative">
                 <button
-                  onClick={() => setShowSizeDropdown(!showSizeDropdown)}
-                  className={`flex items-center gap-2 px-4 py-2 bg-white rounded-lg border ${
-                    selectedFilters.sizes.length > 0 ? 'border-brand' : 'border-gray-300'
-                  } text-sm font-medium whitespace-nowrap`}
+                  onClick={() => {
+                    if (showSizeDropdown) {
+                      setShowSizeDropdown(false)
+                    } else {
+                      closeAllDropdowns()
+                      setShowSizeDropdown(true)
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm ${
+                    selectedFilters.sizes.length > 0 ? 'border-brand' : ''
+                  }`}
                 >
-                  {t('store.size')}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showSizeDropdown ? 'rotate-180' : ''}`} />
+                  <span>{t('store.size')}</span>
+                  {selectedFilters.sizes && selectedFilters.sizes.length > 0 && (
+                    <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {selectedFilters.sizes.length}
+                    </span>
+                  )}
+                  <ChevronDown className="w-4 h-4" />
                 </button>
                 {showSizeDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 min-w-[200px] max-h-60 overflow-y-auto p-2">
-                    <div className="flex flex-wrap gap-2">
+                  <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[220px]">
+                    <div className="space-y-2">
                       {filters.sizes.map((size: string) => (
-                        <button
-                          key={size}
-                          onClick={() => toggleFilter('sizes', size)}
-                          className={`px-3 py-1 rounded border ${
-                            selectedFilters.sizes.includes(size)
-                              ? 'border-brand bg-brand/10 text-brand'
-                              : 'border-gray-300'
-                          }`}
+                        <label 
+                          key={size} 
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                          onClick={() => {
+                            setTimeout(() => setShowSizeDropdown(false), 200)
+                          }}
                         >
-                          {size}
-                        </button>
+                          <Checkbox 
+                            checked={selectedFilters.sizes?.includes(size)}
+                            onCheckedChange={(checked) => handleFilterChange("sizes", size, checked as boolean)} 
+                          />
+                          <span className="text-sm">{size}</span>
+                        </label>
                       ))}
                     </div>
                   </div>
@@ -452,16 +527,23 @@ export default function StorePage({
             {/* Price Filter */}
             <div className="relative">
               <button
-                onClick={() => setShowPriceDropdown(!showPriceDropdown)}
-                className={`flex items-center gap-2 px-4 py-2 bg-white rounded-lg border ${
-                  priceRange.min !== undefined || priceRange.max !== undefined ? 'border-brand' : 'border-gray-300'
-                } text-sm font-medium whitespace-nowrap`}
+                onClick={() => {
+                  if (showPriceDropdown) {
+                    setShowPriceDropdown(false)
+                  } else {
+                    closeAllDropdowns()
+                    setShowPriceDropdown(true)
+                  }
+                }}
+                className={`flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm ${
+                  priceRange.min !== undefined || priceRange.max !== undefined ? 'border-brand' : ''
+                }`}
               >
-                {t('store.price')}
-                <ChevronDown className={`w-4 h-4 transition-transform ${showPriceDropdown ? 'rotate-180' : ''}`} />
+                <span>{t('store.price')}</span>
+                <ChevronDown className="w-4 h-4" />
               </button>
               {showPriceDropdown && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 min-w-[300px]">
+                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[300px]">
                   <div className="flex gap-2">
                     <input
                       type="number"
@@ -495,35 +577,59 @@ export default function StorePage({
             {filters.colors && filters.colors.length > 0 && (
               <div className="relative">
                 <button
-                  onClick={() => setShowColorDropdown(!showColorDropdown)}
-                  className={`flex items-center gap-2 px-4 py-2 bg-white rounded-lg border ${
-                    selectedFilters.colors.length > 0 ? 'border-brand' : 'border-gray-300'
-                  } text-sm font-medium whitespace-nowrap`}
+                  onClick={() => {
+                    if (showColorDropdown) {
+                      setShowColorDropdown(false)
+                    } else {
+                      closeAllDropdowns()
+                      setShowColorDropdown(true)
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-brand text-sm ${
+                    selectedFilters.colors.length > 0 ? 'border-brand' : ''
+                  }`}
                 >
-                  {t('store.color')}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showColorDropdown ? 'rotate-180' : ''}`} />
+                  <span>{t('store.color')}</span>
+                  {selectedFilters.colors && selectedFilters.colors.length > 0 && (
+                    <span className="bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {selectedFilters.colors.length}
+                    </span>
+                  )}
+                  <ChevronDown className="w-4 h-4" />
                 </button>
                 {showColorDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 min-w-[200px] max-h-60 overflow-y-auto p-2">
-                    <div className="flex flex-wrap gap-2">
+                  <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-4 min-w-[220px]">
+                    <div className="space-y-2">
                       {filters.colors.map((color: any) => (
-                        <button
-                          key={color.name}
-                          onClick={() => toggleFilter('colors', color.name)}
-                          className={`px-3 py-1 rounded border ${
-                            selectedFilters.colors.includes(color.name)
-                              ? 'border-brand bg-brand/10 text-brand'
-                              : 'border-gray-300'
-                          }`}
+                        <label 
+                          key={color.name} 
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                          onClick={() => {
+                            setTimeout(() => setShowColorDropdown(false), 200)
+                          }}
                         >
-                          {color.name}
-                        </button>
+                          <Checkbox 
+                            checked={selectedFilters.colors?.includes(color.name)}
+                            onCheckedChange={(checked) => handleFilterChange("colors", color.name, checked as boolean)} 
+                          />
+                          <span className="text-sm capitalize">{color.name}</span>
+                        </label>
                       ))}
                     </div>
                   </div>
                 )}
               </div>
             )}
+          
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 text-brand hover:text-brand-hover text-sm font-medium"
+            >
+              {t('search.reset')}
+            </button>
+          )}
           </div>
         </div>
 
