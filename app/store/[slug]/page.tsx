@@ -189,9 +189,6 @@ export default function StorePage({
     <div className="min-h-screen bg-gray-50">
       <AuthModals {...auth} />
       
-      {/* Spacing after top bar */}
-      <div className="h-4 lg:h-6"></div>
-      
       {/* Store Profile Section */}
       {store && (
         <div className="bg-white border-b border-gray-200">
