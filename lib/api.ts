@@ -210,6 +210,20 @@ export const authApi = {
       method: 'POST',
       requiresAuth: true,
     }),
+
+  // Set password for Django admin access
+  setPassword: (data: {
+    password: string
+    password_confirm: string
+  }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+    }>(API_CONFIG.ENDPOINTS.SET_PASSWORD, {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
 }
 
 // Products API

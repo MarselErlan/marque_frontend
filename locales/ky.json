@@ -384,7 +384,23 @@
       "nameRequired": "Дүкөн аталышы талап кылынат",
       "emailInvalid": "Email форматы туура эмес",
       "websiteInvalid": "Веб-сайт http:// же https:// менен башталышы керек",
-      "loginRequired": "Дүкөн каттоо үчүн сураныч, системага кириңиз"
+      "loginRequired": "Дүкөн каттоо үчүн сураныч, системага кириңиз",
+      "setPasswordTitle": "Админ паролун орнотуу",
+      "setPasswordDescription": "Дүкөн админ панелине кирүү үчүн пароль орнотуңуз. Сиз муну өткөрүп жиберип, кийинчерээк орното аласыз.",
+      "password": "Пароль",
+      "passwordPlaceholder": "Парольду киргизиңиз (минималдуу 8 символ)",
+      "passwordConfirm": "Парольду ырастаңыз",
+      "passwordConfirmPlaceholder": "Парольду ырастаңыз",
+      "passwordRequired": "Пароль талап кылынат",
+      "passwordMinLength": "Пароль минималдуу 8 символ болушу керек",
+      "passwordConfirmRequired": "Сураныч, парольду ырастаңыз",
+      "passwordMismatch": "Парольдор дал келбейт",
+      "setPassword": "Парольду орнотуу",
+      "settingPassword": "Орнотулууда...",
+      "skip": "Азыр өткөрүп жиберүү",
+      "passwordSetSuccess": "Пароль ийгиликтүү орнотулду! Эми сиз админ панелине кире аласыз.",
+      "passwordSetError": "Парольду орнотуу мүмкүн болгон жок",
+      "passwordSkipped": "Сиз парольду кийинчерээк профилиңизде орното аласыз."
     }
   },
   "search": {

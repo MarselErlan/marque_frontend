@@ -378,7 +378,23 @@
       "nameRequired": "Store name is required",
       "emailInvalid": "Invalid email format",
       "websiteInvalid": "Website must start with http:// or https://",
-      "loginRequired": "Please log in to register a store"
+      "loginRequired": "Please log in to register a store",
+      "setPasswordTitle": "Set Admin Password",
+      "setPasswordDescription": "Set a password to access your store admin panel. You can skip this and set it later.",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password (min 8 characters)",
+      "passwordConfirm": "Confirm Password",
+      "passwordConfirmPlaceholder": "Confirm password",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordConfirmRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "setPassword": "Set Password",
+      "settingPassword": "Setting...",
+      "skip": "Skip for Now",
+      "passwordSetSuccess": "Password set successfully! You can now access the admin panel.",
+      "passwordSetError": "Failed to set password",
+      "passwordSkipped": "You can set your password later in your profile."
     }
   },
   "search": {

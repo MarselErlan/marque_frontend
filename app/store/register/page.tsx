@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useAuth } from "@/hooks/useAuth"
 import { AuthModals } from "@/components/AuthModals"
-import { storesApi } from "@/lib/api"
+import { storesApi, authApi } from "@/lib/api"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { toast } from "sonner"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Lock } from "lucide-react"
 import Link from "next/link"
 
 export default function StoreRegisterPage() {
@@ -31,6 +32,16 @@ export default function StoreRegisterPage() {
   
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Password setup state
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    password: '',
+    password_confirm: '',
+  })
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({})
+  const [isSettingPassword, setIsSettingPassword] = useState(false)
+  const [passwordSkipped, setPasswordSkipped] = useState(false)
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -93,8 +104,8 @@ export default function StoreRegisterPage() {
 
       if (response.success) {
         toast.success(response.message || t('store.register.success') || 'Store registered successfully!')
-        // Redirect to store page or profile
-        router.push('/profile')
+        // Show password setup dialog
+        setShowPasswordDialog(true)
       } else {
         toast.error(t('store.register.error') || 'Failed to register store')
       }
@@ -301,6 +312,152 @@ export default function StoreRegisterPage() {
             </p>
           )}
         </form>
+
+        {/* Password Setup Dialog */}
+        <Dialog open={showPasswordDialog} onOpenChange={(open) => {
+          if (!open && !passwordSkipped) {
+            // Only allow closing if password was set or skipped
+            setShowPasswordDialog(false)
+            router.push('/profile')
+          }
+        }}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="flex items-center gap-2 mb-2">
+                <Lock className="w-5 h-5 text-brand" />
+                <DialogTitle>{t('store.register.setPasswordTitle') || 'Set Admin Password'}</DialogTitle>
+              </div>
+              <DialogDescription>
+                {t('store.register.setPasswordDescription') || 'Set a password to access your store admin panel. You can skip this and set it later.'}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('store.register.password') || 'Password'} <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={passwordData.password}
+                  onChange={(e) => {
+                    setPasswordData(prev => ({ ...prev, password: e.target.value }))
+                    if (passwordErrors.password) {
+                      setPasswordErrors(prev => {
+                        const newErrors = { ...prev }
+                        delete newErrors.password
+                        return newErrors
+                      })
+                    }
+                  }}
+                  placeholder={t('store.register.passwordPlaceholder') || 'Enter password (min 8 characters)'}
+                  className={passwordErrors.password ? 'border-red-500' : ''}
+                />
+                {passwordErrors.password && (
+                  <p className="mt-1 text-sm text-red-500">{passwordErrors.password}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="password_confirm" className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('store.register.passwordConfirm') || 'Confirm Password'} <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  id="password_confirm"
+                  type="password"
+                  value={passwordData.password_confirm}
+                  onChange={(e) => {
+                    setPasswordData(prev => ({ ...prev, password_confirm: e.target.value }))
+                    if (passwordErrors.password_confirm) {
+                      setPasswordErrors(prev => {
+                        const newErrors = { ...prev }
+                        delete newErrors.password_confirm
+                        return newErrors
+                      })
+                    }
+                  }}
+                  placeholder={t('store.register.passwordConfirmPlaceholder') || 'Confirm password'}
+                  className={passwordErrors.password_confirm ? 'border-red-500' : ''}
+                />
+                {passwordErrors.password_confirm && (
+                  <p className="mt-1 text-sm text-red-500">{passwordErrors.password_confirm}</p>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    setPasswordSkipped(true)
+                    setShowPasswordDialog(false)
+                    router.push('/profile')
+                    toast.info(t('store.register.passwordSkipped') || 'You can set your password later in your profile.')
+                  }}
+                  className="flex-1"
+                  disabled={isSettingPassword}
+                >
+                  {t('store.register.skip') || 'Skip for Now'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    // Validate password
+                    const newErrors: Record<string, string> = {}
+                    
+                    if (!passwordData.password) {
+                      newErrors.password = t('store.register.passwordRequired') || 'Password is required'
+                    } else if (passwordData.password.length < 8) {
+                      newErrors.password = t('store.register.passwordMinLength') || 'Password must be at least 8 characters'
+                    }
+                    
+                    if (!passwordData.password_confirm) {
+                      newErrors.password_confirm = t('store.register.passwordConfirmRequired') || 'Please confirm your password'
+                    } else if (passwordData.password !== passwordData.password_confirm) {
+                      newErrors.password_confirm = t('store.register.passwordMismatch') || 'Passwords do not match'
+                    }
+                    
+                    if (Object.keys(newErrors).length > 0) {
+                      setPasswordErrors(newErrors)
+                      return
+                    }
+                    
+                    setIsSettingPassword(true)
+                    try {
+                      const response = await authApi.setPassword({
+                        password: passwordData.password,
+                        password_confirm: passwordData.password_confirm,
+                      })
+                      
+                      if (response.success) {
+                        toast.success(t('store.register.passwordSetSuccess') || 'Password set successfully! You can now access the admin panel.')
+                        setShowPasswordDialog(false)
+                        router.push('/profile')
+                      }
+                    } catch (error: any) {
+                      console.error('Password setup error:', error)
+                      if (error.details && typeof error.details === 'object') {
+                        setPasswordErrors(error.details)
+                      } else {
+                        toast.error(error.message || t('store.register.passwordSetError') || 'Failed to set password')
+                      }
+                    } finally {
+                      setIsSettingPassword(false)
+                    }
+                  }}
+                  className="flex-1 bg-brand hover:bg-brand-hover text-white"
+                  disabled={isSettingPassword}
+                >
+                  {isSettingPassword 
+                    ? (t('store.register.settingPassword') || 'Setting...')
+                    : (t('store.register.setPassword') || 'Set Password')
+                  }
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

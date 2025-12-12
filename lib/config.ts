@@ -8,6 +8,7 @@ export const API_CONFIG = {
     LOGOUT: '/auth/logout',
     USER_PROFILE: '/auth/profile',
     USER_SESSIONS: '/auth/sessions',
+    SET_PASSWORD: '/auth/set-password',
     
     // Products
     PRODUCTS: '/products',
