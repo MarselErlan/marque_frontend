@@ -59,7 +59,9 @@
     "noActiveOrders": "No active orders",
     "noArchiveOrders": "No archived orders",
     "noDetailAvailable": "Order details not available",
-    "fetchDetailError": "Failed to load order details"
+    "fetchDetailError": "Failed to load order details",
+    "registerStore": "Register Store",
+    "registerStoreDescription": "Create your store on MARQUE marketplace"
   },
   "settings": {
     "title": "Settings",
@@ -440,7 +442,8 @@
     "brands": "Brands",
     "privacyPolicy": "Privacy Policy",
     "termsOfUse": "Terms of Use",
-    "registerStore": "Register Store"
+    "registerStore": "Register Store",
+    "profile": "Profile"
   },
   "languages": {
     "russian": "Russian",

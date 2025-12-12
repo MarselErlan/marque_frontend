@@ -2167,6 +2167,22 @@ export default function ProfilePage() {
                 >
                   {t('payments.addPayment')}
                 </Button>
+
+                {/* Register Store Link - Same style as payment cards */}
+                <Link
+                  href="/store/register"
+                  className="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow mt-4"
+                >
+                  <div>
+                    <p className="text-lg font-medium text-gray-900 mb-1">
+                      {t('profile.registerStore')}
+                    </p>
+                    <p className="text-gray-600">
+                      {t('profile.registerStoreDescription')}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </Link>
               </div>
             )}
 
@@ -2429,8 +2445,8 @@ export default function ProfilePage() {
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 gap-4">
             <div className="flex flex-wrap gap-4">
-              <Link href="/store/register" className="hover:text-white transition-colors">
-                {t('footer.registerStore')}
+              <Link href="/profile" className="hover:text-white transition-colors">
+                {t('footer.profile')}
               </Link>
               <div className="hover:text-white cursor-pointer transition-colors">{t('footer.privacyPolicy')}</div>
               <div className="hover:text-white cursor-pointer transition-colors">{t('footer.termsOfUse')}</div>

@@ -60,6 +60,8 @@
     "noArchiveOrders": "Архивделген буйрутмалар жок",
     "noDetailAvailable": "Буйрутма деталдары жеткиликсиз",
     "fetchDetailError": "Буйрутма деталдарын жүктөөдө ката кетти",
+    "registerStore": "Дүкөндү каттаңыз",
+    "registerStoreDescription": "MARQUE базарында дүкөнүңүздү түзүңүз",
     "phoneAdded": "Телефон номуру кошулду",
     "phoneAddError": "Телефон номурун кошууда ката кетти",
     "phoneUpdated": "Телефон номуру жаңыланды",
@@ -444,7 +446,8 @@
     "brands": "Бренддер",
     "privacyPolicy": "Купуялык саясаты",
     "termsOfUse": "Колдонуу келишими",
-    "registerStore": "Дүкөн каттоо"
+    "registerStore": "Дүкөн каттоо",
+    "profile": "Жеке кабинет"
   },
   "languages": {
     "russian": "Орусча",
