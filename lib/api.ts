@@ -1267,6 +1267,26 @@ export const storesApi = {
       method: 'POST',
       requiresAuth: true,
     }),
+
+  // Register new store
+  registerStore: (data: {
+    name: string
+    description?: string
+    market: 'KG' | 'US' | 'ALL'
+    email?: string
+    phone?: string
+    website?: string
+    address?: string
+  }) =>
+    apiRequest<{
+      success: boolean
+      message: string
+      store: any
+    }>(API_CONFIG.ENDPOINTS.STORES + '/register/', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify(data),
+    }),
 }
 
 export { ApiError }

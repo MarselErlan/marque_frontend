@@ -355,7 +355,35 @@
     "minPrice": "Минималдуу",
     "maxPrice": "Максималдуу",
     "apply": "Колдонуу",
-    "noProducts": "Товарлар табылган жок"
+    "noProducts": "Товарлар табылган жок",
+    "register": {
+      "title": "Дүкөн каттоо",
+      "subtitle": "MARQUE маркетплейсте дүкөнүңүздү түзүңүз. Дүкөнүңүз командабыз тарабынан каралып, активдештирилет.",
+      "storeName": "Дүкөн аталышы",
+      "storeNamePlaceholder": "Дүкөн аталышын киргизиңиз",
+      "description": "Сыпаттама",
+      "descriptionPlaceholder": "Дүкөнүңүз жөнүндө айтыңыз...",
+      "market": "Рынок",
+      "selectMarket": "Рынокту тандаңыз",
+      "email": "Email",
+      "emailPlaceholder": "store@example.com",
+      "phone": "Телефон",
+      "phonePlaceholder": "+996 555 123 456",
+      "website": "Веб-сайт",
+      "websitePlaceholder": "https://example.com",
+      "address": "Дареги",
+      "addressPlaceholder": "Дүкөн дареги",
+      "info": "Дүкөнүңүздүн каттоосу командабыз тарабынан каралат. Дүкөнүңүз бекитилип, активдештирилгенде сизге билдирилет.",
+      "submit": "Дүкөн каттоо",
+      "submitting": "Жөнөтүлүүдө...",
+      "success": "Дүкөн ийгиликтүү катталды!",
+      "error": "Дүкөн каттоо мүмкүн эмес",
+      "validationError": "Сураныч, формадагы каталарды текшериңиз",
+      "nameRequired": "Дүкөн аталышы талап кылынат",
+      "emailInvalid": "Email форматы туура эмес",
+      "websiteInvalid": "Веб-сайт http:// же https:// менен башталышы керек",
+      "loginRequired": "Дүкөн каттоо үчүн сураныч, системага кириңиз"
+    }
   },
   "search": {
     "title": "Издөө натыйжалары",
@@ -415,7 +443,8 @@
     "accessories": "Аксессуарлар",
     "brands": "Бренддер",
     "privacyPolicy": "Купуялык саясаты",
-    "termsOfUse": "Колдонуу келишими"
+    "termsOfUse": "Колдонуу келишими",
+    "registerStore": "Дүкөн каттоо"
   },
   "languages": {
     "russian": "Орусча",

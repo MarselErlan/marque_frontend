@@ -2427,9 +2427,14 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div className="hover:text-white cursor-pointer transition-colors">{t('footer.privacyPolicy')}</div>
-            <div className="hover:text-white cursor-pointer transition-colors">{t('footer.termsOfUse')}</div>
+          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 gap-4">
+            <div className="flex flex-wrap gap-4">
+              <Link href="/store/register" className="hover:text-white transition-colors">
+                {t('footer.registerStore')}
+              </Link>
+              <div className="hover:text-white cursor-pointer transition-colors">{t('footer.privacyPolicy')}</div>
+              <div className="hover:text-white cursor-pointer transition-colors">{t('footer.termsOfUse')}</div>
+            </div>
           </div>
         </div>
       </footer>

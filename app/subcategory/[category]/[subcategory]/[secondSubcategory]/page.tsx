@@ -1247,9 +1247,14 @@ export default function SecondSubcategoryPage({
               </div>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <div>{t('footer.privacyPolicy')}</div>
-            <div>{t('footer.termsOfUse')}</div>
+          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 gap-4">
+            <div className="flex flex-wrap gap-4">
+              <Link href="/store/register" className="hover:text-white transition-colors">
+                {t('footer.registerStore')}
+              </Link>
+              <div>{t('footer.privacyPolicy')}</div>
+              <div>{t('footer.termsOfUse')}</div>
+            </div>
           </div>
         </div>
       </footer>

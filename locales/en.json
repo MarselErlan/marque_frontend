@@ -349,7 +349,35 @@
     "minPrice": "Min",
     "maxPrice": "Max",
     "apply": "Apply",
-    "noProducts": "No products found"
+    "noProducts": "No products found",
+    "register": {
+      "title": "Register Your Store",
+      "subtitle": "Create your store on MARQUE marketplace. Your store will be reviewed and activated by our team.",
+      "storeName": "Store Name",
+      "storeNamePlaceholder": "Enter your store name",
+      "description": "Description",
+      "descriptionPlaceholder": "Tell us about your store...",
+      "market": "Market",
+      "selectMarket": "Select market",
+      "email": "Email",
+      "emailPlaceholder": "store@example.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+996 555 123 456",
+      "website": "Website",
+      "websitePlaceholder": "https://example.com",
+      "address": "Address",
+      "addressPlaceholder": "Store address",
+      "info": "Your store registration will be reviewed by our team. You will be notified once your store is approved and activated.",
+      "submit": "Register Store",
+      "submitting": "Submitting...",
+      "success": "Store registered successfully!",
+      "error": "Failed to register store",
+      "validationError": "Please check the form for errors",
+      "nameRequired": "Store name is required",
+      "emailInvalid": "Invalid email format",
+      "websiteInvalid": "Website must start with http:// or https://",
+      "loginRequired": "Please log in to register a store"
+    }
   },
   "search": {
     "title": "Search Results",
@@ -411,7 +439,8 @@
     "accessories": "Accessories",
     "brands": "Brands",
     "privacyPolicy": "Privacy Policy",
-    "termsOfUse": "Terms of Use"
+    "termsOfUse": "Terms of Use",
+    "registerStore": "Register Store"
   },
   "languages": {
     "russian": "Russian",
