@@ -1069,6 +1069,24 @@ export default function ProfilePage() {
                     />
                   </div>
 
+                  {/* Register Store Link */}
+                  <div className="pt-6 md:pt-8 border-t border-gray-200">
+                    <Link
+                      href="/store/register"
+                      className="flex items-center justify-between p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
+                    >
+                      <div>
+                        <p className="text-lg font-medium text-gray-900 mb-1">
+                          {t('profile.registerStore')}
+                        </p>
+                        <p className="text-gray-600">
+                          {t('profile.registerStoreDescription')}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                    </Link>
+                  </div>
+
                   {/* Logout Button */}
                   <div className="pt-6 md:pt-8 border-t border-gray-200">
                     <Button
